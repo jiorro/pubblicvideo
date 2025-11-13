@@ -1,0 +1,51 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #121212;
+  color: #eee;
+}
+
+header {
+  text-align: center;
+  padding: 2rem;
+  background: #1f1f1f;
+  border-bottom: 2px solid #333;
+}
+
+input[type="file"] {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background: #333;
+  color: #eee;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+main {
+  padding: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: center;
+}
+
+.video-box {
+  width: 320px;
+  background: #1a1a1a;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 0 10px #000;
+}
+
+video {
+  width: 100%;
+  border-radius: 4px;
+}
+
+footer {
+  text-align: center;
+  padding: 1rem;
+  background: #1f1f1f;
+  border-top: 2px solid #333;
+}
