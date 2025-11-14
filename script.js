@@ -17,3 +17,14 @@ uploader.addEventListener("change", (event) => {
     gallery.appendChild(box);
   }
 });
+
+const searchInput = document.getElementById("searchInput");
+const videoBoxes = document.querySelectorAll(".video-box");
+
+searchInput.addEventListener("input", () => {
+  const query = searchInput.value.toLowerCase();
+  videoBoxes.forEach(box => {
+    const title = box.dataset.title.toLowerCase();
+    box.style.display = title.includes(query) ? "block" : "none";
+  });
+});
