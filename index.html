@@ -3,18 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jiorro Video Drop</title>
+  <title>Jiorro Video Share</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <h1>🎬 Jiorro Video Drop</h1>
-    <p>Carica e guarda i tuoi video epici</p>
-    <input type="file" id="videoUploader" accept="video/mp4,video/webm" multiple />
+    <h1>🎬 Jiorro Video Share</h1>
+    <p>Guarda video pubblici da qualsiasi dispositivo</p>
+    <input type="text" id="searchInput" placeholder="🔍 Cerca video..." />
   </header>
 
   <main>
-    <section id="videoGallery"></section>
+    <section id="videoGallery">
+      <!-- Video 1 -->
+      <div class="video-box" data-title="video di esempio">
+        <video controls>
+          <source src="media/tuo-video.mp4" type="video/mp4" />
+          Il tuo browser non supporta il video.
+        </video>
+        <h3>Video di esempio</h3>
+      </div>
+
+      <!-- Video 2 -->
+      <div class="video-box" data-title="formula 1 highlights">
+        <video controls>
+          <source src="media/formula1.mp4" type="video/mp4" />
+        </video>
+        <h3>Formula 1 Highlights</h3>
+      </div>
+    </section>
   </main>
 
   <footer>
