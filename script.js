@@ -8,6 +8,15 @@ const videoContainer = document.getElementById('videoContainer');
 const searchInput = document.getElementById('searchInput');
 const uploadStatus = document.getElementById('uploadStatus');
 
+// 🔁 Carica video salvati da localStorage
+window.addEventListener('DOMContentLoaded', () => {
+  const savedVideos = JSON.parse(localStorage.getItem('jiorroVideos') || '[]');
+  savedVideos.forEach(({ url, title }) => {
+    const card = createVideoCard(url, title);
+    videoContainer.appendChild(card);
+  });
+});
+
 openUpload.addEventListener('click', () => {
   uploadModal.classList.remove('hidden');
   uploadStatus.textContent = '';
@@ -36,7 +45,7 @@ uploadBtn.addEventListener('click', async () => {
 
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('upload_preset', 'jiorro_upload'); // ✅ tuo preset unsigned
+  formData.append('upload_preset', 'jiorro_upload');
 
   try {
     const res = await fetch('https://api.cloudinary.com/v1_1/dng8rjd6u/auto/upload', {
@@ -57,22 +66,13 @@ uploadBtn.addEventListener('click', async () => {
       return;
     }
 
-    const card = document.createElement('div');
-    card.className = 'video-card';
-
-    const videoEl = document.createElement('video');
-    videoEl.src = videoUrl;
-    videoEl.controls = true;
-    videoEl.setAttribute('playsinline', '');
-    videoEl.setAttribute('preload', 'metadata');
-
-    const titleEl = document.createElement('div');
-    titleEl.className = 'video-title';
-    titleEl.textContent = title || 'Video senza titolo';
-
-    card.appendChild(videoEl);
-    card.appendChild(titleEl);
+    const card = createVideoCard(videoUrl, title);
     videoContainer.prepend(card);
+
+    // 🔐 Salva nel localStorage
+    const savedVideos = JSON.parse(localStorage.getItem('jiorroVideos') || '[]');
+    savedVideos.unshift({ url: videoUrl, title });
+    localStorage.setItem('jiorroVideos', JSON.stringify(savedVideos));
 
     uploadStatus.style.color = 'green';
     uploadStatus.textContent = '✅ Video caricato!';
@@ -94,3 +94,23 @@ searchInput.addEventListener('input', () => {
     card.style.display = match ? 'flex' : 'none';
   });
 });
+
+// 🧩 Funzione per creare card video
+function createVideoCard(url, title) {
+  const card = document.createElement('div');
+  card.className = 'video-card';
+
+  const videoEl = document.createElement('video');
+  videoEl.src = url;
+  videoEl.controls = true;
+  videoEl.setAttribute('playsinline', '');
+  videoEl.setAttribute('preload', 'metadata');
+
+  const titleEl = document.createElement('div');
+  titleEl.className = 'video-title';
+  titleEl.textContent = title || 'Video senza titolo';
+
+  card.appendChild(videoEl);
+  card.appendChild(titleEl);
+  return card;
+}
