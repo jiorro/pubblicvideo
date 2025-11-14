@@ -119,24 +119,38 @@
     const home = document.getElementById('homeSection');
     const video = document.getElementById('videoSection');
 
-    input.addEventListener('input', () => {
-      const value = input.value.trim().toLowerCase();
-      if (value === 'jiorr0') {
-        result.textContent = '✅ Accesso consentito';
-        result.style.color = '#6f6';
-        home.style.display = 'none';
-        video.style.display = 'block';
-      } else if (value.length > 0) {
-        result.textContent = '❌ Non trovato';
-        result.style.color = '#f66';
-        home.style.display = 'block';
-        video.style.display = 'none';
-      } else {
-        result.textContent = '';
-        home.style.display = 'block';
-        video.style.display = 'none';
-      }
-    });
+  const enterBtn = document.createElement('button');
+enterBtn.textContent = 'Entra';
+enterBtn.style.marginTop = '15px';
+enterBtn.style.padding = '10px 20px';
+enterBtn.style.fontSize = '16px';
+enterBtn.style.background = '#444';
+enterBtn.style.color = '#fff';
+enterBtn.style.border = 'none';
+enterBtn.style.cursor = 'pointer';
+enterBtn.style.display = 'none';
+result.insertAdjacentElement('afterend', enterBtn);
+
+input.addEventListener('input', () => {
+  const value = input.value.trim().toLowerCase();
+  if (value === 'jiorr0') {
+    result.textContent = '✅ Accesso consentito';
+    result.style.color = '#6f6';
+    enterBtn.style.display = 'inline-block';
+  } else if (value.length > 0) {
+    result.textContent = '❌ Non trovato';
+    result.style.color = '#f66';
+    enterBtn.style.display = 'none';
+  } else {
+    result.textContent = '';
+    enterBtn.style.display = 'none';
+  }
+});
+
+enterBtn.addEventListener('click', () => {
+  home.style.display = 'none';
+  video.style.display = 'block';
+});
 
     const openUpload = document.getElementById('openUpload');
     const closeUpload = document.getElementById('closeUpload');
