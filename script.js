@@ -24,12 +24,16 @@ uploadBtn.addEventListener('click', async () => {
     return;
   }
 
+  if (!file.type.startsWith('video/')) {
+    uploadStatus.textContent = 'Errore: il file non è un video valido.';
+    return;
+  }
+
   uploadStatus.textContent = 'Caricamento in corso...';
 
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('upload_preset', 'jiorro_upload'); // 🔧 tuo preset Cloudinary
-
+  formData.append('upload_preset', 'jiorro_upload'); // ← tuo preset esatto
   try {
     const res = await fetch('https://api.cloudinary.com/v1_1/jiorro/video/upload', {
       method: 'POST',
@@ -37,8 +41,9 @@ uploadBtn.addEventListener('click', async () => {
     });
 
     const data = await res.json();
-    const videoUrl = data.secure_url;
+    console.log("Risposta Cloudinary:", data);
 
+    const videoUrl = data.secure_url;
     if (!videoUrl) {
       uploadStatus.textContent = 'Errore: URL non ricevuto.';
       return;
