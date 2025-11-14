@@ -23,16 +23,16 @@ uploadBtn.addEventListener('click', async () => {
   const title = videoTitle.value.trim();
 
   if (!file) {
-    uploadStatus.textContent = 'Seleziona un file video.';
+    uploadStatus.textContent = '❌ Seleziona un file video.';
     return;
   }
 
   if (!file.type.startsWith('video/')) {
-    uploadStatus.textContent = 'Errore: il file non è un video valido.';
+    uploadStatus.textContent = '❌ Il file non è un video valido.';
     return;
   }
 
-  uploadStatus.textContent = 'Caricamento in corso...';
+  uploadStatus.textContent = '⏳ Caricamento in corso...';
 
   const formData = new FormData();
   formData.append('file', file);
@@ -45,11 +45,15 @@ uploadBtn.addEventListener('click', async () => {
     });
 
     const data = await res.json();
-    console.log("Risposta Cloudinary:", data);
+
+    if (data.error) {
+      uploadStatus.textContent = '❌ Errore Cloudinary: ' + data.error.message;
+      return;
+    }
 
     const videoUrl = data.secure_url;
     if (!videoUrl) {
-      uploadStatus.textContent = 'Errore: URL non ricevuto.';
+      uploadStatus.textContent = '❌ Errore: URL non ricevuto.';
       return;
     }
 
@@ -70,12 +74,12 @@ uploadBtn.addEventListener('click', async () => {
     card.appendChild(titleEl);
     videoContainer.prepend(card);
 
+    uploadStatus.style.color = 'green';
     uploadStatus.textContent = '✅ Video caricato!';
     videoFile.value = '';
     videoTitle.value = '';
   } catch (err) {
-    uploadStatus.textContent = 'Errore durante l\'upload.';
-    console.error(err);
+    uploadStatus.textContent = '❌ Errore durante l\'upload.';
   }
 });
 
@@ -90,3 +94,4 @@ searchInput.addEventListener('input', () => {
     card.style.display = match ? 'flex' : 'none';
   });
 });
+
