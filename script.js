@@ -96,7 +96,7 @@ searchInput.addEventListener('input', () => {
   });
 });
 
-// 🧩 Crea card video con views
+// 🧩 Crea card video con views e protezione
 function createVideoCard(url, title, views = 0) {
   const card = document.createElement('div');
   card.className = 'video-card';
@@ -106,6 +106,8 @@ function createVideoCard(url, title, views = 0) {
   videoEl.controls = true;
   videoEl.setAttribute('playsinline', '');
   videoEl.setAttribute('preload', 'metadata');
+  videoEl.setAttribute('controlsList', 'nodownload'); // 🔒 blocca download
+  videoEl.addEventListener('contextmenu', e => e.preventDefault()); // 🔒 blocca clic destro
 
   const titleEl = document.createElement('div');
   titleEl.className = 'video-title';
@@ -131,5 +133,3 @@ function createVideoCard(url, title, views = 0) {
   card.appendChild(viewsEl);
   return card;
 }
-
-
