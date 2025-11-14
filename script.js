@@ -3,6 +3,7 @@ const closeUpload = document.getElementById('closeUpload');
 const uploadModal = document.getElementById('uploadModal');
 const uploadBtn = document.getElementById('uploadBtn');
 const videoFile = document.getElementById('videoFile');
+const videoTitle = document.getElementById('videoTitle');
 const videoContainer = document.getElementById('videoContainer');
 const searchInput = document.getElementById('searchInput');
 const uploadStatus = document.getElementById('uploadStatus');
@@ -19,6 +20,8 @@ closeUpload.addEventListener('click', () => {
 
 uploadBtn.addEventListener('click', async () => {
   const file = videoFile.files[0];
+  const title = videoTitle.value.trim();
+
   if (!file) {
     uploadStatus.textContent = 'Seleziona un file video.';
     return;
@@ -34,6 +37,7 @@ uploadBtn.addEventListener('click', async () => {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('upload_preset', 'jiorro_upload'); // ← tuo preset esatto
+
   try {
     const res = await fetch('https://api.cloudinary.com/v1_1/jiorro/video/upload', {
       method: 'POST',
@@ -49,15 +53,26 @@ uploadBtn.addEventListener('click', async () => {
       return;
     }
 
+    const card = document.createElement('div');
+    card.className = 'video-card';
+
     const videoEl = document.createElement('video');
     videoEl.src = videoUrl;
     videoEl.controls = true;
     videoEl.setAttribute('playsinline', '');
     videoEl.setAttribute('preload', 'metadata');
-    videoContainer.prepend(videoEl);
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'video-title';
+    titleEl.textContent = title || 'Video senza titolo';
+
+    card.appendChild(videoEl);
+    card.appendChild(titleEl);
+    videoContainer.prepend(card);
 
     uploadStatus.textContent = '✅ Video caricato!';
     videoFile.value = '';
+    videoTitle.value = '';
   } catch (err) {
     uploadStatus.textContent = 'Errore durante l\'upload.';
     console.error(err);
@@ -67,9 +82,11 @@ uploadBtn.addEventListener('click', async () => {
 // 🔍 Ricerca
 searchInput.addEventListener('input', () => {
   const term = searchInput.value.toLowerCase();
-  const videos = videoContainer.querySelectorAll('video');
-  videos.forEach(video => {
-    const match = video.src.toLowerCase().includes(term);
-    video.style.display = match ? 'block' : 'none';
+  const cards = videoContainer.querySelectorAll('.video-card');
+  cards.forEach(card => {
+    const src = card.querySelector('video')?.src.toLowerCase() || '';
+    const title = card.querySelector('.video-title')?.textContent.toLowerCase() || '';
+    const match = src.includes(term) || title.includes(term);
+    card.style.display = match ? 'flex' : 'none';
   });
 });
