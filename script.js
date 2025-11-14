@@ -36,11 +36,10 @@ uploadBtn.addEventListener('click', async () => {
 
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('upload_preset', 'jiorro_upload'); // ← tuo preset esatto
+  formData.append('upload_preset', 'jiorro_upload'); // ✅ tuo preset unsigned
 
   try {
-const res = await fetch('https://api.cloudinary.com/v1_1/dng8rjd6u/video/upload', {
-
+    const res = await fetch('https://api.cloudinary.com/v1_1/dng8rjd6u/auto/upload', {
       method: 'POST',
       body: formData
     });
@@ -95,4 +94,3 @@ searchInput.addEventListener('input', () => {
     card.style.display = match ? 'flex' : 'none';
   });
 });
-
