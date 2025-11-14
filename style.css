@@ -32,15 +32,15 @@ header {
 }
 
 #videoContainer {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
   padding: 20px;
-  justify-content: center;
 }
 
 video {
-  max-width: 300px;
+  width: 100%;
+  aspect-ratio: 16 / 9;
   border: 2px solid #8000ff;
   border-radius: 8px;
 }
@@ -77,4 +77,10 @@ video {
   font-size: 28px;
   cursor: pointer;
   color: #fff;
+}
+
+#uploadStatus {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #00ffcc;
 }
