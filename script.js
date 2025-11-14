@@ -5,37 +5,58 @@ const uploadBtn = document.getElementById('uploadBtn');
 const videoFile = document.getElementById('videoFile');
 const videoContainer = document.getElementById('videoContainer');
 const searchInput = document.getElementById('searchInput');
+const uploadStatus = document.getElementById('uploadStatus');
 
 openUpload.addEventListener('click', () => {
   uploadModal.classList.remove('hidden');
+  uploadStatus.textContent = '';
 });
 
 closeUpload.addEventListener('click', () => {
   uploadModal.classList.add('hidden');
+  uploadStatus.textContent = '';
 });
 
 uploadBtn.addEventListener('click', async () => {
   const file = videoFile.files[0];
-  if (!file) return;
+  if (!file) {
+    uploadStatus.textContent = 'Seleziona un file video.';
+    return;
+  }
+
+  uploadStatus.textContent = 'Caricamento in corso...';
 
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('upload_preset', 'jiorro_preset'); // 🔧 Sostituisci con il tuo preset
-  const res = await fetch('https://api.cloudinary.com/v1_1/jiorro/video/upload', {
-    method: 'POST',
-    body: formData
-  });
+  formData.append('upload_preset', 'jiorro_upload'); // 🔧 tuo preset Cloudinary
 
-  const data = await res.json();
-  const videoUrl = data.secure_url;
+  try {
+    const res = await fetch('https://api.cloudinary.com/v1_1/jiorro/video/upload', {
+      method: 'POST',
+      body: formData
+    });
 
-  const videoEl = document.createElement('video');
-  videoEl.src = videoUrl;
-  videoEl.controls = true;
-  videoContainer.prepend(videoEl);
+    const data = await res.json();
+    const videoUrl = data.secure_url;
 
-  uploadModal.classList.add('hidden');
-  videoFile.value = '';
+    if (!videoUrl) {
+      uploadStatus.textContent = 'Errore: URL non ricevuto.';
+      return;
+    }
+
+    const videoEl = document.createElement('video');
+    videoEl.src = videoUrl;
+    videoEl.controls = true;
+    videoEl.setAttribute('playsinline', '');
+    videoEl.setAttribute('preload', 'metadata');
+    videoContainer.prepend(videoEl);
+
+    uploadStatus.textContent = '✅ Video caricato!';
+    videoFile.value = '';
+  } catch (err) {
+    uploadStatus.textContent = 'Errore durante l\'upload.';
+    console.error(err);
+  }
 });
 
 // 🔍 Ricerca
