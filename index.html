@@ -3,42 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jiorro Video Share</title>
+  <title>Jiorro Video</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <h1>🎬 Jiorro Video Share</h1>
-    <p>Guarda video pubblici da qualsiasi dispositivo</p>
-    <div class="top-right">
-      <button id="addVideoBtn">➕</button>
-    </div>
-    <input type="text" id="searchInput" placeholder="🔍 Cerca video..." />
+    <h1>🎥 Jiorro Video</h1>
+    <button id="openUpload">＋</button>
+    <input type="text" id="searchInput" placeholder="Cerca video..." />
   </header>
 
-  <main>
-    <section id="videoGallery">
-      <!-- Video statico già pubblicato -->
-      <div class="video-box" data-title="video di esempio">
-        <video controls>
-          <source src="media/tuo-video.mp4" type="video/mp4" />
-          Il tuo browser non supporta il video.
-        </video>
-        <h3>Video di esempio</h3>
-      </div>
-    </section>
-  </main>
+  <main id="videoContainer"></main>
 
-  <footer>
-    <p>&copy; 2025 Jiorro. Creato da Pedro & Copilot 🚀</p>
-  </footer>
-
-  <!-- Modale per upload -->
-  <div id="uploadModal" class="modal">
+  <!-- Modal upload -->
+  <div id="uploadModal" class="modal hidden">
     <div class="modal-content">
-      <span class="close">&times;</span>
-      <h2>Carica un nuovo video</h2>
-      <input type="file" id="videoUploader" accept="video/mp4,video/webm" />
+      <span id="closeUpload" class="close">&times;</span>
+      <h2>Carica un video</h2>
+      <input type="file" id="videoFile" accept="video/*" />
+      <button id="uploadBtn">Upload</button>
     </div>
   </div>
 
