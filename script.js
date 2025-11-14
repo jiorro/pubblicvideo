@@ -8,13 +8,15 @@ const videoContainer = document.getElementById('videoContainer');
 const searchInput = document.getElementById('searchInput');
 const uploadStatus = document.getElementById('uploadStatus');
 
-// 🔁 Carica video salvati da localStorage
+// 🔁 Carica video salvati e ordina per views
 window.addEventListener('DOMContentLoaded', () => {
   const savedVideos = JSON.parse(localStorage.getItem('jiorroVideos') || '[]');
-  savedVideos.forEach(({ url, title }) => {
-    const card = createVideoCard(url, title);
-    videoContainer.appendChild(card);
-  });
+  savedVideos
+    .sort((a, b) => (b.views || 0) - (a.views || 0))
+    .forEach(({ url, title, views }) => {
+      const card = createVideoCard(url, title, views || 0);
+      videoContainer.appendChild(card);
+    });
 });
 
 openUpload.addEventListener('click', () => {
@@ -66,12 +68,11 @@ uploadBtn.addEventListener('click', async () => {
       return;
     }
 
-    const card = createVideoCard(videoUrl, title);
+    const card = createVideoCard(videoUrl, title, 0);
     videoContainer.prepend(card);
 
-    // 🔐 Salva nel localStorage
     const savedVideos = JSON.parse(localStorage.getItem('jiorroVideos') || '[]');
-    savedVideos.unshift({ url: videoUrl, title });
+    savedVideos.unshift({ url: videoUrl, title, views: 0 });
     localStorage.setItem('jiorroVideos', JSON.stringify(savedVideos));
 
     uploadStatus.style.color = 'green';
@@ -95,8 +96,8 @@ searchInput.addEventListener('input', () => {
   });
 });
 
-// 🧩 Funzione per creare card video
-function createVideoCard(url, title) {
+// 🧩 Crea card video con views
+function createVideoCard(url, title, views = 0) {
   const card = document.createElement('div');
   card.className = 'video-card';
 
@@ -110,7 +111,25 @@ function createVideoCard(url, title) {
   titleEl.className = 'video-title';
   titleEl.textContent = title || 'Video senza titolo';
 
+  const viewsEl = document.createElement('div');
+  viewsEl.className = 'video-views';
+  viewsEl.textContent = `👁️ ${views} views`;
+
+  videoEl.addEventListener('play', () => {
+    views++;
+    viewsEl.textContent = `👁️ ${views} views`;
+
+    const savedVideos = JSON.parse(localStorage.getItem('jiorroVideos') || '[]');
+    const updated = savedVideos.map(v =>
+      v.url === url ? { ...v, views } : v
+    );
+    localStorage.setItem('jiorroVideos', JSON.stringify(updated));
+  });
+
   card.appendChild(videoEl);
   card.appendChild(titleEl);
+  card.appendChild(viewsEl);
   return card;
 }
+
+
