@@ -48,4 +48,16 @@ footer {
   padding: 1rem;
   background: #1f1f1f;
   border-top: 2px solid #333;
+} 
+
+input[type="text"] {
+  margin-top: 1rem;
+  padding: 0.6rem;
+  width: 60%;
+  max-width: 400px;
+  font-size: 1rem;
+  border-radius: 5px;
+  border: none;
+  background: #333;
+  color: #eee;
 }
