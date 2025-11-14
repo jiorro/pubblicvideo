@@ -1,7 +1,7 @@
 body {
   font-family: sans-serif;
-  background: #111;
-  color: #fff;
+  background: orange;
+  color: #111;
   margin: 0;
   padding: 0;
 }
@@ -12,6 +12,7 @@ header {
   justify-content: space-between;
   padding: 10px 20px;
   background: #222;
+  color: white;
 }
 
 #openUpload {
@@ -54,7 +55,7 @@ video {
 .video-title {
   margin-top: 8px;
   font-size: 14px;
-  color: #00ffcc;
+  color: #222;
   text-align: center;
 }
 
@@ -72,11 +73,12 @@ video {
 }
 
 .modal-content {
-  background: #222;
+  background: #fff;
   padding: 20px;
   border-radius: 8px;
   text-align: center;
   position: relative;
+  color: #000;
 }
 
 .hidden {
@@ -89,12 +91,11 @@ video {
   right: 20px;
   font-size: 28px;
   cursor: pointer;
-  color: #fff;
+  color: #000;
 }
 
 #uploadStatus {
   margin-top: 10px;
   font-size: 14px;
-  color: #00ffcc;
+  color: red;
 }
-
