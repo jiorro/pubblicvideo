@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Regione di Canaan</title>
+  <title>Jiorro - Canaan & Video</title>
   <style>
     body {
       margin: 0;
@@ -48,77 +48,163 @@
       font-size: 18px;
       color: #f66;
     }
-    #enterBtn {
-      margin-top: 15px;
-      padding: 10px 20px;
-      font-size: 16px;
-      background: #444;
-      color: #fff;
-      border: none;
-      cursor: pointer;
+    #videoSection {
       display: none;
+      padding: 20px;
     }
-    #enterBtn:hover {
-      background: #666;
+    .video-card {
+      background: #222;
+      border: 1px solid #333;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+    .video-title {
+      margin-top: 8px;
+      font-weight: bold;
+    }
+    .video-views {
+      margin-top: 4px;
+      font-size: 14px;
+      color: #aaa;
+    }
+    #uploadModal.hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="text-section">
-      <h1>La regione di Canaan</h1>
-      <p>
-        La regione di Canaan (o Cananea) si trovava nel Levante e corrisponde approssimativamente ai territori degli attuali Libano, Israele, Palestina e parti della Siria e della Giordania. In questa area geografica si svilupparono sia la civiltà dei Fenici che quella degli Ebrei.
-      </p>
-      <p>
-        Fenici: Si insediarono principalmente lungo la costa orientale del Mar Mediterraneo, in quella che corrisponde all'odierno Libano. Le loro città-stato più importanti erano Biblo, Sidone e Tiro, da cui partirono per fondare numerose colonie nel Mediterraneo, inclusa Cartagine.
-      </p>
-      <p>
-        Ebrei: Si stabilirono nell'entroterra della regione di Canaan, occupando l'area che divenne in seguito la Terra d'Israele o Palestina, una regione percorsa da nord a sud dal fiume Giordano.
-      </p>
-      <p>
-        Le mappe storiche mostrano i Fenici stanziati in una stretta striscia costiera a nord, mentre il territorio degli Ebrei si estendeva più a sud e nell'entroterra, fino al Mar Morto. Entrambi i popoli interagirono in questa regione, talvolta in conflitto con le popolazioni cananee originarie e con i Filistei.
-      </p>
-      <p>
-        Per visualizzare queste posizioni, si possono cercare online mappe storiche intitolate "Mappa storica di Canaan" o "Mappa Ebrei e Fenici" che illustrano gli insediamenti e i regni antichi nella regione del Levante.
-      </p>
 
-      <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="Cerca qualcosa...">
-        <div class="result" id="searchResult"></div>
-        <button id="enterBtn">Entra</button>
+  <!-- 🧭 Home Section -->
+  <div id="homeSection">
+    <div class="container">
+      <div class="text-section">
+        <h1>La regione di Canaan</h1>
+        <p>La regione di Canaan (o Cananea) si trovava nel Levante e corrisponde approssimativamente ai territori degli attuali Libano, Israele, Palestina e parti della Siria e della Giordania. In questa area geografica si svilupparono sia la civiltà dei Fenici che quella degli Ebrei.</p>
+        <p>Fenici: Si insediarono principalmente lungo la costa orientale del Mar Mediterraneo, in quella che corrisponde all'odierno Libano. Le loro città-stato più importanti erano Biblo, Sidone e Tiro, da cui partirono per fondare numerose colonie nel Mediterraneo, inclusa Cartagine.</p>
+        <p>Ebrei: Si stabilirono nell'entroterra della regione di Canaan, occupando l'area che divenne in seguito la Terra d'Israele o Palestina, una regione percorsa da nord a sud dal fiume Giordano.</p>
+        <p>Le mappe storiche mostrano i Fenici stanziati in una stretta striscia costiera a nord, mentre il territorio degli Ebrei si estendeva più a sud e nell'entroterra, fino al Mar Morto. Entrambi i popoli interagirono in questa regione, talvolta in conflitto con le popolazioni cananee originarie e con i Filistei.</p>
+        <p>Per visualizzare queste posizioni, si possono cercare online mappe storiche intitolate "Mappa storica di Canaan" o "Mappa Ebrei e Fenici" che illustrano gli insediamenti e i regni antichi nella regione del Levante.</p>
+
+        <div class="search-bar">
+          <input type="text" id="searchInput" placeholder="Cerca qualcosa...">
+          <div class="result" id="searchResult"></div>
+        </div>
+      </div>
+      <div class="image-section">
+        <img src="canaan-map.jpg" alt="Cartina della regione di Canaan">
       </div>
     </div>
+  </div>
 
-    <div class="image-section">
-      <img src="canaan-map.jpg" alt="Cartina della regione di Canaan">
+  <!-- 🎥 Video Section -->
+  <div id="videoSection">
+    <h2>🎥 Jiorro Video</h2>
+    <button id="openUpload">Carica Video</button>
+    <input type="text" id="searchVideos" placeholder="Cerca video..." style="margin-left:20px;">
+    <div id="videoContainer"></div>
+
+    <div id="uploadModal" class="hidden">
+      <h3>Upload Video</h3>
+      <input type="file" id="videoFile"><br><br>
+      <input type="text" id="videoTitle" placeholder="Titolo del video"><br><br>
+      <button id="uploadBtn">Upload</button>
+      <button id="closeUpload">Chiudi</button>
+      <div id="uploadStatus"></div>
     </div>
   </div>
 
   <script>
     const input = document.getElementById('searchInput');
     const result = document.getElementById('searchResult');
-    const enterBtn = document.getElementById('enterBtn');
+    const home = document.getElementById('homeSection');
+    const video = document.getElementById('videoSection');
 
     input.addEventListener('input', () => {
       const value = input.value.trim().toLowerCase();
       if (value === 'jiorr0') {
         result.textContent = '✅ Accesso consentito';
         result.style.color = '#6f6';
-        enterBtn.style.display = 'inline-block';
+        home.style.display = 'none';
+        video.style.display = 'block';
       } else if (value.length > 0) {
         result.textContent = '❌ Non trovato';
         result.style.color = '#f66';
-        enterBtn.style.display = 'none';
+        home.style.display = 'block';
+        video.style.display = 'none';
       } else {
         result.textContent = '';
-        enterBtn.style.display = 'none';
+        home.style.display = 'block';
+        video.style.display = 'none';
       }
     });
 
-    enterBtn.addEventListener('click', () => {
-      window.location.href = 'jiorro.html';
+    const openUpload = document.getElementById('openUpload');
+    const closeUpload = document.getElementById('closeUpload');
+    const uploadModal = document.getElementById('uploadModal');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const videoFile = document.getElementById('videoFile');
+    const videoTitle = document.getElementById('videoTitle');
+    const videoContainer = document.getElementById('videoContainer');
+    const searchVideos = document.getElementById('searchVideos');
+    const uploadStatus = document.getElementById('uploadStatus');
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedVideos = JSON.parse(localStorage.getItem('jiorroVideos') || '[]');
+      savedVideos.sort((a, b) => (b.views || 0) - (a.views || 0))
+        .forEach(({ url, title, views }) => {
+          const card = createVideoCard(url, title, views || 0);
+          videoContainer.appendChild(card);
+        });
     });
-  </script>
-</body>
-</html>
+
+    openUpload.addEventListener('click', () => {
+      uploadModal.classList.remove('hidden');
+      uploadStatus.textContent = '';
+    });
+
+    closeUpload.addEventListener('click', () => {
+      uploadModal.classList.add('hidden');
+      uploadStatus.textContent = '';
+    });
+
+    uploadBtn.addEventListener('click', async () => {
+      const file = videoFile.files[0];
+      const title = videoTitle.value.trim();
+
+      if (!file || !file.type.startsWith('video/')) {
+        uploadStatus.textContent = '❌ Seleziona un file video valido.';
+        return;
+      }
+
+      uploadStatus.textContent = '⏳ Caricamento in corso...';
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'jiorro_upload');
+
+      try {
+        const res = await fetch('https://api.cloudinary.com/v1_1/dng8rjd6u/auto/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+        if (data.error || !data.secure_url) {
+          uploadStatus.textContent = '❌ Errore durante l\'upload.';
+          return;
+        }
+
+        const videoUrl = data.secure_url;
+        const card = createVideoCard(videoUrl, title, 0);
+        videoContainer.prepend(card);
+
+        const savedVideos = JSON.parse(localStorage.getItem('jiorroVideos') || '[]');
+        savedVideos.unshift({ url: videoUrl, title, views: 0 });
+        localStorage.setItem('jiorroVideos', JSON.stringify(savedVideos));
+
+        uploadStatus.style.color = 'green';
+        uploadStatus.textContent = '✅ Video caricato!';
+        videoFile.value = '';
+        videoTitle.value = '';
+      } catch {
+        upload
