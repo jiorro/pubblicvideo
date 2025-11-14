@@ -39,7 +39,8 @@ uploadBtn.addEventListener('click', async () => {
   formData.append('upload_preset', 'jiorro_upload'); // ← tuo preset esatto
 
   try {
-    const res = await fetch('https://api.cloudinary.com/v1_1/jiorro/video/upload', {
+const res = await fetch('https://api.cloudinary.com/v1_1/dng8rjd6u/video/upload', {
+
       method: 'POST',
       body: formData
     });
