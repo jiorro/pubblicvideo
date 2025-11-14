@@ -33,11 +33,13 @@
       border: 2px solid #444;
     }
     .search-bar {
-      margin-top: 30px;
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      text-align: right;
     }
     input[type="text"] {
       padding: 10px;
-      width: 80%;
       font-size: 16px;
       background: #333;
       color: #fff;
@@ -47,6 +49,19 @@
       margin-top: 10px;
       font-size: 18px;
       color: #f66;
+    }
+    #enterBtn {
+      margin-top: 10px;
+      padding: 8px 16px;
+      font-size: 14px;
+      background: #444;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: none;
+    }
+    #enterBtn:hover {
+      background: #666;
     }
     #videoSection {
       display: none;
@@ -74,6 +89,13 @@
 </head>
 <body>
 
+  <!-- 🔍 Barra di ricerca in alto -->
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Cerca qualcosa...">
+    <div class="result" id="searchResult"></div>
+    <button id="enterBtn">Entra</button>
+  </div>
+
   <!-- 🧭 Home Section -->
   <div id="homeSection">
     <div class="container">
@@ -84,11 +106,6 @@
         <p>Ebrei: Si stabilirono nell'entroterra della regione di Canaan, occupando l'area che divenne in seguito la Terra d'Israele o Palestina, una regione percorsa da nord a sud dal fiume Giordano.</p>
         <p>Le mappe storiche mostrano i Fenici stanziati in una stretta striscia costiera a nord, mentre il territorio degli Ebrei si estendeva più a sud e nell'entroterra, fino al Mar Morto. Entrambi i popoli interagirono in questa regione, talvolta in conflitto con le popolazioni cananee originarie e con i Filistei.</p>
         <p>Per visualizzare queste posizioni, si possono cercare online mappe storiche intitolate "Mappa storica di Canaan" o "Mappa Ebrei e Fenici" che illustrano gli insediamenti e i regni antichi nella regione del Levante.</p>
-
-        <div class="search-bar">
-          <input type="text" id="searchInput" placeholder="Cerca qualcosa...">
-          <div class="result" id="searchResult"></div>
-        </div>
       </div>
       <div class="image-section">
         <img src="canaan-map.jpg" alt="Cartina della regione di Canaan">
@@ -116,41 +133,30 @@
   <script>
     const input = document.getElementById('searchInput');
     const result = document.getElementById('searchResult');
+    const enterBtn = document.getElementById('enterBtn');
     const home = document.getElementById('homeSection');
     const video = document.getElementById('videoSection');
 
-  const enterBtn = document.createElement('button');
-enterBtn.textContent = 'Entra';
-enterBtn.style.marginTop = '15px';
-enterBtn.style.padding = '10px 20px';
-enterBtn.style.fontSize = '16px';
-enterBtn.style.background = '#444';
-enterBtn.style.color = '#fff';
-enterBtn.style.border = 'none';
-enterBtn.style.cursor = 'pointer';
-enterBtn.style.display = 'none';
-result.insertAdjacentElement('afterend', enterBtn);
+    input.addEventListener('input', () => {
+      const value = input.value.trim().toLowerCase();
+      if (value === 'jiorr0') {
+        result.textContent = '✅ Accesso consentito';
+        result.style.color = '#6f6';
+        enterBtn.style.display = 'inline-block';
+      } else if (value.length > 0) {
+        result.textContent = '❌ Non trovato';
+        result.style.color = '#f66';
+        enterBtn.style.display = 'none';
+      } else {
+        result.textContent = '';
+        enterBtn.style.display = 'none';
+      }
+    });
 
-input.addEventListener('input', () => {
-  const value = input.value.trim().toLowerCase();
-  if (value === 'JIORR0') {
-    result.textContent = '✅ Accesso consentito';
-    result.style.color = '#6f6';
-    enterBtn.style.display = 'inline-block';
-  } else if (value.length > 0) {
-    result.textContent = '❌ Non trovato';
-    result.style.color = '#f66';
-    enterBtn.style.display = 'none';
-  } else {
-    result.textContent = '';
-    enterBtn.style.display = 'none';
-  }
-});
-
-enterBtn.addEventListener('click', () => {
-  home.style.display = 'none';
-  video.style.display = 'block';
-});
+    enterBtn.addEventListener('click', () => {
+      home.style.display = 'none';
+      video.style.display = 'block';
+    });
 
     const openUpload = document.getElementById('openUpload');
     const closeUpload = document.getElementById('closeUpload');
@@ -204,21 +210,3 @@ enterBtn.addEventListener('click', () => {
 
         const data = await res.json();
         if (data.error || !data.secure_url) {
-          uploadStatus.textContent = '❌ Errore durante l\'upload.';
-          return;
-        }
-
-        const videoUrl = data.secure_url;
-        const card = createVideoCard(videoUrl, title, 0);
-        videoContainer.prepend(card);
-
-        const savedVideos = JSON.parse(localStorage.getItem('jiorroVideos') || '[]');
-        savedVideos.unshift({ url: videoUrl, title, views: 0 });
-        localStorage.setItem('jiorroVideos', JSON.stringify(savedVideos));
-
-        uploadStatus.style.color = 'green';
-        uploadStatus.textContent = '✅ Video caricato!';
-        videoFile.value = '';
-        videoTitle.value = '';
-      } catch {
-        upload
