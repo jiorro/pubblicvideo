@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Jiorro - Canaan & Video</title>
+  <title>Canaan & Jiorro Video</title>
   <style>
     body {
       margin: 0;
@@ -73,6 +73,8 @@
       border: 1px solid #333;
       padding: 10px;
       margin-bottom: 20px;
+      display: flex;
+      flex-direction: column;
     }
     .video-title {
       margin-top: 8px;
@@ -90,7 +92,7 @@
 </head>
 <body>
 
-  <!-- 🔍 Barra di ricerca con lente -->
+  <!-- 🔍 Barra di ricerca -->
   <div class="search-bar">
     <input type="text" id="searchInput" placeholder="Cerca qualcosa...">
     <button class="search-icon" id="searchBtn">🔍</button>
@@ -106,7 +108,7 @@
         <p>Fenici: Si insediarono principalmente lungo la costa orientale del Mar Mediterraneo, in quella che corrisponde all'odierno Libano. Le loro città-stato più importanti erano Biblo, Sidone e Tiro, da cui partirono per fondare numerose colonie nel Mediterraneo, inclusa Cartagine.</p>
         <p>Ebrei: Si stabilirono nell'entroterra della regione di Canaan, occupando l'area che divenne in seguito la Terra d'Israele o Palestina, una regione percorsa da nord a sud dal fiume Giordano.</p>
         <p>Le mappe storiche mostrano i Fenici stanziati in una stretta striscia costiera a nord, mentre il territorio degli Ebrei si estendeva più a sud e nell'entroterra, fino al Mar Morto. Entrambi i popoli interagirono in questa regione, talvolta in conflitto con le popolazioni cananee originarie e con i Filistei.</p>
-        <p>Per visualizzare queste posizioni, si possono cercare online mappe storiche intitolate "Mappa storica di Canaan" o "Mappa Ebrei e Fenici" che illustrano gli insediamenti e i regni antichi nella regione del Levante.</p>
+        <p>Per visualizzare queste posizioni, si possono cercare online mappe storiche intitolate "Mappa storica di Canaan" o "Mappa Ebrei e Fenici".</p>
       </div>
       <div class="image-section">
         <img src="canaan-map.jpg" alt="Cartina della regione di Canaan">
@@ -138,21 +140,31 @@
     const home = document.getElementById('homeSection');
     const video = document.getElementById('videoSection');
 
+    // 🔍 Accesso con lente
     searchBtn.addEventListener('click', () => {
       const value = input.value.trim().toLowerCase();
       if (value === 'jiorr0') {
         result.textContent = '✅ Accesso consentito';
         result.style.color = '#6f6';
-        home.style.display = 'none';
-        video.style.display = 'block';
+        setTimeout(() => {
+          home.style.display = 'none';
+          video.style.display = 'block';
+          result.textContent = '';
+          input.value = '';
+        }, 300);
       } else if (value.length > 0) {
         result.textContent = '❌ Non trovato';
         result.style.color = '#f66';
+        video.style.display = 'none';
+        home.style.display = 'block';
       } else {
         result.textContent = '';
+        video.style.display = 'none';
+        home.style.display = 'block';
       }
     });
 
+    // 🎥 JS che mi hai passato
     const openUpload = document.getElementById('openUpload');
     const closeUpload = document.getElementById('closeUpload');
     const uploadModal = document.getElementById('uploadModal');
@@ -163,9 +175,11 @@
     const searchVideos = document.getElementById('searchVideos');
     const uploadStatus = document.getElementById('uploadStatus');
 
+    // 🔁 Carica video salvati e ordina per views
     window.addEventListener('DOMContentLoaded', () => {
       const savedVideos = JSON.parse(localStorage.getItem('jiorroVideos') || '[]');
-      savedVideos.sort((a, b) => (b.views || 0) - (a.views || 0))
+      savedVideos
+        .sort((a, b) => (b.views || 0) - (a.views || 0))
         .forEach(({ url, title, views }) => {
           const card = createVideoCard(url, title, views || 0);
           videoContainer.appendChild(card);
@@ -186,8 +200,13 @@
       const file = videoFile.files[0];
       const title = videoTitle.value.trim();
 
-      if (!file || !file.type.startsWith('video/')) {
-        uploadStatus.textContent = '❌ Seleziona un file video valido.';
+      if (!file) {
+        uploadStatus.textContent = '❌ Seleziona un file video.';
+        return;
+      }
+
+      if (!file.type.startsWith('video/')) {
+        uploadStatus.textContent = '❌ Il file non è un video valido.';
         return;
       }
 
@@ -198,16 +217,4 @@
       formData.append('upload_preset', 'jiorro_upload');
 
       try {
-        const res = await fetch('https://api.cloudinary.com/v1_1/dng8rjd6u/auto/upload', {
-          method: 'POST',
-          body: formData
-        });
-
-        const data = await res.json();
-        if (data.error || !data.secure_url) {
-          uploadStatus.textContent = '❌ Errore durante l\'upload.';
-          return;
-        }
-
-        const videoUrl = data.secure_url;
-        const card = createVideoCard(video
+        const res = await fetch('https://api.cloudinary.com/v1_
