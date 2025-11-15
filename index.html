@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Jiorro — Video manager completo</title>
+  <title>Jiorro — Video manager (fix upload)</title>
   <style>
     :root{
       --bg:#0f0f10; --panel:#17171a; --border:#2b2b30; --text:#e8eefb;
@@ -61,7 +61,7 @@
     <div class="home-container">
       <article class="panel">
         <h1>Jiorro — Video manager</h1>
-        <p>Interfaccia minimale per caricare, amministrare e riprodurre video. Premi <strong>J</strong> per aprire il preset full-screen.</p>
+        <p>Interfaccia per caricare, amministrare e riprodurre video. Premi <strong>J</strong> per aprire il preset full-screen.</p>
       </article>
       <figure class="panel home-figure" aria-label="Esempio">
         <img src="canaan-map.jpg" alt="Cartina storica" style="max-width:100%;border-radius:10px;border:1px solid var(--border)">
@@ -107,10 +107,6 @@
         <input id="videoTitle" class="input" placeholder="Titolo (opzionale)" />
       </div>
 
-      <div style="margin-top:8px">
-        <label for="overlaySrc">Nota: lascia vuoto per la maggior parte dei casi</label>
-      </div>
-
       <div class="progress" aria-hidden="true"><i id="uploadProgress"></i></div>
 
       <div class="modal-actions" style="margin-top:10px">
@@ -137,30 +133,27 @@
     document.addEventListener('DOMContentLoaded', () => {
 
       /* =========================
-         CONFIG - modifica qui
-         =========================
-         - CLOUDINARY_CLOUD: tuo "cloud name" (lascia vuoto per fallback locale)
-         - UPLOAD_PRESET: nome upload preset unsigned (lascia vuoto per fallback locale)
-         - PRESET_LOCAL_PATH: percorso del file usato dal tasto J; può essere URL esterno (Cloudinary) o percorso relativo nel repo
+         CONFIG - modifica qui se vuoi
       */
       const STORAGE_KEY = 'jiorroVideos_v3';
       const ADMIN_PASS = 'JIORR0CON$=LE';
-      const CLOUDINARY_CLOUD = 'dng8rjd6u'; // inserisci il tuo valore oppure lascia vuoto per test locale
-      const UPLOAD_PRESET = '';              // inserisci preset unsigned se vuoi upload reale
+      // usa '' per fallback locale
+      const CLOUDINARY_CLOUD = 'dng8rjd6u';
+      const UPLOAD_PRESET = '';
       const CLOUDINARY_URL = CLOUDINARY_CLOUD ? `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload` : '';
+      // preset J: usa l'URL MP4 convertito o un percorso relativo './overlay/preset.mp4'
       const PRESET_LOCAL_PATH = 'https://res.cloudinary.com/dng8rjd6u/video/upload/f_mp4/v1763226447/Screen_recording_2025-11-15_17.24.42_yrffoa.mp4';
-      // PRESET_LOCAL_PATH può essere './overlay/preset.mp4' se ospiti il file nel repo
 
       /* =========================
-         HELPERS GENERALI
-         ========================= */
+         HELPERS
+      */
       function getSaved(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e){ console.error('parse error localStorage', e); return []; } }
       function setSaved(arr){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr || [])); } catch(e){ console.error('save error', e); } }
       function showStatus(msg, type){ const s = document.getElementById('statusEl'); s.textContent = msg || ''; s.className = 'status' + (type ? ' ' + type : ''); }
 
       /* =========================
          ELEMENT REF
-         ========================= */
+      */
       const lensBtn = document.getElementById('lensBtn');
       const homeSection = document.getElementById('homeSection');
       const videoSection = document.getElementById('videoSection');
@@ -188,7 +181,7 @@
 
       /* =========================
          NAV
-         ========================= */
+      */
       function showHome(){ homeSection.classList.remove('hidden'); videoSection.classList.add('hidden'); adminSection.classList.add('hidden'); showStatus(''); }
       function showVideo(){ homeSection.classList.add('hidden'); adminSection.classList.add('hidden'); videoSection.classList.remove('hidden'); showStatus('✅ Sezione video aperta','success'); setTimeout(()=>showStatus(''),900); }
       function showAdmin(){ homeSection.classList.add('hidden'); videoSection.classList.add('hidden'); adminSection.classList.remove('hidden'); showStatus('🔧 Admin sbloccato','success'); setTimeout(()=>showStatus(''),900); }
@@ -197,10 +190,7 @@
       backHome && backHome.addEventListener('click', showHome);
 
       /* =========================
-         MIGRAZIONE AUTOMATICA (webm -> f_mp4) - one-time runtime
-         - Questa funzione non modifica il DB se non trova corrispondenze,
-         - quando trova URL Cloudinary .webm prova a trasformarlo in f_mp4 .mp4.
-         - utile se hai caricato .webm ma vuoi riprodurlo in browser che non supportano webm.
+         MIGRAZIONE automatica (webm -> f_mp4)
       */
       function migrateSavedWebmToMp4(){
         try {
@@ -210,7 +200,6 @@
           const mapped = list.map(item => {
             if(!item || !item.url) return item;
             const url = String(item.url);
-            // solo per Cloudinary upload path: /video/upload/
             if(url.includes('/video/upload/') && url.match(/\.webm($|\?)/i)){
               const newUrl = url.replace('/video/upload/', '/video/upload/f_mp4/').replace(/\.webm($|\?)/i, '.mp4$1');
               changed++;
@@ -218,26 +207,18 @@
             }
             return item;
           });
-          if(changed){
-            setSaved(mapped);
-            console.info(`Migrati ${changed} url .webm -> f_mp4 .mp4 in localStorage key ${STORAGE_KEY}`);
-          }
+          if(changed){ setSaved(mapped); console.info(`Migrati ${changed} url .webm -> f_mp4 .mp4 in localStorage key ${STORAGE_KEY}`); }
         } catch(e){ console.warn('migrate error', e); }
       }
 
       /* =========================
-         RENDER / CARD
-         =========================
-         - createCard: robusto; prova a convertire webm a mp4 al volo se necessario (fallback runtime)
-         - conteggio views: incrementa solo la prima volta che si vede play dopo reload
+         RENDER
       */
       function tryMp4FromCloudinary(url){
         if(!url) return url;
         try{
           if(url.endsWith('.mp4')) return url;
-          if(url.includes('/video/upload/')){
-            return url.replace('/video/upload/', '/video/upload/f_mp4/').replace(/\.webm($|\?)/i, '.mp4$1');
-          }
+          if(url.includes('/video/upload/')) return url.replace('/video/upload/', '/video/upload/f_mp4/').replace(/\.webm($|\?)/i, '.mp4$1');
           return url;
         } catch(e){ return url; }
       }
@@ -245,12 +226,9 @@
       function createCard(item){
         const card = document.createElement('div'); card.className='card video-card';
         const v = document.createElement('video');
-        // assegna src con fallback per webm->mp4 (non modifica localStorage qui)
         const candidate = tryMp4FromCloudinary(item.url || '');
         v.src = candidate || item.url || '';
-        v.controls = true;
-        v.preload = 'metadata';
-        v.setAttribute('controlsList','nodownload');
+        v.controls = true; v.preload = 'metadata'; v.setAttribute('controlsList','nodownload');
         v.addEventListener('contextmenu', e => e.preventDefault());
 
         const t = document.createElement('div'); t.className='title'; t.textContent = item.title || 'Video senza titolo';
@@ -281,26 +259,19 @@
       window.renderAllVideosPublic = renderAll;
 
       /* =========================
-         UPLOAD: XHR helper con progress
-         - Se CLOUDINARY_CLOUD + UPLOAD_PRESET definiti usa Cloudinary.
-         - Altrimenti usa fallback locale (objectURL) per test.
-      ========================= */
+         UPLOAD helper XHR
+      */
       function uploadToCloudinaryXHR(file, preset, cloudUrl, onProgress){
         return new Promise((resolve, reject) => {
           const form = new FormData();
           form.append('file', file);
           form.append('upload_preset', preset);
-          // aggiungi metadata opzionale: context, tags ecc.
-          form.append('context', `caption=${encodeURIComponent(file.name || '')}`);
           const xhr = new XMLHttpRequest();
           xhr.open('POST', cloudUrl);
-          xhr.timeout = 3 * 60 * 1000; // 3 minuti
+          xhr.timeout = 3 * 60 * 1000;
           xhr.onload = () => {
-            if(xhr.status >= 200 && xhr.status < 300){
-              try{ const data = JSON.parse(xhr.responseText); resolve(data); } catch(e){ reject(new Error('invalid-json')); }
-            } else {
-              try{ const data = JSON.parse(xhr.responseText); reject(new Error(data?.error?.message || 'upload-failed')); } catch(e){ reject(new Error('upload-failed')); }
-            }
+            if(xhr.status >= 200 && xhr.status < 300){ try{ resolve(JSON.parse(xhr.responseText)); } catch(e){ reject(new Error('invalid-json')); } }
+            else { try{ const data = JSON.parse(xhr.responseText); reject(new Error(data?.error?.message || 'upload-failed')); } catch(e){ reject(new Error('upload-failed')); } }
           };
           xhr.onerror = () => reject(new Error('network-error'));
           xhr.ontimeout = () => reject(new Error('timeout'));
@@ -310,7 +281,7 @@
       }
 
       /* =========================
-         ASSICURA HANDLER UPLOAD (rimuove duplicati)
+         ASSICURA HANDLER UPLOAD (robusto)
       */
       function ensureUploadHandler(){
         const btn = document.getElementById('uploadBtn');
@@ -318,63 +289,65 @@
         const progressBar = document.getElementById('uploadProgress');
         if(!btn || !fileEl){ console.error('uploadBtn o videoFile non trovati'); return; }
 
-        // rimuove listener duplicati sostituendo con clone
         btn.replaceWith(btn.cloneNode(true));
         const fresh = document.getElementById('uploadBtn');
 
         fresh.addEventListener('click', async (ev) => {
           ev.preventDefault();
-          uploadStatus.textContent = '';
-          // reset progress
-          progressBar.style.width = '0%';
+          const uploadStatusEl = document.getElementById('uploadStatus');
+          if(uploadStatusEl) uploadStatusEl.textContent = '';
+          if(progressBar) progressBar.style.width = '0%';
           const f = fileEl.files && fileEl.files[0];
-          if(!f){ uploadStatus.textContent = '❌ Seleziona un file.'; return; }
-          if(!f.type || !f.type.startsWith('video/')){ uploadStatus.textContent = '❌ Il file selezionato non è un video.'; return; }
+          if(!f){ if(uploadStatusEl) uploadStatusEl.textContent = '❌ Seleziona un file.'; return; }
+          if(!f.type || !f.type.startsWith('video/')){ if(uploadStatusEl) uploadStatusEl.textContent = '❌ Il file selezionato non è un video.'; return; }
 
           fresh.disabled = true; fresh.classList.add('loading');
           try {
             if(CLOUDINARY_CLOUD && UPLOAD_PRESET && CLOUDINARY_URL){
-              // upload Cloudinary
-              uploadStatus.textContent = `⏳ Upload ${f.name} (${Math.round(f.size/1024)} KB)`;
+              if(uploadStatusEl) uploadStatusEl.textContent = `⏳ Upload ${f.name} (${Math.round(f.size/1024)} KB)`;
               const res = await uploadToCloudinaryXHR(f, UPLOAD_PRESET, CLOUDINARY_URL, (pct) => {
-                progressBar.style.width = pct + '%';
-                uploadStatus.textContent = `⏳ Caricamento ${pct}%`;
+                if(progressBar) progressBar.style.width = pct + '%';
+                if(uploadStatusEl) uploadStatusEl.textContent = `⏳ Caricamento ${pct}%`;
               });
               console.info('Cloudinary response:', res);
-              if(!res || !res.secure_url) throw new Error('no-url-returned');
-              // salva secure_url (https) in localStorage
+              if(!res || !res.secure_url) throw new Error('no-url');
               const url = res.secure_url;
               const saved = getSaved();
               saved.unshift({ url, title: (titleInput.value||f.name), views:0, published:true, uploadedAt: Date.now(), cloudResponse: { public_id: res.public_id } });
               setSaved(saved);
               renderAll();
               if(typeof window.renderAdminTable === 'function') window.renderAdminTable();
-              uploadStatus.textContent = '✅ Caricamento completato';
-              progressBar.style.width = '100%';
+              if(uploadStatusEl) uploadStatusEl.textContent = '✅ Caricamento completato';
+              if(progressBar) progressBar.style.width = '100%';
               setTimeout(()=>{ uploadModal.classList.remove('show'); showStatus('Video caricato', 'success'); setTimeout(()=>showStatus(''),900); }, 700);
             } else {
-              // fallback locale: objectURL (utile per test rapidissimi)
               const url = URL.createObjectURL(f);
               const saved = getSaved();
               saved.unshift({ url, title: (titleInput.value||f.name), views:0, published:true, uploadedAt: Date.now(), test:true });
               setSaved(saved);
               renderAll();
-              uploadStatus.textContent = '✅ File registrato localmente per test (objectURL)';
+              if(uploadStatusEl) uploadStatusEl.textContent = '✅ File registrato localmente per test';
               setTimeout(()=>{ uploadModal.classList.remove('show'); showStatus('File salvato localmente (test)', 'success'); setTimeout(()=>showStatus(''),900); }, 700);
               console.info('Saved objectURL for test:', url);
             }
-          } catch(err){
+          } catch (err) {
             console.error('Upload error:', err);
-            uploadStatus.textContent = '❌ Upload fallito: ' + (err && err.message ? err.message : String(err));
+            if(uploadStatusEl) uploadStatusEl.textContent = '❌ Upload fallito: ' + (err && err.message ? err.message : String(err));
             showStatus('Upload fallito: vedi console', 'error');
           } finally {
             fresh.disabled = false; fresh.classList.remove('loading');
-            setTimeout(()=>{ uploadStatus.textContent = ''; progressBar.style.width = '0%'; }, 2500);
+            setTimeout(()=>{ if(uploadStatusEl) uploadStatusEl.textContent = ''; if(progressBar) progressBar.style.width = '0%'; }, 2500);
           }
         });
 
         console.info('Upload handler assicurato. Cloudinary active:', !!(CLOUDINARY_CLOUD && UPLOAD_PRESET));
       }
+
+      /* =========================
+         MODAL open/close
+      */
+      openUploadBtn && openUploadBtn.addEventListener('click', () => { uploadModal.classList.add('show'); openUploadBtn.setAttribute('aria-expanded','true'); });
+      closeUploadBtn && closeUploadBtn.addEventListener('click', () => { uploadModal.classList.remove('show'); openUploadBtn.setAttribute('aria-expanded','false'); });
 
       /* =========================
          ADMIN anchor & table
@@ -438,7 +411,7 @@
       adminToHome && adminToHome.addEventListener('click', ()=>{ homeSection.classList.remove('hidden'); adminSection.classList.add('hidden'); });
 
       /* =========================
-         SEARCH FILTER
+         SEARCH
       */
       searchVideos && searchVideos.addEventListener('input', () => {
         const term = (searchVideos.value||'').toLowerCase();
@@ -451,8 +424,6 @@
 
       /* =========================
          PRESET FULLSCREEN (J key)
-         - PRESET_LOCAL_PATH: se è un URL Cloudinary già in mp4 funziona ovunque;
-         - altrimenti puoi usare un percorso relativo: './overlay/preset.mp4'
       */
       let overlayEl = null, overlayVideoEl = null;
       let underlying = null, underlyingState = { wasPlaying:false, muted:false, time:0 };
@@ -488,10 +459,7 @@
       function removeOverlay(){
         if(!overlayEl) return;
         if(underlying){
-          try{
-            underlying.muted = underlyingState.muted;
-            if(underlyingState.wasPlaying){ underlying.currentTime = underlyingState.time || underlying.currentTime; underlying.play().catch(()=>{}); }
-          } catch(e){}
+          try{ underlying.muted = underlyingState.muted; if(underlyingState.wasPlaying){ underlying.currentTime = underlyingState.time || underlying.currentTime; underlying.play().catch(()=>{}); } } catch(e){}
           underlying = null;
         }
         try{ document.removeEventListener('keydown', overlayEl._escHandler); } catch(e){}
@@ -522,8 +490,7 @@
       });
 
       /* =========================
-         DIAGNOSTICA UTILE (stampa info su tutti gli url salvati)
-         - esegui in console: window.checkSavedUrls()
+         DIAGNOSTICA
       */
       window.checkSavedUrls = async function(){
         const list = getSaved();
@@ -551,15 +518,14 @@
       };
 
       /* =========================
-         INIT: migrazione, render, handler
+         INIT
       */
-      migrateSavedWebmToMp4(); // runtime migration per miglior compatibilità
+      migrateSavedWebmToMp4();
       renderAll();
       ensureUploadHandler();
       console.info('Init complete. Cloudinary active:', !!(CLOUDINARY_CLOUD && UPLOAD_PRESET));
       console.info('Preset path (J):', PRESET_LOCAL_PATH);
       console.info('Se vuoi diagnosticare, esegui window.checkSavedUrls() nella Console');
-
     }); // DOMContentLoaded
   </script>
 </body>
