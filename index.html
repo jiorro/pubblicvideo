@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Canaan & Jiorro Video</title>
+  <title>Canaan & Jiorro Video + Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
   <style>
@@ -10,12 +10,13 @@
       --bg: #0f0f10;
       --panel: #18181b;
       --border: #2a2a31;
-      --text: #fff;
+      --text: #ffffff;
       --muted: #b7b7c3;
       --accent: #6ff66f;
       --danger: #ff6666;
       --brand: #66aaff;
       --shadow: rgba(0,0,0,0.35);
+      --warn: #f3c969;
     }
 
     html, body {
@@ -26,12 +27,9 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
     }
 
-    /* Top bar with lens */
     .topbar {
       position: fixed;
-      top: 0;
-      right: 0;
-      left: 0;
+      top: 0; right: 0; left: 0;
       height: 60px;
       background: linear-gradient(to bottom, rgba(24,24,27,0.9), rgba(24,24,27,0.6));
       backdrop-filter: blur(6px);
@@ -42,244 +40,153 @@
       padding: 0 20px;
       z-index: 1000;
     }
-
     .lens-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 42px;
-      height: 42px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--panel);
-      color: var(--text);
-      font-size: 22px;
-      cursor: pointer;
-      transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 42px; height: 42px; border-radius: 10px;
+      border: 1px solid var(--border); background: var(--panel); color: var(--text);
+      font-size: 22px; cursor: pointer;
+      transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease, color 120ms ease;
     }
-    .lens-btn:hover {
-      transform: translateY(-1px);
-      border-color: var(--brand);
-      box-shadow: 0 6px 16px var(--shadow);
-      color: var(--accent);
-    }
-    .lens-btn:active {
-      transform: translateY(0);
-      box-shadow: none;
-    }
-    .lens-btn:focus-visible {
-      outline: 2px solid var(--brand);
-      outline-offset: 2px;
-    }
+    .lens-btn:hover { transform: translateY(-1px); border-color: var(--brand); box-shadow: 0 6px 16px var(--shadow); color: var(--accent); }
+    .lens-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 
-    /* Status text under topbar (for feedback) */
     .status {
       position: fixed;
-      top: 64px;
-      right: 20px;
-      min-height: 24px;
-      font-size: 14px;
-      color: var(--muted);
-      z-index: 900;
-      text-align: right;
+      top: 64px; right: 20px;
+      min-height: 24px; font-size: 14px;
+      color: var(--muted); z-index: 900; text-align: right;
     }
     .status.success { color: var(--accent); }
     .status.error { color: var(--danger); }
 
-    /* Sections container */
     .section {
       position: relative;
-      padding-top: 80px; /* space for topbar */
+      padding-top: 80px;
       min-height: 100vh;
-      opacity: 1;
-      visibility: visible;
+      opacity: 1; visibility: visible;
       transition: opacity 240ms ease, visibility 240ms ease;
     }
-    .section.hidden {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
+    .section.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
-    /* Home layout */
     .home-container {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 24px;
-      padding: 32px;
+      display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; padding: 32px;
     }
-
     .home-text {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 10px 30px var(--shadow);
-      line-height: 1.6;
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px var(--shadow); line-height: 1.6;
     }
-
-    .home-text h1 {
-      margin-top: 0;
-      font-size: 28px;
-      letter-spacing: 0.3px;
-    }
-
+    .home-text h1 { margin-top: 0; font-size: 28px; letter-spacing: 0.3px; }
     .home-figure {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      box-shadow: 0 10px 30px var(--shadow);
-      padding: 16px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 16px; box-shadow: 0 10px 30px var(--shadow); padding: 16px;
     }
-    .home-figure img {
-      max-width: 100%;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-    }
+    .home-figure img { max-width: 100%; border-radius: 12px; border: 1px solid var(--border); }
 
-    /* Video section layout */
-    .video-container {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 24px;
-      padding: 32px;
-    }
-
+    .video-container { display: grid; grid-template-columns: 1fr; gap: 24px; padding: 32px; }
     .video-toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow: 0 10px 30px var(--shadow);
+      display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 16px; padding: 16px; box-shadow: 0 10px 30px var(--shadow);
     }
-
     .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--panel);
-      color: var(--text);
-      padding: 10px 14px;
-      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px;
+      border: 1px solid var(--border); border-radius: 12px;
+      background: var(--panel); color: var(--text);
+      padding: 10px 14px; cursor: pointer;
       transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
     }
-    .btn:hover {
-      border-color: var(--brand);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px var(--shadow);
-    }
-    .btn:focus-visible {
-      outline: 2px solid var(--brand);
-      outline-offset: 2px;
-    }
+    .btn:hover { border-color: var(--brand); transform: translateY(-1px); box-shadow: 0 6px 16px var(--shadow); }
+    .btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
 
     .input {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--panel);
-      color: var(--text);
-      padding: 10px 12px;
-      min-width: 220px;
+      border: 1px solid var(--border); border-radius: 12px;
+      background: var(--panel); color: var(--text); padding: 10px 12px; min-width: 220px;
     }
     .input::placeholder { color: #999; }
 
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 16px;
-    }
-
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
     .card {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      background: var(--panel);
-      padding: 12px;
-      box-shadow: 0 10px 30px var(--shadow);
+      display: flex; flex-direction: column; gap: 8px;
+      border: 1px solid var(--border); border-radius: 16px;
+      background: var(--panel); padding: 12px; box-shadow: 0 10px 30px var(--shadow);
     }
-
-    .card video {
-      width: 100%;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: black;
-    }
-
+    .card video { width: 100%; border-radius: 12px; border: 1px solid var(--border); background: black; }
     .card .title { font-weight: 600; }
     .card .views { color: var(--muted); font-size: 14px; }
 
-    /* Modal */
     .modal {
-      position: fixed;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0,0,0,0.5);
-      z-index: 1200;
+      position: fixed; inset: 0; display: none;
+      align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.5); z-index: 1200;
     }
     .modal.show { display: flex; }
     .modal-panel {
-      width: 92%;
-      max-width: 520px;
-      border-radius: 16px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      box-shadow: 0 10px 30px var(--shadow);
-      padding: 20px;
+      width: 92%; max-width: 520px;
+      border-radius: 16px; background: var(--panel);
+      border: 1px solid var(--border); box-shadow: 0 10px 30px var(--shadow); padding: 20px;
     }
-    .modal-title {
-      margin: 0 0 12px 0;
-      font-size: 20px;
-      font-weight: 700;
-    }
+    .modal-title { margin: 0 0 12px 0; font-size: 20px; font-weight: 700; }
     .modal-row { margin-bottom: 12px; }
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 8px;
-    }
-    .status-line {
-      min-height: 20px;
-      font-size: 14px;
-      color: var(--muted);
-      margin-top: 8px;
-    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+    .status-line { min-height: 20px; font-size: 14px; color: var(--muted); margin-top: 8px; }
     .status-line.success { color: var(--accent); }
     .status-line.error { color: var(--danger); }
 
-    /* Utility hidden */
+    /* Admin bottom unlock bar */
+    .admin-unlock {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      display: flex; justify-content: center; align-items: center; gap: 10px;
+      background: linear-gradient(to top, rgba(24,24,27,0.9), rgba(24,24,27,0.6));
+      border-top: 1px solid var(--border); padding: 10px 16px; z-index: 1100;
+      backdrop-filter: blur(6px);
+    }
+    .admin-info { font-size: 12px; color: var(--muted); }
+
+    /* Admin section */
+    .admin-section {
+      position: relative; padding: 32px;
+    }
+    .admin-panel {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 16px; padding: 16px; box-shadow: 0 10px 30px var(--shadow);
+    }
+    .admin-grid {
+      width: 100%; border-collapse: collapse; margin-top: 12px;
+    }
+    .admin-grid th, .admin-grid td {
+      border-top: 1px solid var(--border);
+      padding: 10px; text-align: left; vertical-align: middle;
+    }
+    .admin-grid th { color: var(--muted); font-weight: 600; }
+    .pill {
+      display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px;
+      border: 1px solid var(--border); background: #202025; color: var(--muted);
+    }
+    .pill.pub { color: var(--accent); border-color: #336633; background: #143016; }
+    .actions {
+      display: flex; gap: 8px; flex-wrap: wrap;
+    }
+    .warn { color: var(--warn); }
+    .danger { color: var(--danger); }
+
     .hidden { display: none !important; }
 
-    /* Responsive tweaks */
     @media (max-width: 980px) {
-      .home-container {
-        grid-template-columns: 1fr;
-      }
+      .home-container { grid-template-columns: 1fr; }
+      .admin-grid th, .admin-grid td { font-size: 13px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Top right lens -->
+  <!-- Top bar -->
   <header class="topbar" role="banner" aria-label="Barra superiore">
     <button id="searchBtn" class="lens-btn" aria-label="Apri sezione video">🔍</button>
   </header>
   <div id="searchResult" class="status" aria-live="polite"></div>
 
-  <!-- Home Section -->
+  <!-- Home -->
   <main id="homeSection" class="section" role="main" aria-label="Home Terra di Canaan">
     <div class="home-container">
       <article class="home-text">
@@ -287,8 +194,7 @@
         <p>La regione di Canaan (o Cananea) si trovava nel Levante e corrisponde approssimativamente ai territori degli attuali Libano, Israele, Palestina e parti della Siria e della Giordania. In questa area geografica si svilupparono sia la civiltà dei Fenici che quella degli Ebrei.</p>
         <p><strong>Fenici:</strong> Si insediarono principalmente lungo la costa orientale del Mar Mediterraneo, in quella che corrisponde all'odierno Libano. Le loro città-stato più importanti erano Biblo, Sidone e Tiro, da cui partirono per fondare numerose colonie nel Mediterraneo, inclusa Cartagine.</p>
         <p><strong>Ebrei:</strong> Si stabilirono nell'entroterra della regione di Canaan, occupando l'area che divenne in seguito la Terra d'Israele o Palestina, una regione percorsa da nord a sud dal fiume Giordano.</p>
-        <p>Le mappe storiche mostrano i Fenici stanziati in una stretta striscia costiera a nord, mentre il territorio degli Ebrei si estendeva più a sud e nell'entroterra, fino al Mar Morto. Entrambi i popoli interagirono in questa regione, talvolta in conflitto con le popolazioni cananee originarie e con i Filistei.</p>
-        <p>Per visualizzare queste posizioni, puoi consultare mappe storiche del Levante che illustrano gli insediamenti antichi e i regni dell'epoca.</p>
+        <p>Le mappe storiche mostrano i Fenici stanziati in una stretta striscia costiera a nord, mentre il territorio degli Ebrei si estendeva più a sud e nell'entroterra, fino al Mar Morto.</p>
       </article>
       <figure class="home-figure" aria-label="Illustrazione della regione di Canaan">
         <img src="canaan-map.jpg" alt="Cartina storica della regione di Canaan">
@@ -296,19 +202,45 @@
     </div>
   </main>
 
-  <!-- Video Section -->
+  <!-- Video -->
   <section id="videoSection" class="section hidden" role="region" aria-label="Sezione video Jiorro">
     <div class="video-container">
-
-      <!-- Toolbar -->
       <div class="video-toolbar" role="toolbar" aria-label="Strumenti video">
         <button id="openUpload" class="btn" aria-controls="uploadModal" aria-expanded="false">⬆️ Carica video</button>
         <input id="searchVideos" class="input" type="text" placeholder="Cerca video per titolo o URL" aria-label="Cerca video">
         <button id="backToHome" class="btn" aria-label="Torna alla home">🏠 Home</button>
       </div>
-
-      <!-- Cards container -->
       <div id="videoContainer" class="cards" aria-live="polite" aria-busy="false"></div>
+    </div>
+  </section>
+
+  <!-- Admin (locked by passphrase) -->
+  <section id="adminSection" class="section hidden" role="region" aria-label="Sezione amministrazione Jiorro">
+    <div class="admin-section">
+      <div class="admin-panel">
+        <h2>🔧 Amministrazione video</h2>
+        <p class="admin-info">Modifica titoli, resetta views, elimina o cambia stato pubblicazione. I cambiamenti sono immediati e persistenti.</p>
+
+        <table class="admin-grid" id="adminGrid">
+          <thead>
+            <tr>
+              <th>Anteprima</th>
+              <th>Titolo</th>
+              <th>Views</th>
+              <th>Stato</th>
+              <th>Azioni</th>
+            </tr>
+          </thead>
+          <tbody id="adminBody">
+            <!-- rows injected by JS -->
+          </tbody>
+        </table>
+
+        <div style="margin-top:12px;">
+          <button id="adminBackVideo" class="btn">🎬 Torna ai video</button>
+          <button id="adminBackHome" class="btn">🏠 Torna alla home</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -336,6 +268,13 @@
     </div>
   </div>
 
+  <!-- Bottom unlock bar -->
+  <div class="admin-unlock" aria-label="Sblocca amministrazione">
+    <input id="adminUnlockInput" class="input" type="text" placeholder="Digita passphrase per admin..." aria-label="Passphrase admin">
+    <button id="adminUnlockBtn" class="btn">🔓 Sblocca</button>
+    <span class="admin-info">Suggerimento: JIORR0CON$=LE</span>
+  </div>
+
   <script>
     /* ==========
        Navigation and UI
@@ -345,6 +284,7 @@
       const statusEl  = document.getElementById('searchResult');
       const home      = document.getElementById('homeSection');
       const video     = document.getElementById('videoSection');
+      const admin     = document.getElementById('adminSection');
       const backHome  = document.getElementById('backToHome');
 
       function showStatus(msg, type) {
@@ -354,21 +294,29 @@
       function showHome() {
         home.classList.remove('hidden');
         video.classList.add('hidden');
+        admin.classList.add('hidden');
         showStatus('', '');
       }
       function showVideo() {
         home.classList.add('hidden');
+        admin.classList.add('hidden');
         video.classList.remove('hidden');
         showStatus('✅ Accesso alla sezione video', 'success');
         setTimeout(() => showStatus('', ''), 1200);
       }
+      function showAdmin() {
+        home.classList.add('hidden');
+        video.classList.add('hidden');
+        admin.classList.remove('hidden');
+        showStatus('🔧 Admin aperto', 'success');
+        setTimeout(() => showStatus('', ''), 1200);
+      }
 
-      // Click lens to open video section
-      searchBtn.addEventListener('click', () => {
-        showVideo();
-      });
+      // Click lens to open video
+      searchBtn.addEventListener('click', showVideo);
+      backHome.addEventListener('click', showHome);
 
-      // Keyboard accessibility: Enter or Space on lens
+      // Keyboard accessibility
       searchBtn.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -376,9 +324,24 @@
         }
       });
 
-      // Back to home
-      backHome.addEventListener('click', showHome);
+      // Admin quick nav
+      const adminBackVideo = document.getElementById('adminBackVideo');
+      const adminBackHome = document.getElementById('adminBackHome');
+      adminBackVideo.addEventListener('click', showVideo);
+      adminBackHome.addEventListener('click', showHome);
     })();
+
+    /* ==========
+       Storage helpers
+       ========== */
+    const STORAGE_KEY = 'jiorroVideos';
+    function getSaved() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+      catch { return []; }
+    }
+    function setSaved(arr) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr || [])); } catch {}
+    }
 
     /* ==========
        Video logic (upload, listing, search, views)
@@ -394,17 +357,6 @@
       const searchVideos   = document.getElementById('searchVideos');
       const uploadStatus   = document.getElementById('uploadStatus');
 
-      // Storage helpers
-      const STORAGE_KEY = 'jiorroVideos';
-      function getSaved() {
-        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-        catch { return []; }
-      }
-      function setSaved(arr) {
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr || [])); } catch {}
-      }
-
-      // Modal helpers
       function openModal() {
         uploadModal.classList.add('show');
         document.getElementById('openUpload').setAttribute('aria-expanded', 'true');
@@ -418,10 +370,10 @@
         videoTitle.value = '';
       }
 
-      // Card factory
-      function createVideoCard(url, title, views) {
+      function createVideoCard(url, title, views, published = true) {
         const card = document.createElement('div');
         card.className = 'card video-card';
+        card.dataset.url = url;
 
         const v = document.createElement('video');
         v.src = url;
@@ -430,7 +382,6 @@
         v.preload = 'metadata';
         v.setAttribute('controlsList', 'nodownload');
         v.addEventListener('contextmenu', (e) => e.preventDefault());
-        v.style.background = 'black';
 
         const t = document.createElement('div');
         t.className = 'title video-title';
@@ -440,22 +391,25 @@
         vw.className = 'views video-views';
         vw.textContent = `👁️ ${views || 0} views`;
 
-        // Count views on play (debounced per session)
+        // Count view once per session play
         let counted = false;
         v.addEventListener('play', () => {
           if (counted) return;
           counted = true;
-
           const saved = getSaved();
           const updated = saved.map(item => {
             if (item.url === url) {
-              const nextViews = (item.views || 0) + 1;
-              vw.textContent = `👁️ ${nextViews} views`;
-              return { ...item, views: nextViews };
+              const next = (item.views || 0) + 1;
+              vw.textContent = `👁️ ${next} views`;
+              return { ...item, views: next };
             }
             return item;
           });
           setSaved(updated);
+          // refresh admin if open
+          if (!document.getElementById('adminSection').classList.contains('hidden')) {
+            renderAdminTable();
+          }
         });
 
         card.appendChild(v);
@@ -464,31 +418,27 @@
         return card;
       }
 
-      // Render all saved videos (sorted by views desc)
       function renderAll() {
         videoContainer.setAttribute('aria-busy', 'true');
         videoContainer.innerHTML = '';
-        const saved = getSaved().sort((a, b) => (b.views || 0) - (a.views || 0));
-        saved.forEach(({ url, title, views }) => {
-          const card = createVideoCard(url, title, views || 0);
+        const saved = getSaved()
+          .filter(v => v.published !== false) // only published
+          .sort((a, b) => (b.views || 0) - (a.views || 0));
+        saved.forEach(({ url, title, views, published }) => {
+          const card = createVideoCard(url, title, views || 0, published !== false);
           videoContainer.appendChild(card);
         });
         videoContainer.setAttribute('aria-busy', 'false');
       }
 
-      // Initial render after DOM ready
       window.addEventListener('DOMContentLoaded', renderAll);
-
-      // Open/close modal
       openUpload.addEventListener('click', openModal);
       closeUpload.addEventListener('click', closeModal);
 
-      // Upload action
       uploadBtn.addEventListener('click', async () => {
         const file = videoFile.files && videoFile.files[0];
         const title = (videoTitle.value || '').trim();
 
-        // Validation
         if (!file) {
           uploadStatus.textContent = '❌ Seleziona un file video.';
           uploadStatus.className = 'status-line error';
@@ -503,17 +453,15 @@
         uploadStatus.textContent = '⏳ Caricamento in corso...';
         uploadStatus.className = 'status-line';
 
-        // Cloudinary config — ensure your preset is valid
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('upload_preset', 'jiorro_upload'); // CHANGE if needed
+        formData.append('upload_preset', 'jiorro_upload');
 
         try {
           const res = await fetch('https://api.cloudinary.com/v1_1/dng8rjd6u/auto/upload', {
             method: 'POST',
             body: formData
           });
-
           const data = await res.json();
 
           if (!res.ok || data.error) {
@@ -530,28 +478,24 @@
             return;
           }
 
-          // Persist new video
+          // Persist new video (published by default)
           const saved = getSaved();
-          saved.unshift({ url: videoUrl, title, views: 0 });
+          saved.unshift({ url: videoUrl, title, views: 0, published: true });
           setSaved(saved);
 
-          // Render new card at top
-          const card = createVideoCard(videoUrl, title, 0);
-          videoContainer.prepend(card);
+          // Render in main list and admin
+          renderAll();
+          renderAdminTable();
 
           uploadStatus.textContent = '✅ Video caricato!';
           uploadStatus.className = 'status-line success';
-
-          // Clear inputs
-          videoFile.value = '';
-          videoTitle.value = '';
+          videoFile.value = ''; videoTitle.value = '';
         } catch (err) {
           uploadStatus.textContent = '❌ Errore durante l\'upload.';
           uploadStatus.className = 'status-line error';
         }
       });
 
-      // Search in saved videos (by title or URL)
       searchVideos.addEventListener('input', () => {
         const term = (searchVideos.value || '').toLowerCase();
         const cards = videoContainer.querySelectorAll('.video-card');
@@ -563,12 +507,174 @@
         });
       });
 
-      // Close modal on ESC
-      window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && uploadModal.classList.contains('show')) {
-          closeModal();
+      // Expose admin render for other scope
+      window.renderAllVideosPublic = renderAll;
+    })();
+
+    /* ==========
+       Admin unlock & controls
+       ========== */
+    (function(){
+      const PASS = 'JIORR0CON$=LE';
+
+      const adminUnlockInput = document.getElementById('adminUnlockInput');
+      const adminUnlockBtn   = document.getElementById('adminUnlockBtn');
+
+      const home   = document.getElementById('homeSection');
+      const video  = document.getElementById('videoSection');
+      const admin  = document.getElementById('adminSection');
+      const adminBody = document.getElementById('adminBody');
+
+      function showAdmin() {
+        home.classList.add('hidden');
+        video.classList.add('hidden');
+        admin.classList.remove('hidden');
+        document.getElementById('searchResult').textContent = '';
+      }
+
+      adminUnlockBtn.addEventListener('click', () => {
+        const val = (adminUnlockInput.value || '').trim();
+        if (val === PASS) {
+          adminUnlockInput.value = '';
+          showAdmin();
+          renderAdminTable();
+        } else {
+          adminUnlockInput.classList.add('danger');
+          setTimeout(() => adminUnlockInput.classList.remove('danger'), 700);
         }
       });
+
+      // Enter key unlock
+      adminUnlockInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          adminUnlockBtn.click();
+        }
+      });
+
+      // Render admin table rows
+      window.renderAdminTable = function renderAdminTable() {
+        const saved = getSaved();
+        adminBody.innerHTML = '';
+
+        if (!saved.length) {
+          const tr = document.createElement('tr');
+          const td = document.createElement('td');
+          td.colSpan = 5;
+          td.textContent = 'Nessun video salvato.';
+          td.className = 'admin-info';
+          tr.appendChild(td);
+          adminBody.appendChild(tr);
+          return;
+        }
+
+        saved.forEach((item, idx) => {
+          const tr = document.createElement('tr');
+
+          // Preview
+          const tdPrev = document.createElement('td');
+          const prev = document.createElement('video');
+          prev.src = item.url;
+          prev.preload = 'metadata';
+          prev.controls = true;
+          prev.style.maxWidth = '140px';
+          prev.style.borderRadius = '8px';
+          prev.setAttribute('controlsList', 'nodownload');
+          prev.addEventListener('contextmenu', e => e.preventDefault());
+          tdPrev.appendChild(prev);
+
+          // Title editable
+          const tdTitle = document.createElement('td');
+          const titleInput = document.createElement('input');
+          titleInput.type = 'text';
+          titleInput.className = 'input';
+          titleInput.value = item.title || '';
+          titleInput.placeholder = 'Titolo...';
+          tdTitle.appendChild(titleInput);
+
+          // Views
+          const tdViews = document.createElement('td');
+          const viewsPill = document.createElement('span');
+          viewsPill.className = 'pill';
+          viewsPill.textContent = (item.views || 0) + ' views';
+          tdViews.appendChild(viewsPill);
+
+          // Status (published/unpublished)
+          const tdStatus = document.createElement('td');
+          const statusPill = document.createElement('span');
+          statusPill.className = 'pill ' + (item.published === false ? '' : 'pub');
+          statusPill.textContent = item.published === false ? 'Non pubblicato' : 'Pubblicato';
+          tdStatus.appendChild(statusPill);
+
+          // Actions
+          const tdActions = document.createElement('td');
+          const actions = document.createElement('div');
+          actions.className = 'actions';
+
+          const btnSaveTitle = document.createElement('button');
+          btnSaveTitle.className = 'btn';
+          btnSaveTitle.textContent = '💾 Salva titolo';
+
+          const btnResetViews = document.createElement('button');
+          btnResetViews.className = 'btn warn';
+          btnResetViews.textContent = '🔄 Reset views';
+
+          const btnTogglePub = document.createElement('button');
+          btnTogglePub.className = 'btn';
+          btnTogglePub.textContent = item.published === false ? '📢 Pubblica' : '🙈 Nascondi';
+
+          const btnDelete = document.createElement('button');
+          btnDelete.className = 'btn danger';
+          btnDelete.textContent = '🗑️ Elimina';
+
+          actions.appendChild(btnSaveTitle);
+          actions.appendChild(btnResetViews);
+          actions.appendChild(btnTogglePub);
+          actions.appendChild(btnDelete);
+          tdActions.appendChild(actions);
+
+          // Row assemble
+          tr.appendChild(tdPrev);
+          tr.appendChild(tdTitle);
+          tr.appendChild(tdViews);
+          tr.appendChild(tdStatus);
+          tr.appendChild(tdActions);
+          adminBody.appendChild(tr);
+
+          // Handlers
+          btnSaveTitle.addEventListener('click', () => {
+            const saved = getSaved();
+            saved[idx].title = titleInput.value.trim();
+            setSaved(saved);
+            renderAdminTable();
+            if (window.renderAllVideosPublic) window.renderAllVideosPublic();
+          });
+
+          btnResetViews.addEventListener('click', () => {
+            const saved = getSaved();
+            saved[idx].views = 0;
+            setSaved(saved);
+            renderAdminTable();
+            if (window.renderAllVideosPublic) window.renderAllVideosPublic();
+          });
+
+          btnTogglePub.addEventListener('click', () => {
+            const saved = getSaved();
+            const current = saved[idx].published === false ? false : true;
+            saved[idx].published = !current; // toggle
+            setSaved(saved);
+            renderAdminTable();
+            if (window.renderAllVideosPublic) window.renderAllVideosPublic();
+          });
+
+          btnDelete.addEventListener('click', () => {
+            const saved = getSaved();
+            const next = saved.filter((_, i) => i !== idx);
+            setSaved(next);
+            renderAdminTable();
+            if (window.renderAllVideosPublic) window.renderAllVideosPublic();
+          });
+        });
+      };
     })();
   </script>
 </body>
