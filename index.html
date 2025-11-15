@@ -1,244 +1,171 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <title>Canaan & Jiorro Video + Admin</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="dark">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Canaan & Jiorro Video — Admin discreto (esteso)</title>
   <style>
-    :root {
-      --bg: #0f0f10;
-      --panel: #18181b;
-      --border: #2a2a31;
-      --text: #ffffff;
-      --muted: #b7b7c3;
-      --accent: #6ff66f;
-      --danger: #ff6666;
-      --brand: #66aaff;
-      --shadow: rgba(0,0,0,0.35);
-      --warn: #f3c969;
+    /* -------------------------
+       Palette, reset e layout
+       ------------------------- */
+    :root{
+      --bg:#0f0f10; --panel:#18181b; --border:#2a2a31; --text:#fff;
+      --muted:#b7b7c3; --accent:#6ff66f; --brand:#66aaff; --danger:#ff6666;
+      --shadow:rgba(0,0,0,0.35); --glass: rgba(255,255,255,0.02);
     }
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,"Helvetica Neue";}
+    *{box-sizing:border-box}
+    a{color:inherit;text-decoration:none}
 
-    html, body {
-      height: 100%;
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-    }
-
-    .topbar {
-      position: fixed;
-      top: 0; right: 0; left: 0;
-      height: 60px;
-      background: linear-gradient(to bottom, rgba(24,24,27,0.9), rgba(24,24,27,0.6));
-      backdrop-filter: blur(6px);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      padding: 0 20px;
-      z-index: 1000;
-    }
-    .lens-btn {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 42px; height: 42px; border-radius: 10px;
-      border: 1px solid var(--border); background: var(--panel); color: var(--text);
-      font-size: 22px; cursor: pointer;
-      transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease, color 120ms ease;
-    }
-    .lens-btn:hover { transform: translateY(-1px); border-color: var(--brand); box-shadow: 0 6px 16px var(--shadow); color: var(--accent); }
-    .lens-btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
-
-    .status {
-      position: fixed;
-      top: 64px; right: 20px;
-      min-height: 24px; font-size: 14px;
-      color: var(--muted); z-index: 900; text-align: right;
-    }
-    .status.success { color: var(--accent); }
-    .status.error { color: var(--danger); }
-
-    .section {
-      position: relative;
-      padding-top: 80px;
-      min-height: 100vh;
-      opacity: 1; visibility: visible;
-      transition: opacity 240ms ease, visibility 240ms ease;
-    }
-    .section.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-
-    .home-container {
-      display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; padding: 32px;
-    }
-    .home-text {
-      background: var(--panel); border: 1px solid var(--border);
-      border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px var(--shadow); line-height: 1.6;
-    }
-    .home-text h1 { margin-top: 0; font-size: 28px; letter-spacing: 0.3px; }
-    .home-figure {
-      display: flex; align-items: center; justify-content: center;
-      background: var(--panel); border: 1px solid var(--border);
-      border-radius: 16px; box-shadow: 0 10px 30px var(--shadow); padding: 16px;
-    }
-    .home-figure img { max-width: 100%; border-radius: 12px; border: 1px solid var(--border); }
-
-    .video-container { display: grid; grid-template-columns: 1fr; gap: 24px; padding: 32px; }
-    .video-toolbar {
-      display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
-      background: var(--panel); border: 1px solid var(--border);
-      border-radius: 16px; padding: 16px; box-shadow: 0 10px 30px var(--shadow);
-    }
-    .btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      border: 1px solid var(--border); border-radius: 12px;
-      background: var(--panel); color: var(--text);
-      padding: 10px 14px; cursor: pointer;
-      transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
-    }
-    .btn:hover { border-color: var(--brand); transform: translateY(-1px); box-shadow: 0 6px 16px var(--shadow); }
-    .btn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
-
-    .input {
-      border: 1px solid var(--border); border-radius: 12px;
-      background: var(--panel); color: var(--text); padding: 10px 12px; min-width: 220px;
-    }
-    .input::placeholder { color: #999; }
-
-    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
-    .card {
-      display: flex; flex-direction: column; gap: 8px;
-      border: 1px solid var(--border); border-radius: 16px;
-      background: var(--panel); padding: 12px; box-shadow: 0 10px 30px var(--shadow);
-    }
-    .card video { width: 100%; border-radius: 12px; border: 1px solid var(--border); background: black; }
-    .card .title { font-weight: 600; }
-    .card .views { color: var(--muted); font-size: 14px; }
-
-    .modal {
-      position: fixed; inset: 0; display: none;
-      align-items: center; justify-content: center;
-      background: rgba(0,0,0,0.5); z-index: 1200;
-    }
-    .modal.show { display: flex; }
-    .modal-panel {
-      width: 92%; max-width: 520px;
-      border-radius: 16px; background: var(--panel);
-      border: 1px solid var(--border); box-shadow: 0 10px 30px var(--shadow); padding: 20px;
-    }
-    .modal-title { margin: 0 0 12px 0; font-size: 20px; font-weight: 700; }
-    .modal-row { margin-bottom: 12px; }
-    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
-    .status-line { min-height: 20px; font-size: 14px; color: var(--muted); margin-top: 8px; }
-    .status-line.success { color: var(--accent); }
-    .status-line.error { color: var(--danger); }
-
-    /* Admin bottom unlock bar */
-    .admin-unlock {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      display: flex; justify-content: center; align-items: center; gap: 10px;
-      background: linear-gradient(to top, rgba(24,24,27,0.9), rgba(24,24,27,0.6));
-      border-top: 1px solid var(--border); padding: 10px 16px; z-index: 1100;
+    /* Topbar */
+    .topbar{
+      position:fixed;top:0;left:0;right:0;height:64px;
+      display:flex;align-items:center;justify-content:flex-end;padding:0 18px;
+      background:linear-gradient(to bottom, rgba(24,24,27,0.95), rgba(24,24,27,0.7));
+      border-bottom:1px solid var(--border);z-index:1000;
       backdrop-filter: blur(6px);
     }
-    .admin-info { font-size: 12px; color: var(--muted); }
+    .lens-btn{
+      width:44px;height:44px;border-radius:12px;border:1px solid var(--border);
+      background:linear-gradient(180deg,var(--panel),var(--glass));
+      color:var(--text);font-size:20px;display:inline-flex;align-items:center;justify-content:center;
+      cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s,color .12s;
+    }
+    .lens-btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px var(--shadow);color:var(--accent);border-color:var(--brand)}
+    .lens-btn:focus{outline:2px solid var(--brand);outline-offset:2px}
 
-    /* Admin section */
-    .admin-section {
-      position: relative; padding: 32px;
+    /* small status under topbar */
+    .status{
+      position:fixed;top:70px;right:20px;font-size:13px;color:var(--muted);z-index:950;text-align:right;
     }
-    .admin-panel {
-      background: var(--panel); border: 1px solid var(--border);
-      border-radius: 16px; padding: 16px; box-shadow: 0 10px 30px var(--shadow);
-    }
-    .admin-grid {
-      width: 100%; border-collapse: collapse; margin-top: 12px;
-    }
-    .admin-grid th, .admin-grid td {
-      border-top: 1px solid var(--border);
-      padding: 10px; text-align: left; vertical-align: middle;
-    }
-    .admin-grid th { color: var(--muted); font-weight: 600; }
-    .pill {
-      display: inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px;
-      border: 1px solid var(--border); background: #202025; color: var(--muted);
-    }
-    .pill.pub { color: var(--accent); border-color: #336633; background: #143016; }
-    .actions {
-      display: flex; gap: 8px; flex-wrap: wrap;
-    }
-    .warn { color: var(--warn); }
-    .danger { color: var(--danger); }
+    .status.success{color:var(--accent)} .status.error{color:var(--danger)}
 
-    .hidden { display: none !important; }
+    /* sections common */
+    .section{padding-top:96px;min-height:100vh;transition:opacity .22s,visibility .22s}
+    .hidden{opacity:0;visibility:hidden;pointer-events:none}
 
-    @media (max-width: 980px) {
-      .home-container { grid-template-columns: 1fr; }
-      .admin-grid th, .admin-grid td { font-size: 13px; }
+    /* home grid */
+    .home-container{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;padding:28px;}
+    .home-text{
+      background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;
+      box-shadow:0 14px 36px var(--shadow);line-height:1.6;
+    }
+    .home-text h1{margin-top:0;font-size:26px}
+    .home-figure{display:flex;align-items:center;justify-content:center;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px}
+    .home-figure img{max-width:100%;border-radius:10px;border:1px solid var(--border)}
+
+    /* video area */
+    .video-container{padding:28px;display:grid;gap:16px}
+    .video-toolbar{
+      display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--border);
+      padding:12px;border-radius:12px;box-shadow:0 12px 32px var(--shadow)
+    }
+    .btn{
+      background:var(--panel);border:1px solid var(--border);color:var(--text);
+      padding:9px 12px;border-radius:10px;cursor:pointer;transition:all .12s;
+      display:inline-flex;align-items:center;gap:8px;font-size:14px;
+    }
+    .btn:hover{transform:translateY(-2px);border-color:var(--brand)}
+    .input{background:var(--panel);border:1px solid var(--border);padding:8px 10px;border-radius:10px;color:var(--text)}
+    .input::placeholder{color:#8f8f98}
+
+    .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:12px}
+    .card{background:var(--panel);border:1px solid var(--border);padding:10px;border-radius:12px;box-shadow:0 10px 30px var(--shadow);display:flex;flex-direction:column;gap:8px}
+    .card video{width:100%;border-radius:8px;background:black}
+    .title{font-weight:600} .views{color:var(--muted);font-size:13px}
+
+    /* modal */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);z-index:1200}
+    .modal.show{display:flex}
+    .modal-panel{width:92%;max-width:560px;background:var(--panel);border:1px solid var(--border);padding:18px;border-radius:12px;box-shadow:0 14px 44px var(--shadow)}
+    .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:12px}
+    .status-line{margin-top:8px;color:var(--muted);min-height:18px}
+    .status-line.success{color:var(--accent)} .status-line.error{color:var(--danger)}
+
+    /* bottom-left discreet admin anchor */
+    .admin-anchor{position:fixed;left:14px;bottom:14px;z-index:1300;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+    .admin-btn{
+      width:46px;height:46px;border-radius:999px;background:linear-gradient(180deg,var(--panel),var(--glass));
+      border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;color:var(--text);font-size:18px;cursor:pointer;
+      transition:transform .12s,border-color .12s;
+    }
+    .admin-btn:hover{transform:translateY(-2px);border-color:var(--brand);color:var(--brand)}
+    .admin-input-wrap{display:none;gap:8px;align-items:center}
+    .admin-input{width:220px;padding:8px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--text);outline:none}
+    .admin-input[aria-hidden='true']{display:none}
+
+    /* admin section */
+    .admin-section{padding:26px}
+    .admin-panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px}
+    table.admin-grid{width:100%;border-collapse:collapse;margin-top:12px}
+    table.admin-grid th, table.admin-grid td{padding:10px;border-top:1px solid var(--border);vertical-align:middle}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#202025;color:var(--muted);border:1px solid var(--border);font-size:13px}
+    .pill.pub{background:#103016;color:var(--accent);border-color:#244b2f}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .danger{color:var(--danger)}
+
+    /* small responsiveness */
+    @media (max-width:980px){
+      .home-container{grid-template-columns:1fr}
+      .admin-input{width:150px}
     }
   </style>
 </head>
 <body>
 
-  <!-- Top bar -->
+  <!-- Topbar: lens button -->
   <header class="topbar" role="banner" aria-label="Barra superiore">
-    <button id="searchBtn" class="lens-btn" aria-label="Apri sezione video">🔍</button>
+    <button id="lensBtn" class="lens-btn" aria-label="Apri sezione video">🔍</button>
   </header>
-  <div id="searchResult" class="status" aria-live="polite"></div>
+  <div id="statusEl" class="status" aria-live="polite"></div>
 
-  <!-- Home -->
+  <!-- HOME -->
   <main id="homeSection" class="section" role="main" aria-label="Home Terra di Canaan">
     <div class="home-container">
       <article class="home-text">
         <h1>La regione di Canaan</h1>
         <p>La regione di Canaan (o Cananea) si trovava nel Levante e corrisponde approssimativamente ai territori degli attuali Libano, Israele, Palestina e parti della Siria e della Giordania. In questa area geografica si svilupparono sia la civiltà dei Fenici che quella degli Ebrei.</p>
-        <p><strong>Fenici:</strong> Si insediarono principalmente lungo la costa orientale del Mar Mediterraneo, in quella che corrisponde all'odierno Libano. Le loro città-stato più importanti erano Biblo, Sidone e Tiro, da cui partirono per fondare numerose colonie nel Mediterraneo, inclusa Cartagine.</p>
-        <p><strong>Ebrei:</strong> Si stabilirono nell'entroterra della regione di Canaan, occupando l'area che divenne in seguito la Terra d'Israele o Palestina, una regione percorsa da nord a sud dal fiume Giordano.</p>
-        <p>Le mappe storiche mostrano i Fenici stanziati in una stretta striscia costiera a nord, mentre il territorio degli Ebrei si estendeva più a sud e nell'entroterra, fino al Mar Morto.</p>
+        <p><strong>Fenici:</strong> insediati lungo la costa; città principali Biblo, Sidone e Tiro.</p>
+        <p><strong>Ebrei:</strong> stabiliti nell'entroterra, nell'area che sarebbe poi divenuta la Terra d'Israele.</p>
+        <p>Questa pagina è pensata per integrare contenuti storici con una sezione video gestita localmente e attraverso Cloudinary.</p>
       </article>
-      <figure class="home-figure" aria-label="Illustrazione della regione di Canaan">
+
+      <figure class="home-figure" aria-label="Cartina di Canaan">
         <img src="canaan-map.jpg" alt="Cartina storica della regione di Canaan">
       </figure>
     </div>
   </main>
 
-  <!-- Video -->
-  <section id="videoSection" class="section hidden" role="region" aria-label="Sezione video Jiorro">
+  <!-- VIDEO SECTION -->
+  <section id="videoSection" class="section hidden" role="region" aria-label="Sezione video">
     <div class="video-container">
       <div class="video-toolbar" role="toolbar" aria-label="Strumenti video">
         <button id="openUpload" class="btn" aria-controls="uploadModal" aria-expanded="false">⬆️ Carica video</button>
-        <input id="searchVideos" class="input" type="text" placeholder="Cerca video per titolo o URL" aria-label="Cerca video">
-        <button id="backToHome" class="btn" aria-label="Torna alla home">🏠 Home</button>
+        <input id="searchVideos" class="input" placeholder="Cerca video per titolo o URL" aria-label="Cerca video" />
+        <button id="backHome" class="btn">🏠 Home</button>
       </div>
+
       <div id="videoContainer" class="cards" aria-live="polite" aria-busy="false"></div>
     </div>
   </section>
 
-  <!-- Admin (locked by passphrase) -->
-  <section id="adminSection" class="section hidden" role="region" aria-label="Sezione amministrazione Jiorro">
+  <!-- ADMIN SECTION (hidden until unlocked) -->
+  <section id="adminSection" class="section hidden" role="region" aria-label="Admin">
     <div class="admin-section">
       <div class="admin-panel">
-        <h2>🔧 Amministrazione video</h2>
-        <p class="admin-info">Modifica titoli, resetta views, elimina o cambia stato pubblicazione. I cambiamenti sono immediati e persistenti.</p>
+        <h2>🔧 Pannello amministrazione</h2>
+        <p style="color:var(--muted)">Modifica titoli, resetta views, elimina o cambia stato pubblicazione. Tutte le azioni sono persistenti su questo browser (localStorage).</p>
 
         <table class="admin-grid" id="adminGrid">
           <thead>
-            <tr>
-              <th>Anteprima</th>
-              <th>Titolo</th>
-              <th>Views</th>
-              <th>Stato</th>
-              <th>Azioni</th>
-            </tr>
+            <tr><th>Anteprima</th><th>Titolo</th><th>Views</th><th>Stato</th><th>Azioni</th></tr>
           </thead>
-          <tbody id="adminBody">
-            <!-- rows injected by JS -->
-          </tbody>
+          <tbody id="adminBody"></tbody>
         </table>
 
         <div style="margin-top:12px;">
-          <button id="adminBackVideo" class="btn">🎬 Torna ai video</button>
-          <button id="adminBackHome" class="btn">🏠 Torna alla home</button>
+          <button id="adminToVideo" class="btn">🎬 Vai ai video</button>
+          <button id="adminToHome" class="btn">🏠 Torna alla home</button>
         </div>
       </div>
     </div>
@@ -247,169 +174,133 @@
   <!-- Upload Modal -->
   <div id="uploadModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="uploadTitle">
     <div class="modal-panel">
-      <h2 id="uploadTitle" class="modal-title">Upload Video</h2>
-
-      <div class="modal-row">
-        <label for="videoFile">File video</label><br>
-        <input id="videoFile" type="file" accept="video/*">
+      <h3 id="uploadTitle">Upload Video</h3>
+      <div style="margin-top:8px">
+        <label for="videoFile">File</label><br>
+        <input id="videoFile" type="file" accept="video/*" />
       </div>
-
-      <div class="modal-row">
+      <div style="margin-top:8px">
         <label for="videoTitle">Titolo</label><br>
-        <input id="videoTitle" class="input" type="text" placeholder="Titolo del video">
+        <input id="videoTitle" class="input" />
       </div>
-
       <div class="modal-actions">
-        <button id="uploadBtn" class="btn" aria-label="Esegui upload">Carica</button>
-        <button id="closeUpload" class="btn" aria-label="Chiudi upload">Chiudi</button>
+        <button id="uploadBtn" class="btn">Carica</button>
+        <button id="closeUpload" class="btn">Chiudi</button>
       </div>
-
       <div id="uploadStatus" class="status-line" aria-live="polite"></div>
     </div>
   </div>
 
-  <!-- Bottom unlock bar -->
-  <div class="admin-unlock" aria-label="Sblocca amministrazione">
-    <input id="adminUnlockInput" class="input" type="text" placeholder="Digita passphrase per admin..." aria-label="Passphrase admin">
-    <button id="adminUnlockBtn" class="btn">🔓 Sblocca</button>
-    <span class="admin-info">Suggerimento: JIORR0CON$=LE</span>
+  <!-- discreet admin anchor bottom-left (small button + no-hint input) -->
+  <div class="admin-anchor" aria-hidden="false">
+    <button id="adminAnchorBtn" class="admin-btn" title="Admin"></button>
+    <div id="adminInputWrap" class="admin-input-wrap" aria-hidden="true">
+      <input id="adminInput" class="admin-input" type="text" autocomplete="off" spellcheck="false" aria-label="Passphrase admin" />
+      <button id="adminSubmit" class="btn">Apri</button>
+    </div>
   </div>
 
   <script>
-    /* ==========
-       Navigation and UI
-       ========== */
-    (function(){
-      const searchBtn = document.getElementById('searchBtn');
-      const statusEl  = document.getElementById('searchResult');
-      const home      = document.getElementById('homeSection');
-      const video     = document.getElementById('videoSection');
-      const admin     = document.getElementById('adminSection');
-      const backHome  = document.getElementById('backToHome');
-
-      function showStatus(msg, type) {
-        statusEl.textContent = msg || '';
-        statusEl.className = 'status' + (type ? ' ' + type : '');
-      }
-      function showHome() {
-        home.classList.remove('hidden');
-        video.classList.add('hidden');
-        admin.classList.add('hidden');
-        showStatus('', '');
-      }
-      function showVideo() {
-        home.classList.add('hidden');
-        admin.classList.add('hidden');
-        video.classList.remove('hidden');
-        showStatus('✅ Accesso alla sezione video', 'success');
-        setTimeout(() => showStatus('', ''), 1200);
-      }
-      function showAdmin() {
-        home.classList.add('hidden');
-        video.classList.add('hidden');
-        admin.classList.remove('hidden');
-        showStatus('🔧 Admin aperto', 'success');
-        setTimeout(() => showStatus('', ''), 1200);
-      }
-
-      // Click lens to open video
-      searchBtn.addEventListener('click', showVideo);
-      backHome.addEventListener('click', showHome);
-
-      // Keyboard accessibility
-      searchBtn.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          showVideo();
-        }
-      });
-
-      // Admin quick nav
-      const adminBackVideo = document.getElementById('adminBackVideo');
-      const adminBackHome = document.getElementById('adminBackHome');
-      adminBackVideo.addEventListener('click', showVideo);
-      adminBackHome.addEventListener('click', showHome);
-    })();
-
-    /* ==========
-       Storage helpers
-       ========== */
-    const STORAGE_KEY = 'jiorroVideos';
-    function getSaved() {
-      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-      catch { return []; }
+    /* =========================
+       Utility: storage helpers
+       ========================= */
+    const STORAGE_KEY = 'jiorroVideos_v2'; // versioned key for safer testing
+    function getSaved(){
+      try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : []; }
+      catch(e){ console.error('getSaved parse error', e); return []; }
     }
-    function setSaved(arr) {
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr || [])); } catch {}
+    function setSaved(arr){
+      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr || [])); }
+      catch(e){ console.error('setSaved error', e); }
     }
 
-    /* ==========
-       Video logic (upload, listing, search, views)
-       ========== */
-    (function(){
-      const openUpload     = document.getElementById('openUpload');
-      const closeUpload    = document.getElementById('closeUpload');
-      const uploadModal    = document.getElementById('uploadModal');
-      const uploadBtn      = document.getElementById('uploadBtn');
-      const videoFile      = document.getElementById('videoFile');
-      const videoTitle     = document.getElementById('videoTitle');
+    /* =========================
+       Basic navigation & status
+       ========================= */
+    const lensBtn = document.getElementById('lensBtn');
+    const statusEl = document.getElementById('statusEl');
+    const homeSection = document.getElementById('homeSection');
+    const videoSection = document.getElementById('videoSection');
+    const adminSection = document.getElementById('adminSection');
+    const backHome = document.getElementById('backHome');
+
+    function showStatus(msg, type){
+      statusEl.textContent = msg || '';
+      statusEl.className = 'status' + (type ? ' ' + type : '');
+    }
+    function showHome(){ homeSection.classList.remove('hidden'); videoSection.classList.add('hidden'); adminSection.classList.add('hidden'); showStatus(''); }
+    function showVideo(){ homeSection.classList.add('hidden'); adminSection.classList.add('hidden'); videoSection.classList.remove('hidden'); showStatus('✅ Sezione video aperta','success'); setTimeout(()=>showStatus(''),1000); }
+    function showAdmin(){ homeSection.classList.add('hidden'); videoSection.classList.add('hidden'); adminSection.classList.remove('hidden'); showStatus('🔧 Admin sbloccato','success'); setTimeout(()=>showStatus(''),1000); }
+
+    lensBtn.addEventListener('click', showVideo);
+    backHome && backHome.addEventListener('click', showHome);
+
+    /* =========================
+       Video logic: upload, render, search, views
+       ========================= */
+    (function videoModule(){
+      const openUploadBtn = document.getElementById('openUpload');
+      const uploadModal = document.getElementById('uploadModal');
+      const closeUploadBtn = document.getElementById('closeUpload');
+      const uploadBtn = document.getElementById('uploadBtn');
+      const videoFileInput = document.getElementById('videoFile');
+      const videoTitleInput = document.getElementById('videoTitle');
+      const uploadStatus = document.getElementById('uploadStatus');
       const videoContainer = document.getElementById('videoContainer');
-      const searchVideos   = document.getElementById('searchVideos');
-      const uploadStatus   = document.getElementById('uploadStatus');
+      const searchVideos = document.getElementById('searchVideos');
 
-      function openModal() {
+      // Open/close modal helpers
+      function openModal(){
         uploadModal.classList.add('show');
-        document.getElementById('openUpload').setAttribute('aria-expanded', 'true');
+        openUploadBtn.setAttribute('aria-expanded','true');
       }
-      function closeModal() {
+      function closeModal(){
         uploadModal.classList.remove('show');
-        document.getElementById('openUpload').setAttribute('aria-expanded', 'false');
+        openUploadBtn.setAttribute('aria-expanded','false');
         uploadStatus.textContent = '';
         uploadStatus.className = 'status-line';
-        videoFile.value = '';
-        videoTitle.value = '';
+        videoFileInput.value = '';
+        videoTitleInput.value = '';
       }
 
-      function createVideoCard(url, title, views, published = true) {
+      // Card factory (more robust)
+      function createCard(item){
         const card = document.createElement('div');
         card.className = 'card video-card';
-        card.dataset.url = url;
+        card.dataset.url = item.url || '';
 
         const v = document.createElement('video');
-        v.src = url;
+        v.src = item.url || '';
         v.controls = true;
-        v.playsInline = true;
         v.preload = 'metadata';
-        v.setAttribute('controlsList', 'nodownload');
-        v.addEventListener('contextmenu', (e) => e.preventDefault());
+        v.setAttribute('controlsList','nodownload');
+        v.addEventListener('contextmenu', e => e.preventDefault());
+        v.style.background = 'black';
+        v.style.borderRadius = '8px';
 
         const t = document.createElement('div');
         t.className = 'title video-title';
-        t.textContent = title && title.trim() ? title.trim() : 'Video senza titolo';
+        t.textContent = item.title || 'Video senza titolo';
 
         const vw = document.createElement('div');
         vw.className = 'views video-views';
-        vw.textContent = `👁️ ${views || 0} views`;
+        vw.textContent = `👁️ ${item.views || 0} views`;
 
-        // Count view once per session play
+        // Count views once per session for each video element
         let counted = false;
         v.addEventListener('play', () => {
           if (counted) return;
           counted = true;
-          const saved = getSaved();
-          const updated = saved.map(item => {
-            if (item.url === url) {
-              const next = (item.views || 0) + 1;
-              vw.textContent = `👁️ ${next} views`;
-              return { ...item, views: next };
+          const saved = getSaved().map(s => {
+            if (s.url === item.url) {
+              s.views = (s.views || 0) + 1;
             }
-            return item;
+            return s;
           });
-          setSaved(updated);
-          // refresh admin if open
-          if (!document.getElementById('adminSection').classList.contains('hidden')) {
-            renderAdminTable();
-          }
+          setSaved(saved);
+          vw.textContent = `👁️ ${ (saved.find(s => s.url === item.url)?.views) || 0 } views`;
+          // refresh admin table if open
+          if (typeof window.renderAdminTable === 'function') window.renderAdminTable();
         });
 
         card.appendChild(v);
@@ -418,150 +309,175 @@
         return card;
       }
 
-      function renderAll() {
-        videoContainer.setAttribute('aria-busy', 'true');
+      // Render published videos sorted by views desc
+      function renderAll(){
+        videoContainer.setAttribute('aria-busy','true');
         videoContainer.innerHTML = '';
-        const saved = getSaved()
-          .filter(v => v.published !== false) // only published
-          .sort((a, b) => (b.views || 0) - (a.views || 0));
-        saved.forEach(({ url, title, views, published }) => {
-          const card = createVideoCard(url, title, views || 0, published !== false);
-          videoContainer.appendChild(card);
+        const saved = getSaved().filter(v => v.published !== false).sort((a,b) => (b.views||0)-(a.views||0));
+        saved.forEach(item => {
+          const c = createCard(item);
+          videoContainer.appendChild(c);
         });
-        videoContainer.setAttribute('aria-busy', 'false');
+        videoContainer.setAttribute('aria-busy','false');
       }
 
+      // Bind events
       window.addEventListener('DOMContentLoaded', renderAll);
-      openUpload.addEventListener('click', openModal);
-      closeUpload.addEventListener('click', closeModal);
+      openUploadBtn && openUploadBtn.addEventListener('click', openModal);
+      closeUploadBtn && closeUploadBtn.addEventListener('click', closeModal);
 
-      uploadBtn.addEventListener('click', async () => {
-        const file = videoFile.files && videoFile.files[0];
-        const title = (videoTitle.value || '').trim();
+      // Upload handler (Cloudinary)
+      uploadBtn && uploadBtn.addEventListener('click', async () => {
+        const file = videoFileInput.files && videoFileInput.files[0];
+        const title = (videoTitleInput.value || '').trim();
 
-        if (!file) {
-          uploadStatus.textContent = '❌ Seleziona un file video.';
-          uploadStatus.className = 'status-line error';
-          return;
-        }
-        if (!file.type || !file.type.startsWith('video/')) {
-          uploadStatus.textContent = '❌ Il file non è un video valido.';
-          uploadStatus.className = 'status-line error';
-          return;
-        }
+        // Validation
+        if (!file) { uploadStatus.textContent = '❌ Seleziona un file video.'; uploadStatus.className='status-line error'; return; }
+        if (!file.type || !file.type.startsWith('video/')) { uploadStatus.textContent = '❌ Il file non è un video valido.'; uploadStatus.className='status-line error'; return; }
 
         uploadStatus.textContent = '⏳ Caricamento in corso...';
         uploadStatus.className = 'status-line';
 
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', 'jiorro_upload');
+        const form = new FormData();
+        form.append('file', file);
+        form.append('upload_preset', 'jiorro_upload'); // assicurati sia corretto
 
         try {
-          const res = await fetch('https://api.cloudinary.com/v1_1/dng8rjd6u/auto/upload', {
-            method: 'POST',
-            body: formData
-          });
+          const res = await fetch('https://api.cloudinary.com/v1_1/dng8rjd6u/auto/upload', { method: 'POST', body: form });
           const data = await res.json();
 
           if (!res.ok || data.error) {
-            const msg = data?.error?.message || 'Errore Cloudinary';
-            uploadStatus.textContent = '❌ ' + msg;
+            const err = data?.error?.message || 'Errore Cloudinary';
+            uploadStatus.textContent = '❌ ' + err;
             uploadStatus.className = 'status-line error';
             return;
           }
 
           const videoUrl = data.secure_url;
           if (!videoUrl) {
-            uploadStatus.textContent = '❌ Errore: URL non ricevuto.';
+            uploadStatus.textContent = '❌ URL non ricevuto.';
             uploadStatus.className = 'status-line error';
             return;
           }
 
-          // Persist new video (published by default)
+          // Persist and render
           const saved = getSaved();
           saved.unshift({ url: videoUrl, title, views: 0, published: true });
           setSaved(saved);
-
-          // Render in main list and admin
           renderAll();
-          renderAdminTable();
+          if (typeof window.renderAdminTable === 'function') window.renderAdminTable();
 
           uploadStatus.textContent = '✅ Video caricato!';
           uploadStatus.className = 'status-line success';
-          videoFile.value = ''; videoTitle.value = '';
-        } catch (err) {
+          videoFileInput.value = ''; videoTitleInput.value = '';
+        } catch (e) {
+          console.error('upload error', e);
           uploadStatus.textContent = '❌ Errore durante l\'upload.';
           uploadStatus.className = 'status-line error';
         }
       });
 
-      searchVideos.addEventListener('input', () => {
+      // Internal search in grid
+      searchVideos && searchVideos.addEventListener('input', () => {
         const term = (searchVideos.value || '').toLowerCase();
-        const cards = videoContainer.querySelectorAll('.video-card');
-        cards.forEach(card => {
-          const src = card.querySelector('video')?.src?.toLowerCase() || '';
-          const title = card.querySelector('.video-title')?.textContent?.toLowerCase() || '';
+        document.querySelectorAll('.video-card').forEach(card => {
+          const src = (card.querySelector('video')?.src || '').toLowerCase();
+          const title = (card.querySelector('.video-title')?.textContent || '').toLowerCase();
           const match = !term || src.includes(term) || title.includes(term);
           card.style.display = match ? 'flex' : 'none';
         });
       });
 
-      // Expose admin render for other scope
+      // Expose for admin to call
       window.renderAllVideosPublic = renderAll;
     })();
 
-    /* ==========
-       Admin unlock & controls
-       ========== */
-    (function(){
+    /* =========================
+       Discreet admin anchor (bottom-left)
+       - small round button
+       - toggles single-line input without hints
+       - exact passphrase unlocks admin
+       ========================= */
+    (function adminAnchor(){
+      const ANCHOR_BTN = document.getElementById('adminAnchorBtn');
+      const INPUT_WRAP = document.getElementById('adminInputWrap');
+      const ADMIN_INPUT = document.getElementById('adminInput');
+      const ADMIN_SUBMIT = document.getElementById('adminSubmit');
       const PASS = 'JIORR0CON$=LE';
 
-      const adminUnlockInput = document.getElementById('adminUnlockInput');
-      const adminUnlockBtn   = document.getElementById('adminUnlockBtn');
+      // toggle the tiny input (no placeholder)
+      ANCHOR_BTN.addEventListener('click', () => {
+        const open = INPUT_WRAP.style.display === 'flex' || INPUT_WRAP.classList.contains('admin-open');
+        if (open) {
+          INPUT_WRAP.style.display = 'none';
+          INPUT_WRAP.classList.remove('admin-open');
+          ADMIN_INPUT.value = '';
+          INPUT_WRAP.setAttribute('aria-hidden', 'true');
+        } else {
+          INPUT_WRAP.style.display = 'flex';
+          INPUT_WRAP.classList.add('admin-open');
+          INPUT_WRAP.setAttribute('aria-hidden', 'false');
+          ADMIN_INPUT.focus();
+          ADMIN_INPUT.select();
+        }
+      });
 
-      const home   = document.getElementById('homeSection');
-      const video  = document.getElementById('videoSection');
-      const admin  = document.getElementById('adminSection');
-      const adminBody = document.getElementById('adminBody');
-
-      function showAdmin() {
-        home.classList.add('hidden');
-        video.classList.add('hidden');
-        admin.classList.remove('hidden');
-        document.getElementById('searchResult').textContent = '';
+      // Try unlock
+      function tryUnlock(){
+        const v = (ADMIN_INPUT.value || '').trim();
+        if (v === PASS) {
+          // hide small input and open admin section
+          INPUT_WRAP.style.display = 'none'; INPUT_WRAP.classList.remove('admin-open'); INPUT_WRAP.setAttribute('aria-hidden','true');
+          ADMIN_INPUT.value = '';
+          // open admin and render table
+          if (typeof window.renderAdminTable === 'function') window.renderAdminTable();
+          document.getElementById('adminSection').classList.remove('hidden');
+          document.getElementById('homeSection').classList.add('hidden');
+          document.getElementById('videoSection').classList.add('hidden');
+          showStatus('🔧 Admin sbloccato', 'success');
+          setTimeout(()=>showStatus(''), 1200);
+        } else {
+          // subtle feedback: shake input and clear
+          ADMIN_INPUT.style.transition = 'transform .12s';
+          ADMIN_INPUT.style.transform = 'translateX(-6px)';
+          setTimeout(()=>ADMIN_INPUT.style.transform = 'translateX(6px)', 120);
+          setTimeout(()=>ADMIN_INPUT.style.transform = '', 240);
+          ADMIN_INPUT.value = '';
+          ADMIN_INPUT.focus();
+        }
       }
 
-      adminUnlockBtn.addEventListener('click', () => {
-        const val = (adminUnlockInput.value || '').trim();
-        if (val === PASS) {
-          adminUnlockInput.value = '';
-          showAdmin();
-          renderAdminTable();
-        } else {
-          adminUnlockInput.classList.add('danger');
-          setTimeout(() => adminUnlockInput.classList.remove('danger'), 700);
+      ADMIN_SUBMIT.addEventListener('click', tryUnlock);
+      ADMIN_INPUT.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryUnlock(); });
+
+      // close admin with Escape
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          document.getElementById('adminSection').classList.add('hidden');
+          document.getElementById('homeSection').classList.remove('hidden');
+          document.getElementById('videoSection').classList.add('hidden');
+          showStatus('', '');
         }
       });
+    })();
 
-      // Enter key unlock
-      adminUnlockInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          adminUnlockBtn.click();
-        }
-      });
+    /* =========================
+       Admin panel: list, edit, reset, toggle publish, delete
+       ========================= */
+    (function adminPanel(){
+      const adminBody = document.getElementById('adminBody');
+      const adminToVideo = document.getElementById('adminToVideo');
+      const adminToHome = document.getElementById('adminToHome');
 
-      // Render admin table rows
-      window.renderAdminTable = function renderAdminTable() {
+      function renderAdminTable(){
         const saved = getSaved();
         adminBody.innerHTML = '';
-
         if (!saved.length) {
           const tr = document.createElement('tr');
           const td = document.createElement('td');
           td.colSpan = 5;
           td.textContent = 'Nessun video salvato.';
-          td.className = 'admin-info';
+          td.style.color = 'var(--muted)';
           tr.appendChild(td);
           adminBody.appendChild(tr);
           return;
@@ -570,111 +486,101 @@
         saved.forEach((item, idx) => {
           const tr = document.createElement('tr');
 
-          // Preview
+          // preview
           const tdPrev = document.createElement('td');
-          const prev = document.createElement('video');
-          prev.src = item.url;
-          prev.preload = 'metadata';
-          prev.controls = true;
-          prev.style.maxWidth = '140px';
-          prev.style.borderRadius = '8px';
-          prev.setAttribute('controlsList', 'nodownload');
-          prev.addEventListener('contextmenu', e => e.preventDefault());
-          tdPrev.appendChild(prev);
+          const prevV = document.createElement('video');
+          prevV.src = item.url;
+          prevV.preload = 'metadata';
+          prevV.controls = true;
+          prevV.style.maxWidth = '160px';
+          prevV.style.borderRadius = '8px';
+          prevV.setAttribute('controlsList','nodownload');
+          prevV.addEventListener('contextmenu', e => e.preventDefault());
+          tdPrev.appendChild(prevV);
 
-          // Title editable
+          // title editable
           const tdTitle = document.createElement('td');
           const titleInput = document.createElement('input');
-          titleInput.type = 'text';
           titleInput.className = 'input';
           titleInput.value = item.title || '';
-          titleInput.placeholder = 'Titolo...';
           tdTitle.appendChild(titleInput);
 
-          // Views
+          // views
           const tdViews = document.createElement('td');
-          const viewsPill = document.createElement('span');
-          viewsPill.className = 'pill';
-          viewsPill.textContent = (item.views || 0) + ' views';
-          tdViews.appendChild(viewsPill);
+          const pillV = document.createElement('span');
+          pillV.className = 'pill';
+          pillV.textContent = (item.views || 0) + ' views';
+          tdViews.appendChild(pillV);
 
-          // Status (published/unpublished)
+          // status
           const tdStatus = document.createElement('td');
-          const statusPill = document.createElement('span');
-          statusPill.className = 'pill ' + (item.published === false ? '' : 'pub');
-          statusPill.textContent = item.published === false ? 'Non pubblicato' : 'Pubblicato';
-          tdStatus.appendChild(statusPill);
+          const pillS = document.createElement('span');
+          pillS.className = 'pill ' + (item.published === false ? '' : 'pub');
+          pillS.textContent = item.published === false ? 'Non pubblicato' : 'Pubblicato';
+          tdStatus.appendChild(pillS);
 
-          // Actions
+          // actions
           const tdActions = document.createElement('td');
           const actions = document.createElement('div');
           actions.className = 'actions';
 
-          const btnSaveTitle = document.createElement('button');
-          btnSaveTitle.className = 'btn';
-          btnSaveTitle.textContent = '💾 Salva titolo';
+          const btnSave = document.createElement('button'); btnSave.className='btn'; btnSave.textContent='💾 Salva';
+          const btnReset = document.createElement('button'); btnReset.className='btn'; btnReset.textContent='🔄 Reset';
+          const btnToggle = document.createElement('button'); btnToggle.className='btn'; btnToggle.textContent = item.published === false ? '📢 Pubblica' : '🙈 Nascondi';
+          const btnDel = document.createElement('button'); btnDel.className='btn danger'; btnDel.textContent='🗑️ Elimina';
 
-          const btnResetViews = document.createElement('button');
-          btnResetViews.className = 'btn warn';
-          btnResetViews.textContent = '🔄 Reset views';
-
-          const btnTogglePub = document.createElement('button');
-          btnTogglePub.className = 'btn';
-          btnTogglePub.textContent = item.published === false ? '📢 Pubblica' : '🙈 Nascondi';
-
-          const btnDelete = document.createElement('button');
-          btnDelete.className = 'btn danger';
-          btnDelete.textContent = '🗑️ Elimina';
-
-          actions.appendChild(btnSaveTitle);
-          actions.appendChild(btnResetViews);
-          actions.appendChild(btnTogglePub);
-          actions.appendChild(btnDelete);
+          actions.append(btnSave, btnReset, btnToggle, btnDel);
           tdActions.appendChild(actions);
 
-          // Row assemble
-          tr.appendChild(tdPrev);
-          tr.appendChild(tdTitle);
-          tr.appendChild(tdViews);
-          tr.appendChild(tdStatus);
-          tr.appendChild(tdActions);
+          tr.append(tdPrev, tdTitle, tdViews, tdStatus, tdActions);
           adminBody.appendChild(tr);
 
           // Handlers
-          btnSaveTitle.addEventListener('click', () => {
-            const saved = getSaved();
-            saved[idx].title = titleInput.value.trim();
-            setSaved(saved);
+          btnSave.addEventListener('click', () => {
+            const s = getSaved();
+            s[idx].title = titleInput.value.trim();
+            setSaved(s);
             renderAdminTable();
-            if (window.renderAllVideosPublic) window.renderAllVideosPublic();
+            if (typeof window.renderAllVideosPublic === 'function') window.renderAllVideosPublic();
           });
 
-          btnResetViews.addEventListener('click', () => {
-            const saved = getSaved();
-            saved[idx].views = 0;
-            setSaved(saved);
+          btnReset.addEventListener('click', () => {
+            const s = getSaved();
+            s[idx].views = 0;
+            setSaved(s);
             renderAdminTable();
-            if (window.renderAllVideosPublic) window.renderAllVideosPublic();
+            if (typeof window.renderAllVideosPublic === 'function') window.renderAllVideosPublic();
           });
 
-          btnTogglePub.addEventListener('click', () => {
-            const saved = getSaved();
-            const current = saved[idx].published === false ? false : true;
-            saved[idx].published = !current; // toggle
-            setSaved(saved);
+          btnToggle.addEventListener('click', () => {
+            const s = getSaved();
+            s[idx].published = !(s[idx].published === false);
+            setSaved(s);
             renderAdminTable();
-            if (window.renderAllVideosPublic) window.renderAllVideosPublic();
+            if (typeof window.renderAllVideosPublic === 'function') window.renderAllVideosPublic();
           });
 
-          btnDelete.addEventListener('click', () => {
-            const saved = getSaved();
-            const next = saved.filter((_, i) => i !== idx);
-            setSaved(next);
+          btnDel.addEventListener('click', () => {
+            const s = getSaved();
+            s.splice(idx, 1);
+            setSaved(s);
             renderAdminTable();
-            if (window.renderAllVideosPublic) window.renderAllVideosPublic();
+            if (typeof window.renderAllVideosPublic === 'function') window.renderAllVideosPublic();
           });
         });
-      };
+      }
+
+      window.renderAdminTable = renderAdminTable;
+
+      adminToVideo && adminToVideo.addEventListener('click', () => {
+        document.getElementById('videoSection').classList.remove('hidden');
+        document.getElementById('adminSection').classList.add('hidden');
+        renderAllVideosPublic && renderAllVideosPublic();
+      });
+      adminToHome && adminToHome.addEventListener('click', () => {
+        document.getElementById('homeSection').classList.remove('hidden');
+        document.getElementById('adminSection').classList.add('hidden');
+      });
     })();
   </script>
 </body>
