@@ -3,224 +3,573 @@
 <head>
   <meta charset="UTF-8">
   <title>Canaan & Jiorro Video</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
   <style>
-    body {
+    :root {
+      --bg: #0f0f10;
+      --panel: #18181b;
+      --border: #2a2a31;
+      --text: #ffffff;
+      --muted: #b7b7c3;
+      --accent: #6ff66f;
+      --danger: #ff6666;
+      --brand: #66aaff;
+      --shadow: rgba(0,0,0,0.35);
+    }
+
+    html, body {
+      height: 100%;
       margin: 0;
-      font-family: sans-serif;
-      background: #111;
-      color: #ffff00;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
     }
-    .container {
+
+    /* Top bar with lens */
+    .topbar {
+      position: fixed;
+      top: 0;
+      right: 0;
+      left: 0;
+      height: 60px;
+      background: linear-gradient(to bottom, rgba(24,24,27,0.9), rgba(24,24,27,0.6));
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid var(--border);
       display: flex;
-      flex-direction: row;
-      height: 100vh;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 20px;
+      z-index: 1000;
     }
-    .text-section {
-      flex: 1;
-      padding: 40px;
-      overflow-y: auto;
+
+    .lens-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      font-size: 22px;
+      cursor: pointer;
+      transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
     }
-    .image-section {
-      flex: 1;
-      background: #222;
+    .lens-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--brand);
+      box-shadow: 0 6px 16px var(--shadow);
+      color: var(--accent);
+    }
+    .lens-btn:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+    .lens-btn:focus-visible {
+      outline: 2px solid var(--brand);
+      outline-offset: 2px;
+    }
+
+    /* Status text under topbar (for feedback) */
+    .status {
+      position: fixed;
+      top: 64px;
+      right: 20px;
+      min-height: 24px;
+      font-size: 14px;
+      color: var(--muted);
+      z-index: 900;
+      text-align: right;
+    }
+    .status.success { color: var(--accent); }
+    .status.error { color: var(--danger); }
+
+    /* Sections container */
+    .section {
+      position: relative;
+      padding-top: 80px; /* space for topbar */
+      min-height: 100vh;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 240ms ease, visibility 240ms ease;
+    }
+    .section.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    /* Home layout */
+    .home-container {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+      padding: 32px;
+    }
+
+    .home-text {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 30px var(--shadow);
+      line-height: 1.6;
+    }
+
+    .home-text h1 {
+      margin-top: 0;
+      font-size: 28px;
+      letter-spacing: 0.3px;
+    }
+
+    .home-figure {
       display: flex;
       align-items: center;
       justify-content: center;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px var(--shadow);
+      padding: 16px;
     }
-    .image-section img {
-      max-width: 90%;
-      max-height: 90%;
-      border: 2px solid #444;
+    .home-figure img {
+      max-width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--border);
     }
-    .search-bar {
-      position: absolute;
-      top: 20px;
-      right: 30px;
+
+    /* Video section layout */
+    .video-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      padding: 32px;
     }
-    .search-icon {
-      background: none;
-      border: none;
+
+    .video-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 10px 30px var(--shadow);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel);
+      color: var(--text);
+      padding: 10px 14px;
       cursor: pointer;
-      font-size: 28px;
-      color: #fff;
+      transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
     }
-    .search-icon:hover {
-      color: #6f6;
+    .btn:hover {
+      border-color: var(--brand);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px var(--shadow);
     }
-    #videoSection {
-      display: none;
-      padding: 20px;
+    .btn:focus-visible {
+      outline: 2px solid var(--brand);
+      outline-offset: 2px;
     }
-    .video-card {
-      background: #222;
-      border: 1px solid #333;
-      padding: 10px;
-      margin-bottom: 20px;
+
+    .input {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel);
+      color: var(--text);
+      padding: 10px 12px;
+      min-width: 220px;
+    }
+    .input::placeholder { color: #999; }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
       display: flex;
       flex-direction: column;
+      gap: 8px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--panel);
+      padding: 12px;
+      box-shadow: 0 10px 30px var(--shadow);
     }
-    .video-title {
-      margin-top: 8px;
-      font-weight: bold;
+
+    .card video {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: black;
     }
-    .video-views {
-      margin-top: 4px;
-      font-size: 14px;
-      color: #aaa;
-    }
-    #uploadModal.hidden {
+
+    .card .title { font-weight: 600; }
+    .card .views { color: var(--muted); font-size: 14px; }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      inset: 0;
       display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.5);
+      z-index: 1200;
+    }
+    .modal.show { display: flex; }
+    .modal-panel {
+      width: 92%;
+      max-width: 520px;
+      border-radius: 16px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 30px var(--shadow);
+      padding: 20px;
+    }
+    .modal-title {
+      margin: 0 0 12px 0;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .modal-row { margin-bottom: 12px; }
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 8px;
+    }
+    .status-line {
+      min-height: 20px;
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    .status-line.success { color: var(--accent); }
+    .status-line.error { color: var(--danger); }
+
+    /* Utility hidden */
+    .hidden { display: none !important; }
+
+    /* Responsive tweaks */
+    @media (max-width: 980px) {
+      .home-container {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
 
-  <!-- 🔍 Lente -->
-  <div class="search-bar">
-    <button class="search-icon" id="searchBtn">🔍</button>
-  </div>
+  <!-- Top right lens -->
+  <header class="topbar" role="banner" aria-label="Barra superiore">
+    <button id="searchBtn" class="lens-btn" aria-label="Apri sezione video">🔍</button>
+  </header>
+  <div id="searchResult" class="status" aria-live="polite"></div>
 
-  <!-- 🧭 Home Section -->
-  <div id="homeSection">
-    <div class="container">
-      <div class="text-section">
+  <!-- Home Section -->
+  <main id="homeSection" class="section" role="main" aria-label="Home Terra di Canaan">
+    <div class="home-container">
+      <article class="home-text">
         <h1>La regione di Canaan</h1>
         <p>La regione di Canaan (o Cananea) si trovava nel Levante e corrisponde approssimativamente ai territori degli attuali Libano, Israele, Palestina e parti della Siria e della Giordania. In questa area geografica si svilupparono sia la civiltà dei Fenici che quella degli Ebrei.</p>
-        <p>Fenici: Si insediarono principalmente lungo la costa orientale del Mar Mediterraneo, in quella che corrisponde all'odierno Libano. Le loro città-stato più importanti erano Biblo, Sidone e Tiro, da cui partirono per fondare numerose colonie nel Mediterraneo, inclusa Cartagine.</p>
-        <p>Ebrei: Si stabilirono nell'entroterra della regione di Canaan, occupando l'area che divenne in seguito la Terra d'Israele o Palestina, una regione percorsa da nord a sud dal fiume Giordano.</p>
+        <p><strong>Fenici:</strong> Si insediarono principalmente lungo la costa orientale del Mar Mediterraneo, in quella che corrisponde all'odierno Libano. Le loro città-stato più importanti erano Biblo, Sidone e Tiro, da cui partirono per fondare numerose colonie nel Mediterraneo, inclusa Cartagine.</p>
+        <p><strong>Ebrei:</strong> Si stabilirono nell'entroterra della regione di Canaan, occupando l'area che divenne in seguito la Terra d'Israele o Palestina, una regione percorsa da nord a sud dal fiume Giordano.</p>
         <p>Le mappe storiche mostrano i Fenici stanziati in una stretta striscia costiera a nord, mentre il territorio degli Ebrei si estendeva più a sud e nell'entroterra, fino al Mar Morto. Entrambi i popoli interagirono in questa regione, talvolta in conflitto con le popolazioni cananee originarie e con i Filistei.</p>
-      </div>
-      <div class="image-section">
-        <img src="canaan-map.jpg" alt="Cartina della regione di Canaan">
-      </div>
+        <p>Per visualizzare queste posizioni, puoi consultare mappe storiche del Levante che illustrano gli insediamenti antichi e i regni dell'epoca.</p>
+      </article>
+      <figure class="home-figure" aria-label="Illustrazione della regione di Canaan">
+        <img src="canaan-map.jpg" alt="Cartina storica della regione di Canaan">
+      </figure>
     </div>
-  </div>
+  </main>
 
-  <!-- 🎥 Video Section -->
-  <div id="videoSection">
-    <h2>🎥 Jiorro Video</h2>
-    <button id="openUpload">Carica Video</button>
-    <input type="text" id="searchVideos" placeholder="Cerca video..." style="margin-left:20px;">
-    <div id="videoContainer"></div>
+  <!-- Video Section -->
+  <section id="videoSection" class="section hidden" role="region" aria-label="Sezione video Jiorro">
+    <div class="video-container">
 
-    <div id="uploadModal" class="hidden">
-      <h3>Upload Video</h3>
-      <input type="file" id="videoFile"><br><br>
-      <input type="text" id="videoTitle" placeholder="Titolo del video"><br><br>
-      <button id="uploadBtn">Upload</button>
-      <button id="closeUpload">Chiudi</button>
-      <div id="uploadStatus"></div>
+      <!-- Toolbar -->
+      <div class="video-toolbar" role="toolbar" aria-label="Strumenti video">
+        <button id="openUpload" class="btn" aria-controls="uploadModal" aria-expanded="false">⬆️ Carica video</button>
+        <input id="searchVideos" class="input" type="text" placeholder="Cerca video per titolo o URL" aria-label="Cerca video">
+        <button id="backToHome" class="btn" aria-label="Torna alla home">🏠 Home</button>
+      </div>
+
+      <!-- Cards container -->
+      <div id="videoContainer" class="cards" aria-live="polite" aria-busy="false"></div>
+    </div>
+  </section>
+
+  <!-- Upload Modal -->
+  <div id="uploadModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="uploadTitle">
+    <div class="modal-panel">
+      <h2 id="uploadTitle" class="modal-title">Upload Video</h2>
+
+      <div class="modal-row">
+        <label for="videoFile">File video</label><br>
+        <input id="videoFile" type="file" accept="video/*">
+      </div>
+
+      <div class="modal-row">
+        <label for="videoTitle">Titolo</label><br>
+        <input id="videoTitle" class="input" type="text" placeholder="Titolo del video">
+      </div>
+
+      <div class="modal-actions">
+        <button id="uploadBtn" class="btn" aria-label="Esegui upload">Carica</button>
+        <button id="closeUpload" class="btn" aria-label="Chiudi upload">Chiudi</button>
+      </div>
+
+      <div id="uploadStatus" class="status-line" aria-live="polite"></div>
     </div>
   </div>
 
   <script>
-    const searchBtn = document.getElementById('searchBtn');
-    const home = document.getElementById('homeSection');
-    const video = document.getElementById('videoSection');
+    /* ==========
+       Navigation and UI
+       ========== */
+    (function(){
+      const searchBtn = document.getElementById('searchBtn');
+      const statusEl  = document.getElementById('searchResult');
+      const home      = document.getElementById('homeSection');
+      const video     = document.getElementById('videoSection');
+      const backHome  = document.getElementById('backToHome');
 
-    // 🔍 Basta cliccare la lente per aprire la sezione video
-    searchBtn.addEventListener('click', () => {
-      home.style.display = 'none';
-      video.style.display = 'block';
-    });
+      function showStatus(msg, type) {
+        statusEl.textContent = msg || '';
+        statusEl.className = 'status' + (type ? ' ' + type : '');
+      }
+      function showHome() {
+        home.classList.remove('hidden');
+        video.classList.add('hidden');
+        showStatus('', '');
+      }
+      function showVideo() {
+        home.classList.add('hidden');
+        video.classList.remove('hidden');
+        showStatus('✅ Accesso alla sezione video', 'success');
+        setTimeout(() => showStatus('', ''), 1200);
+      }
 
-    // 🎥 Upload e gestione video
-    const openUpload = document.getElementById('openUpload');
-    const closeUpload = document.getElementById('closeUpload');
-    const uploadModal = document.getElementById('uploadModal');
-    const uploadBtn = document.getElementById('uploadBtn');
-    const videoFile = document.getElementById('videoFile');
-    const videoTitle = document.getElementById('videoTitle');
-    const videoContainer = document.getElementById('videoContainer');
-    const searchVideos = document.getElementById('searchVideos');
-    const uploadStatus = document.getElementById('uploadStatus');
+      // Click lens to open video section
+      searchBtn.addEventListener('click', () => {
+        showVideo();
+      });
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const savedVideos = JSON.parse(localStorage.getItem('jiorroVideos') || '[]');
-      savedVideos
-        .sort((a, b) => (b.views || 0) - (a.views || 0))
-        .forEach(({ url, title, views }) => {
+      // Keyboard accessibility: Enter or Space on lens
+      searchBtn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          showVideo();
+        }
+      });
+
+      // Back to home
+      backHome.addEventListener('click', showHome);
+    })();
+
+    /* ==========
+       Video logic (upload, listing, search, views)
+       ========== */
+    (function(){
+      const openUpload     = document.getElementById('openUpload');
+      const closeUpload    = document.getElementById('closeUpload');
+      const uploadModal    = document.getElementById('uploadModal');
+      const uploadBtn      = document.getElementById('uploadBtn');
+      const videoFile      = document.getElementById('videoFile');
+      const videoTitle     = document.getElementById('videoTitle');
+      const videoContainer = document.getElementById('videoContainer');
+      const searchVideos   = document.getElementById('searchVideos');
+      const uploadStatus   = document.getElementById('uploadStatus');
+
+      // Storage helpers
+      const STORAGE_KEY = 'jiorroVideos';
+      function getSaved() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+        catch { return []; }
+      }
+      function setSaved(arr) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr || [])); } catch {}
+      }
+
+      // Modal helpers
+      function openModal() {
+        uploadModal.classList.add('show');
+        document.getElementById('openUpload').setAttribute('aria-expanded', 'true');
+      }
+      function closeModal() {
+        uploadModal.classList.remove('show');
+        document.getElementById('openUpload').setAttribute('aria-expanded', 'false');
+        uploadStatus.textContent = '';
+        uploadStatus.className = 'status-line';
+        videoFile.value = '';
+        videoTitle.value = '';
+      }
+
+      // Card factory
+      function createVideoCard(url, title, views) {
+        const card = document.createElement('div');
+        card.className = 'card video-card';
+
+        const v = document.createElement('video');
+        v.src = url;
+        v.controls = true;
+        v.playsInline = true;
+        v.preload = 'metadata';
+        v.setAttribute('controlsList', 'nodownload');
+        v.addEventListener('contextmenu', (e) => e.preventDefault());
+        v.style.background = 'black';
+
+        const t = document.createElement('div');
+        t.className = 'title video-title';
+        t.textContent = title && title.trim() ? title.trim() : 'Video senza titolo';
+
+        const vw = document.createElement('div');
+        vw.className = 'views video-views';
+        vw.textContent = `👁️ ${views || 0} views`;
+
+        // Count views on play (debounced per session)
+        let counted = false;
+        v.addEventListener('play', () => {
+          if (counted) return;
+          counted = true;
+
+          const saved = getSaved();
+          const updated = saved.map(item => {
+            if (item.url === url) {
+              const nextViews = (item.views || 0) + 1;
+              vw.textContent = `👁️ ${nextViews} views`;
+              return { ...item, views: nextViews };
+            }
+            return item;
+          });
+          setSaved(updated);
+        });
+
+        card.appendChild(v);
+        card.appendChild(t);
+        card.appendChild(vw);
+        return card;
+      }
+
+      // Render all saved videos (sorted by views desc)
+      function renderAll() {
+        videoContainer.setAttribute('aria-busy', 'true');
+        videoContainer.innerHTML = '';
+        const saved = getSaved().sort((a, b) => (b.views || 0) - (a.views || 0));
+        saved.forEach(({ url, title, views }) => {
           const card = createVideoCard(url, title, views || 0);
           videoContainer.appendChild(card);
         });
-    });
-
-    openUpload.addEventListener('click', () => {
-      uploadModal.classList.remove('hidden');
-      uploadStatus.textContent = '';
-    });
-
-    closeUpload.addEventListener('click', () => {
-      uploadModal.classList.add('hidden');
-      uploadStatus.textContent = '';
-    });
-
-    uploadBtn.addEventListener('click', async () => {
-      const file = videoFile.files[0];
-      const title = videoTitle.value.trim();
-
-      if (!file) {
-        uploadStatus.textContent = '❌ Seleziona un file video.';
-        return;
+        videoContainer.setAttribute('aria-busy', 'false');
       }
 
-      if (!file.type.startsWith('video/')) {
-        uploadStatus.textContent = '❌ Il file non è un video valido.';
-        return;
-      }
+      // Initial render after DOM ready
+      window.addEventListener('DOMContentLoaded', renderAll);
 
-      uploadStatus.textContent = '⏳ Caricamento in corso...';
+      // Open/close modal
+      openUpload.addEventListener('click', openModal);
+      closeUpload.addEventListener('click', closeModal);
 
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', 'jiorro_upload');
+      // Upload action
+      uploadBtn.addEventListener('click', async () => {
+        const file = videoFile.files && videoFile.files[0];
+        const title = (videoTitle.value || '').trim();
 
-      try {
-        const res = await fetch('https://api.cloudinary.com/v1_1/dng8rjd6u/auto/upload', {
-          method: 'POST',
-          body: formData
-        });
-
-        const data = await res.json();
-
-        if (data.error) {
-          uploadStatus.textContent = '❌ Errore Cloudinary: ' + data.error.message;
+        // Validation
+        if (!file) {
+          uploadStatus.textContent = '❌ Seleziona un file video.';
+          uploadStatus.className = 'status-line error';
+          return;
+        }
+        if (!file.type || !file.type.startsWith('video/')) {
+          uploadStatus.textContent = '❌ Il file non è un video valido.';
+          uploadStatus.className = 'status-line error';
           return;
         }
 
-        const videoUrl = data.secure_url;
-        if (!videoUrl) {
-          uploadStatus.textContent = '❌ Errore: URL non ricevuto.';
-          return;
+        uploadStatus.textContent = '⏳ Caricamento in corso...';
+        uploadStatus.className = 'status-line';
+
+        // Cloudinary config — ensure your preset is valid
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', 'jiorro_upload'); // CHANGE if needed
+
+        try {
+          const res = await fetch('https://api.cloudinary.com/v1_1/dng8rjd6u/auto/upload', {
+            method: 'POST',
+            body: formData
+          });
+
+          const data = await res.json();
+
+          if (!res.ok || data.error) {
+            const msg = data?.error?.message || 'Errore Cloudinary';
+            uploadStatus.textContent = '❌ ' + msg;
+            uploadStatus.className = 'status-line error';
+            return;
+          }
+
+          const videoUrl = data.secure_url;
+          if (!videoUrl) {
+            uploadStatus.textContent = '❌ Errore: URL non ricevuto.';
+            uploadStatus.className = 'status-line error';
+            return;
+          }
+
+          // Persist new video
+          const saved = getSaved();
+          saved.unshift({ url: videoUrl, title, views: 0 });
+          setSaved(saved);
+
+          // Render new card at top
+          const card = createVideoCard(videoUrl, title, 0);
+          videoContainer.prepend(card);
+
+          uploadStatus.textContent = '✅ Video caricato!';
+          uploadStatus.className = 'status-line success';
+
+          // Clear inputs
+          videoFile.value = '';
+          videoTitle.value = '';
+        } catch (err) {
+          uploadStatus.textContent = '❌ Errore durante l\'upload.';
+          uploadStatus.className = 'status-line error';
         }
-
-        const card = createVideoCard(videoUrl, title, 0);
-        videoContainer.prepend(card);
-
-        const savedVideos = JSON.parse(localStorage.getItem('jiorroVideos') || '[]');
-        savedVideos.unshift({ url: videoUrl, title, views: 0 });
-        localStorage.setItem('jiorroVideos', JSON.stringify(savedVideos));
-
-        uploadStatus.style.color = 'green';
-        uploadStatus.textContent = '✅ Video caricato!';
-        videoFile.value = '';
-        videoTitle.value = '';
-      } catch (err) {
-        uploadStatus.textContent = '❌ Errore durante l\'upload.';
-      }
-    });
-
-    searchVideos.addEventListener('input', () => {
-      const term = searchVideos.value.toLowerCase();
-      const cards = videoContainer.querySelectorAll('.video-card');
-      cards.forEach(card => {
-        const src = card.querySelector('video')?.src.toLowerCase() || '';
-        const title = card.querySelector('.video-title')?.textContent.toLowerCase() || '';
-        const match = src.includes(term) || title.includes(term);
-        card.style.display = match ? 'flex' : 'none';
       });
-    });
 
-    function createVideoCard(url, title, views = 0) {
-      const card = document.createElement('div');
-      card.className
+      // Search in saved videos (by title or URL)
+      searchVideos.addEventListener('input', () => {
+        const term = (searchVideos.value || '').toLowerCase();
+        const cards = videoContainer.querySelectorAll('.video-card');
+        cards.forEach(card => {
+          const src = card.querySelector('video')?.src?.toLowerCase() || '';
+          const title = card.querySelector('.video-title')?.textContent?.toLowerCase() || '';
+          const match = !term || src.includes(term) || title.includes(term);
+          card.style.display = match ? 'flex' : 'none';
+        });
+      });
+
+      // Close modal on ESC
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && uploadModal.classList.contains('show')) {
+          closeModal();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
