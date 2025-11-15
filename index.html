@@ -3,166 +3,151 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Canaan & Jiorro Video — Admin discreto (esteso)</title>
+  <title>Canaan & Jiorro Video — Extended</title>
   <style>
-    /* -------------------------
-       Palette, reset e layout
-       ------------------------- */
+    /* -----------------------------------------
+       Theme / Reset
+       ----------------------------------------- */
     :root{
       --bg:#0f0f10; --panel:#18181b; --border:#2a2a31; --text:#fff;
       --muted:#b7b7c3; --accent:#6ff66f; --brand:#66aaff; --danger:#ff6666;
-      --shadow:rgba(0,0,0,0.35); --glass: rgba(255,255,255,0.02);
+      --warn:#f3c969; --shadow:rgba(0,0,0,0.35);
     }
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,"Helvetica Neue";}
-    *{box-sizing:border-box}
-    a{color:inherit;text-decoration:none}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;}
+    *,*:before,*:after{box-sizing:border-box}
+    a{color:inherit}
 
-    /* Topbar */
+    /* -----------------------------------------
+       Topbar + lens
+       ----------------------------------------- */
     .topbar{
-      position:fixed;top:0;left:0;right:0;height:64px;
-      display:flex;align-items:center;justify-content:flex-end;padding:0 18px;
+      position:fixed;top:0;left:0;right:0;height:64px;padding:0 18px;
+      display:flex;align-items:center;justify-content:flex-end;
       background:linear-gradient(to bottom, rgba(24,24,27,0.95), rgba(24,24,27,0.7));
-      border-bottom:1px solid var(--border);z-index:1000;
-      backdrop-filter: blur(6px);
+      border-bottom:1px solid var(--border);z-index:1000;backdrop-filter:blur(6px);
     }
     .lens-btn{
-      width:44px;height:44px;border-radius:12px;border:1px solid var(--border);
-      background:linear-gradient(180deg,var(--panel),var(--glass));
-      color:var(--text);font-size:20px;display:inline-flex;align-items:center;justify-content:center;
-      cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s,color .12s;
+      width:46px;height:46px;border-radius:12px;border:1px solid var(--border);
+      background:var(--panel);color:var(--text);font-size:20px;display:inline-flex;
+      align-items:center;justify-content:center;cursor:pointer;transition:all .12s;
     }
-    .lens-btn:hover{transform:translateY(-2px);box-shadow:0 10px 30px var(--shadow);color:var(--accent);border-color:var(--brand)}
-    .lens-btn:focus{outline:2px solid var(--brand);outline-offset:2px}
+    .lens-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px var(--shadow);border-color:var(--brand);color:var(--accent)}
 
-    /* small status under topbar */
     .status{
-      position:fixed;top:70px;right:20px;font-size:13px;color:var(--muted);z-index:950;text-align:right;
+      position:fixed;top:72px;right:18px;font-size:13px;color:var(--muted);z-index:950;text-align:right;
     }
     .status.success{color:var(--accent)} .status.error{color:var(--danger)}
 
-    /* sections common */
+    /* -----------------------------------------
+       Layout sections
+       ----------------------------------------- */
     .section{padding-top:96px;min-height:100vh;transition:opacity .22s,visibility .22s}
     .hidden{opacity:0;visibility:hidden;pointer-events:none}
 
-    /* home grid */
-    .home-container{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;padding:28px;}
-    .home-text{
+    .home-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;padding:28px}
+    .panel{
       background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;
-      box-shadow:0 14px 36px var(--shadow);line-height:1.6;
+      box-shadow:0 14px 36px var(--shadow);
     }
-    .home-text h1{margin-top:0;font-size:26px}
-    .home-figure{display:flex;align-items:center;justify-content:center;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px}
+
+    .home-figure{display:flex;align-items:center;justify-content:center;padding:12px;border-radius:12px}
     .home-figure img{max-width:100%;border-radius:10px;border:1px solid var(--border)}
 
-    /* video area */
+    /* -----------------------------------------
+       Video area
+       ----------------------------------------- */
     .video-container{padding:28px;display:grid;gap:16px}
-    .video-toolbar{
-      display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--border);
-      padding:12px;border-radius:12px;box-shadow:0 12px 32px var(--shadow)
-    }
+    .video-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px;border-radius:12px}
     .btn{
       background:var(--panel);border:1px solid var(--border);color:var(--text);
-      padding:9px 12px;border-radius:10px;cursor:pointer;transition:all .12s;
-      display:inline-flex;align-items:center;gap:8px;font-size:14px;
+      padding:9px 12px;border-radius:10px;cursor:pointer;display:inline-flex;gap:8px;align-items:center;
     }
     .btn:hover{transform:translateY(-2px);border-color:var(--brand)}
     .input{background:var(--panel);border:1px solid var(--border);padding:8px 10px;border-radius:10px;color:var(--text)}
-    .input::placeholder{color:#8f8f98}
-
     .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:12px}
-    .card{background:var(--panel);border:1px solid var(--border);padding:10px;border-radius:12px;box-shadow:0 10px 30px var(--shadow);display:flex;flex-direction:column;gap:8px}
+    .card{background:var(--panel);border:1px solid var(--border);padding:10px;border-radius:12px;display:flex;flex-direction:column;gap:8px}
     .card video{width:100%;border-radius:8px;background:black}
     .title{font-weight:600} .views{color:var(--muted);font-size:13px}
 
-    /* modal */
+    /* -----------------------------------------
+       Modal
+       ----------------------------------------- */
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);z-index:1200}
     .modal.show{display:flex}
-    .modal-panel{width:92%;max-width:560px;background:var(--panel);border:1px solid var(--border);padding:18px;border-radius:12px;box-shadow:0 14px 44px var(--shadow)}
+    .modal-panel{width:92%;max-width:640px;background:var(--panel);border:1px solid var(--border);padding:18px;border-radius:12px;box-shadow:0 14px 44px var(--shadow)}
     .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:12px}
     .status-line{margin-top:8px;color:var(--muted);min-height:18px}
     .status-line.success{color:var(--accent)} .status-line.error{color:var(--danger)}
 
-    /* bottom-left discreet admin anchor */
+    /* -----------------------------------------
+       Admin bottom-left discreet anchor + input
+       ----------------------------------------- */
     .admin-anchor{position:fixed;left:14px;bottom:14px;z-index:1300;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
-    .admin-btn{
-      width:46px;height:46px;border-radius:999px;background:linear-gradient(180deg,var(--panel),var(--glass));
-      border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;color:var(--text);font-size:18px;cursor:pointer;
-      transition:transform .12s,border-color .12s;
-    }
+    .admin-btn{width:46px;height:46px;border-radius:999px;background:var(--panel);border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;color:var(--text);font-size:18px;cursor:pointer;transition:transform .12s}
     .admin-btn:hover{transform:translateY(-2px);border-color:var(--brand);color:var(--brand)}
     .admin-input-wrap{display:none;gap:8px;align-items:center}
     .admin-input{width:220px;padding:8px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--text);outline:none}
-    .admin-input[aria-hidden='true']{display:none}
 
-    /* admin section */
+    /* -----------------------------------------
+       Admin panel
+       ----------------------------------------- */
     .admin-section{padding:26px}
     .admin-panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px}
-    table.admin-grid{width:100%;border-collapse:collapse;margin-top:12px}
-    table.admin-grid th, table.admin-grid td{padding:10px;border-top:1px solid var(--border);vertical-align:middle}
+    .admin-grid{width:100%;border-collapse:collapse;margin-top:12px}
+    .admin-grid th,.admin-grid td{padding:10px;border-top:1px solid var(--border);vertical-align:middle}
     .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#202025;color:var(--muted);border:1px solid var(--border);font-size:13px}
     .pill.pub{background:#103016;color:var(--accent);border-color:#244b2f}
-    .actions{display:flex;gap:8px;flex-wrap:wrap}
-    .danger{color:var(--danger)}
+    .actions{display:flex;gap:8px;flex-wrap:wrap} .danger{color:var(--danger)}
 
-    /* small responsiveness */
-    @media (max-width:980px){
-      .home-container{grid-template-columns:1fr}
-      .admin-input{width:150px}
-    }
+    @media (max-width:980px){.home-grid{grid-template-columns:1fr}.admin-input{width:150px}}
   </style>
 </head>
 <body>
 
-  <!-- Topbar: lens button -->
-  <header class="topbar" role="banner" aria-label="Barra superiore">
+  <!-- Top bar with lens -->
+  <header class="topbar" role="banner">
     <button id="lensBtn" class="lens-btn" aria-label="Apri sezione video">🔍</button>
   </header>
   <div id="statusEl" class="status" aria-live="polite"></div>
 
   <!-- HOME -->
-  <main id="homeSection" class="section" role="main" aria-label="Home Terra di Canaan">
-    <div class="home-container">
-      <article class="home-text">
+  <main id="homeSection" class="section">
+    <div class="home-grid">
+      <article class="panel">
         <h1>La regione di Canaan</h1>
         <p>La regione di Canaan (o Cananea) si trovava nel Levante e corrisponde approssimativamente ai territori degli attuali Libano, Israele, Palestina e parti della Siria e della Giordania. In questa area geografica si svilupparono sia la civiltà dei Fenici che quella degli Ebrei.</p>
         <p><strong>Fenici:</strong> insediati lungo la costa; città principali Biblo, Sidone e Tiro.</p>
         <p><strong>Ebrei:</strong> stabiliti nell'entroterra, nell'area che sarebbe poi divenuta la Terra d'Israele.</p>
-        <p>Questa pagina è pensata per integrare contenuti storici con una sezione video gestita localmente e attraverso Cloudinary.</p>
+        <p style="margin-top:14px;color:var(--muted)">Questa pagina integra contenuti storici con una sezione video e un pannello amministrazione discreto.</p>
       </article>
-
-      <figure class="home-figure" aria-label="Cartina di Canaan">
-        <img src="canaan-map.jpg" alt="Cartina storica della regione di Canaan">
+      <figure class="panel home-figure" aria-label="Cartina di Canaan">
+        <img src="canaan-map.jpg" alt="Cartina storica della regione di Canaan" />
       </figure>
     </div>
   </main>
 
   <!-- VIDEO SECTION -->
-  <section id="videoSection" class="section hidden" role="region" aria-label="Sezione video">
+  <section id="videoSection" class="section hidden" aria-label="Sezione video">
     <div class="video-container">
-      <div class="video-toolbar" role="toolbar" aria-label="Strumenti video">
-        <button id="openUpload" class="btn" aria-controls="uploadModal" aria-expanded="false">⬆️ Carica video</button>
-        <input id="searchVideos" class="input" placeholder="Cerca video per titolo o URL" aria-label="Cerca video" />
+      <div class="video-toolbar panel" role="toolbar">
+        <button id="openUpload" class="btn" aria-controls="uploadModal" aria-expanded="false">⬆️ Carica</button>
+        <input id="searchVideos" class="input" placeholder="Cerca video per titolo o URL" />
         <button id="backHome" class="btn">🏠 Home</button>
       </div>
-
       <div id="videoContainer" class="cards" aria-live="polite" aria-busy="false"></div>
     </div>
   </section>
 
   <!-- ADMIN SECTION (hidden until unlocked) -->
-  <section id="adminSection" class="section hidden" role="region" aria-label="Admin">
+  <section id="adminSection" class="section hidden" aria-label="Admin">
     <div class="admin-section">
       <div class="admin-panel">
         <h2>🔧 Pannello amministrazione</h2>
-        <p style="color:var(--muted)">Modifica titoli, resetta views, elimina o cambia stato pubblicazione. Tutte le azioni sono persistenti su questo browser (localStorage).</p>
-
+        <p style="color:var(--muted)">Modifica titoli, resetta views, elimina, pubblica/nascondi. Le azioni sono persistenzi locali.</p>
         <table class="admin-grid" id="adminGrid">
-          <thead>
-            <tr><th>Anteprima</th><th>Titolo</th><th>Views</th><th>Stato</th><th>Azioni</th></tr>
-          </thead>
+          <thead><tr><th>Anteprima</th><th>Titolo</th><th>Views</th><th>Stato</th><th>Azioni</th></tr></thead>
           <tbody id="adminBody"></tbody>
         </table>
-
         <div style="margin-top:12px;">
           <button id="adminToVideo" class="btn">🎬 Vai ai video</button>
           <button id="adminToHome" class="btn">🏠 Torna alla home</button>
@@ -171,9 +156,9 @@
     </div>
   </section>
 
-  <!-- Upload Modal -->
-  <div id="uploadModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="uploadTitle">
-    <div class="modal-panel">
+  <!-- UPLOAD MODAL -->
+  <div id="uploadModal" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-panel" role="document">
       <h3 id="uploadTitle">Upload Video</h3>
       <div style="margin-top:8px">
         <label for="videoFile">File</label><br>
@@ -191,9 +176,9 @@
     </div>
   </div>
 
-  <!-- discreet admin anchor bottom-left (small button + no-hint input) -->
+  <!-- discreet admin anchor bottom-left -->
   <div class="admin-anchor" aria-hidden="false">
-    <button id="adminAnchorBtn" class="admin-btn" title="Admin"></button>
+    <button id="adminAnchorBtn" class="admin-btn" title="Admin">●</button>
     <div id="adminInputWrap" class="admin-input-wrap" aria-hidden="true">
       <input id="adminInput" class="admin-input" type="text" autocomplete="off" spellcheck="false" aria-label="Passphrase admin" />
       <button id="adminSubmit" class="btn">Apri</button>
@@ -201,22 +186,35 @@
   </div>
 
   <script>
-    /* =========================
-       Utility: storage helpers
-       ========================= */
-    const STORAGE_KEY = 'jiorroVideos_v2'; // versioned key for safer testing
-    function getSaved(){
-      try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : []; }
-      catch(e){ console.error('getSaved parse error', e); return []; }
+    /* ---------------------------
+       Storage helpers & constants
+       --------------------------- */
+    const STORAGE_KEY = 'jiorroVideos_v3'; // bumped version for this extended file
+    const ADMIN_PASS = 'JIORR0CON$=LE';   // exact passphrase required
+
+    function getSaved() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (err) {
+        console.error('getSaved parse error', err);
+        return [];
+      }
     }
-    function setSaved(arr){
-      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr || [])); }
-      catch(e){ console.error('setSaved error', e); }
+    function setSaved(arr) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(arr || []));
+      } catch (err) {
+        console.error('setSaved error', err);
+      }
     }
 
-    /* =========================
-       Basic navigation & status
-       ========================= */
+    // Small action history (in-memory) for undo support
+    const actionHistory = [];
+
+    /* ---------------------------
+       Basic navigation & helpers
+       --------------------------- */
     const lensBtn = document.getElementById('lensBtn');
     const statusEl = document.getElementById('statusEl');
     const homeSection = document.getElementById('homeSection');
@@ -224,71 +222,93 @@
     const adminSection = document.getElementById('adminSection');
     const backHome = document.getElementById('backHome');
 
-    function showStatus(msg, type){
+    function showStatus(msg, type) {
       statusEl.textContent = msg || '';
       statusEl.className = 'status' + (type ? ' ' + type : '');
     }
-    function showHome(){ homeSection.classList.remove('hidden'); videoSection.classList.add('hidden'); adminSection.classList.add('hidden'); showStatus(''); }
-    function showVideo(){ homeSection.classList.add('hidden'); adminSection.classList.add('hidden'); videoSection.classList.remove('hidden'); showStatus('✅ Sezione video aperta','success'); setTimeout(()=>showStatus(''),1000); }
-    function showAdmin(){ homeSection.classList.add('hidden'); videoSection.classList.add('hidden'); adminSection.classList.remove('hidden'); showStatus('🔧 Admin sbloccato','success'); setTimeout(()=>showStatus(''),1000); }
+    function showHome() {
+      homeSection.classList.remove('hidden');
+      videoSection.classList.add('hidden');
+      adminSection.classList.add('hidden');
+      showStatus('');
+    }
+    function showVideo() {
+      homeSection.classList.add('hidden');
+      adminSection.classList.add('hidden');
+      videoSection.classList.remove('hidden');
+      showStatus('✅ Sezione video aperta', 'success');
+      setTimeout(() => showStatus(''), 900);
+    }
+    function showAdmin() {
+      homeSection.classList.add('hidden');
+      videoSection.classList.add('hidden');
+      adminSection.classList.remove('hidden');
+      showStatus('🔧 Admin sbloccato', 'success');
+      setTimeout(() => showStatus(''), 900);
+    }
 
     lensBtn.addEventListener('click', showVideo);
     backHome && backHome.addEventListener('click', showHome);
 
-    /* =========================
-       Video logic: upload, render, search, views
-       ========================= */
-    (function videoModule(){
+    /* ---------------------------
+       Video module (render, upload, search, views)
+       --------------------------- */
+    (function VideoModule() {
       const openUploadBtn = document.getElementById('openUpload');
       const uploadModal = document.getElementById('uploadModal');
       const closeUploadBtn = document.getElementById('closeUpload');
       const uploadBtn = document.getElementById('uploadBtn');
-      const videoFileInput = document.getElementById('videoFile');
-      const videoTitleInput = document.getElementById('videoTitle');
+      const fileInput = document.getElementById('videoFile');
+      const titleInput = document.getElementById('videoTitle');
       const uploadStatus = document.getElementById('uploadStatus');
       const videoContainer = document.getElementById('videoContainer');
       const searchVideos = document.getElementById('searchVideos');
 
-      // Open/close modal helpers
-      function openModal(){
-        uploadModal.classList.add('show');
-        openUploadBtn.setAttribute('aria-expanded','true');
-      }
-      function closeModal(){
-        uploadModal.classList.remove('show');
-        openUploadBtn.setAttribute('aria-expanded','false');
-        uploadStatus.textContent = '';
-        uploadStatus.className = 'status-line';
-        videoFileInput.value = '';
-        videoTitleInput.value = '';
+      // Defensive DOM checks
+      function safe(elId) {
+        const el = document.getElementById(elId);
+        if (!el) console.warn('Missing element:', elId);
+        return el;
       }
 
-      // Card factory (more robust)
-      function createCard(item){
+      function openModal() {
+        if (!uploadModal) return;
+        uploadModal.classList.add('show');
+        openUploadBtn && openUploadBtn.setAttribute('aria-expanded', 'true');
+      }
+      function closeModal() {
+        if (!uploadModal) return;
+        uploadModal.classList.remove('show');
+        openUploadBtn && openUploadBtn.setAttribute('aria-expanded', 'false');
+        uploadStatus.textContent = '';
+        fileInput.value = '';
+        titleInput.value = '';
+      }
+
+      // Create a single video card element with protections and view counting
+      function createCard(item) {
         const card = document.createElement('div');
         card.className = 'card video-card';
         card.dataset.url = item.url || '';
 
-        const v = document.createElement('video');
-        v.src = item.url || '';
-        v.controls = true;
-        v.preload = 'metadata';
-        v.setAttribute('controlsList','nodownload');
-        v.addEventListener('contextmenu', e => e.preventDefault());
-        v.style.background = 'black';
-        v.style.borderRadius = '8px';
+        const videoEl = document.createElement('video');
+        videoEl.src = item.url || '';
+        videoEl.controls = true;
+        videoEl.preload = 'metadata';
+        videoEl.setAttribute('controlsList', 'nodownload');
+        videoEl.addEventListener('contextmenu', e => e.preventDefault());
 
-        const t = document.createElement('div');
-        t.className = 'title video-title';
-        t.textContent = item.title || 'Video senza titolo';
+        const titleEl = document.createElement('div');
+        titleEl.className = 'title video-title';
+        titleEl.textContent = item.title || 'Video senza titolo';
 
-        const vw = document.createElement('div');
-        vw.className = 'views video-views';
-        vw.textContent = `👁️ ${item.views || 0} views`;
+        const viewsEl = document.createElement('div');
+        viewsEl.className = 'views video-views';
+        viewsEl.textContent = `👁️ ${item.views || 0} views`;
 
-        // Count views once per session for each video element
+        // Count views once per page load per element
         let counted = false;
-        v.addEventListener('play', () => {
+        videoEl.addEventListener('play', () => {
           if (counted) return;
           counted = true;
           const saved = getSaved().map(s => {
@@ -298,86 +318,97 @@
             return s;
           });
           setSaved(saved);
-          vw.textContent = `👁️ ${ (saved.find(s => s.url === item.url)?.views) || 0 } views`;
-          // refresh admin table if open
+          const updated = saved.find(s => s.url === item.url);
+          viewsEl.textContent = `👁️ ${updated ? updated.views || 0 : 0} views`;
+          // Update admin table if visible
           if (typeof window.renderAdminTable === 'function') window.renderAdminTable();
         });
 
-        card.appendChild(v);
-        card.appendChild(t);
-        card.appendChild(vw);
+        card.appendChild(videoEl);
+        card.appendChild(titleEl);
+        card.appendChild(viewsEl);
         return card;
       }
 
-      // Render published videos sorted by views desc
-      function renderAll(){
-        videoContainer.setAttribute('aria-busy','true');
+      // Render published videos; show friendly message if none
+      function renderAll() {
+        if (!videoContainer) return;
+        videoContainer.setAttribute('aria-busy', 'true');
         videoContainer.innerHTML = '';
-        const saved = getSaved().filter(v => v.published !== false).sort((a,b) => (b.views||0)-(a.views||0));
-        saved.forEach(item => {
-          const c = createCard(item);
-          videoContainer.appendChild(c);
-        });
-        videoContainer.setAttribute('aria-busy','false');
+        const saved = getSaved().filter(v => v.published !== false).sort((a, b) => (b.views || 0) - (a.views || 0));
+        if (!saved.length) {
+          const info = document.createElement('div');
+          info.style.color = 'var(--muted)';
+          info.textContent = 'Nessun video pubblicato. Carica un video per iniziare.';
+          videoContainer.appendChild(info);
+        } else {
+          saved.forEach(item => videoContainer.appendChild(createCard(item)));
+        }
+        videoContainer.setAttribute('aria-busy', 'false');
       }
 
-      // Bind events
+      // Wire events
       window.addEventListener('DOMContentLoaded', renderAll);
       openUploadBtn && openUploadBtn.addEventListener('click', openModal);
       closeUploadBtn && closeUploadBtn.addEventListener('click', closeModal);
 
-      // Upload handler (Cloudinary)
+      // Upload with Cloudinary; adjust preset if needed
       uploadBtn && uploadBtn.addEventListener('click', async () => {
-        const file = videoFileInput.files && videoFileInput.files[0];
-        const title = (videoTitleInput.value || '').trim();
+        const file = fileInput.files && fileInput.files[0];
+        const title = (titleInput.value || '').trim();
 
-        // Validation
-        if (!file) { uploadStatus.textContent = '❌ Seleziona un file video.'; uploadStatus.className='status-line error'; return; }
-        if (!file.type || !file.type.startsWith('video/')) { uploadStatus.textContent = '❌ Il file non è un video valido.'; uploadStatus.className='status-line error'; return; }
+        if (!file) {
+          uploadStatus.textContent = '❌ Seleziona un file video.';
+          uploadStatus.className = 'status-line error';
+          return;
+        }
+        if (!file.type || !file.type.startsWith('video/')) {
+          uploadStatus.textContent = '❌ Il file non è un video valido.';
+          uploadStatus.className = 'status-line error';
+          return;
+        }
 
         uploadStatus.textContent = '⏳ Caricamento in corso...';
         uploadStatus.className = 'status-line';
 
         const form = new FormData();
         form.append('file', file);
-        form.append('upload_preset', 'jiorro_upload'); // assicurati sia corretto
+        form.append('upload_preset', 'jiorro_upload'); // change if needed
 
         try {
           const res = await fetch('https://api.cloudinary.com/v1_1/dng8rjd6u/auto/upload', { method: 'POST', body: form });
           const data = await res.json();
-
           if (!res.ok || data.error) {
-            const err = data?.error?.message || 'Errore Cloudinary';
-            uploadStatus.textContent = '❌ ' + err;
+            uploadStatus.textContent = '❌ ' + (data?.error?.message || 'Errore Cloudinary');
             uploadStatus.className = 'status-line error';
             return;
           }
-
-          const videoUrl = data.secure_url;
-          if (!videoUrl) {
+          const url = data.secure_url;
+          if (!url) {
             uploadStatus.textContent = '❌ URL non ricevuto.';
             uploadStatus.className = 'status-line error';
             return;
           }
 
-          // Persist and render
+          // Persist new video (published by default)
           const saved = getSaved();
-          saved.unshift({ url: videoUrl, title, views: 0, published: true });
+          saved.unshift({ url, title, views: 0, published: true });
           setSaved(saved);
           renderAll();
           if (typeof window.renderAdminTable === 'function') window.renderAdminTable();
 
           uploadStatus.textContent = '✅ Video caricato!';
           uploadStatus.className = 'status-line success';
-          videoFileInput.value = ''; videoTitleInput.value = '';
-        } catch (e) {
-          console.error('upload error', e);
-          uploadStatus.textContent = '❌ Errore durante l\'upload.';
+          fileInput.value = '';
+          titleInput.value = '';
+        } catch (err) {
+          console.error('Upload error', err);
+          uploadStatus.textContent = "❌ Errore durante l'upload.";
           uploadStatus.className = 'status-line error';
         }
       });
 
-      // Internal search in grid
+      // Internal search in the displayed grid
       searchVideos && searchVideos.addEventListener('input', () => {
         const term = (searchVideos.value || '').toLowerCase();
         document.querySelectorAll('.video-card').forEach(card => {
@@ -388,60 +419,49 @@
         });
       });
 
-      // Expose for admin to call
+      // Expose public render for admin sync
       window.renderAllVideosPublic = renderAll;
     })();
 
-    /* =========================
-       Discreet admin anchor (bottom-left)
-       - small round button
-       - toggles single-line input without hints
+    /* ---------------------------
+       Discreet admin anchor: bottom-left small button + input
+       - toggles minimal input with no placeholder/hint
        - exact passphrase unlocks admin
-       ========================= */
-    (function adminAnchor(){
+       --------------------------- */
+    (function AdminAnchor() {
       const ANCHOR_BTN = document.getElementById('adminAnchorBtn');
       const INPUT_WRAP = document.getElementById('adminInputWrap');
       const ADMIN_INPUT = document.getElementById('adminInput');
       const ADMIN_SUBMIT = document.getElementById('adminSubmit');
-      const PASS = 'JIORR0CON$=LE';
 
-      // toggle the tiny input (no placeholder)
+      function openTinyInput() {
+        INPUT_WRAP.style.display = 'flex';
+        INPUT_WRAP.setAttribute('aria-hidden', 'false');
+        ADMIN_INPUT.focus();
+        ADMIN_INPUT.select();
+      }
+      function closeTinyInput() {
+        INPUT_WRAP.style.display = 'none';
+        INPUT_WRAP.setAttribute('aria-hidden', 'true');
+        ADMIN_INPUT.value = '';
+      }
+
       ANCHOR_BTN.addEventListener('click', () => {
-        const open = INPUT_WRAP.style.display === 'flex' || INPUT_WRAP.classList.contains('admin-open');
-        if (open) {
-          INPUT_WRAP.style.display = 'none';
-          INPUT_WRAP.classList.remove('admin-open');
-          ADMIN_INPUT.value = '';
-          INPUT_WRAP.setAttribute('aria-hidden', 'true');
-        } else {
-          INPUT_WRAP.style.display = 'flex';
-          INPUT_WRAP.classList.add('admin-open');
-          INPUT_WRAP.setAttribute('aria-hidden', 'false');
-          ADMIN_INPUT.focus();
-          ADMIN_INPUT.select();
-        }
+        const isOpen = INPUT_WRAP.style.display === 'flex';
+        if (isOpen) closeTinyInput(); else openTinyInput();
       });
 
-      // Try unlock
-      function tryUnlock(){
-        const v = (ADMIN_INPUT.value || '').trim();
-        if (v === PASS) {
-          // hide small input and open admin section
-          INPUT_WRAP.style.display = 'none'; INPUT_WRAP.classList.remove('admin-open'); INPUT_WRAP.setAttribute('aria-hidden','true');
-          ADMIN_INPUT.value = '';
-          // open admin and render table
+      function tryUnlock() {
+        const val = (ADMIN_INPUT.value || '').trim();
+        if (val === ADMIN_PASS) {
+          closeTinyInput();
           if (typeof window.renderAdminTable === 'function') window.renderAdminTable();
-          document.getElementById('adminSection').classList.remove('hidden');
-          document.getElementById('homeSection').classList.add('hidden');
-          document.getElementById('videoSection').classList.add('hidden');
-          showStatus('🔧 Admin sbloccato', 'success');
-          setTimeout(()=>showStatus(''), 1200);
+          showAdmin();
         } else {
-          // subtle feedback: shake input and clear
           ADMIN_INPUT.style.transition = 'transform .12s';
           ADMIN_INPUT.style.transform = 'translateX(-6px)';
-          setTimeout(()=>ADMIN_INPUT.style.transform = 'translateX(6px)', 120);
-          setTimeout(()=>ADMIN_INPUT.style.transform = '', 240);
+          setTimeout(() => ADMIN_INPUT.style.transform = 'translateX(6px)', 120);
+          setTimeout(() => ADMIN_INPUT.style.transform = '', 240);
           ADMIN_INPUT.value = '';
           ADMIN_INPUT.focus();
         }
@@ -450,106 +470,124 @@
       ADMIN_SUBMIT.addEventListener('click', tryUnlock);
       ADMIN_INPUT.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryUnlock(); });
 
-      // close admin with Escape
+      // ESC closes admin and tiny input
       window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-          document.getElementById('adminSection').classList.add('hidden');
-          document.getElementById('homeSection').classList.remove('hidden');
-          document.getElementById('videoSection').classList.add('hidden');
-          showStatus('', '');
+          closeTinyInput();
+          adminSection.classList.add('hidden');
+          homeSection.classList.remove('hidden');
+          videoSection.classList.add('hidden');
+          showStatus('');
         }
       });
     })();
 
-    /* =========================
-       Admin panel: list, edit, reset, toggle publish, delete
-       ========================= */
-    (function adminPanel(){
+    /* ---------------------------
+       Admin panel: render table + actions
+       - edit title (save)
+       - reset views (confirm)
+       - toggle published
+       - delete with undo
+       --------------------------- */
+    (function AdminPanel() {
       const adminBody = document.getElementById('adminBody');
       const adminToVideo = document.getElementById('adminToVideo');
       const adminToHome = document.getElementById('adminToHome');
 
-      function renderAdminTable(){
+      // helper: create element safely
+      function el(tag, props = {}, children = []) {
+        const e = document.createElement(tag);
+        Object.assign(e, props);
+        children.forEach(c => e.appendChild(c));
+        return e;
+      }
+
+      // render the admin table based on storage
+      function renderAdminTable() {
         const saved = getSaved();
-        adminBody.innerHTML = '';
+        adminBody.innerHTML = ''; // clear existing rows
+
+        // show message if empty
         if (!saved.length) {
-          const tr = document.createElement('tr');
-          const td = document.createElement('td');
-          td.colSpan = 5;
-          td.textContent = 'Nessun video salvato.';
+          const tr = el('tr');
+          const td = el('td', { colSpan: 5, textContent: 'Nessun video salvato.' });
           td.style.color = 'var(--muted)';
           tr.appendChild(td);
           adminBody.appendChild(tr);
           return;
         }
 
+        // build rows
         saved.forEach((item, idx) => {
-          const tr = document.createElement('tr');
+          const tr = el('tr');
 
-          // preview
-          const tdPrev = document.createElement('td');
-          const prevV = document.createElement('video');
-          prevV.src = item.url;
-          prevV.preload = 'metadata';
-          prevV.controls = true;
-          prevV.style.maxWidth = '160px';
-          prevV.style.borderRadius = '8px';
-          prevV.setAttribute('controlsList','nodownload');
-          prevV.addEventListener('contextmenu', e => e.preventDefault());
-          tdPrev.appendChild(prevV);
+          // preview cell
+          const tdPrev = el('td');
+          const preview = el('video', { src: item.url, preload: 'metadata', controls: true });
+          preview.style.maxWidth = '160px';
+          preview.setAttribute('controlsList', 'nodownload');
+          preview.addEventListener('contextmenu', e => e.preventDefault());
+          tdPrev.appendChild(preview);
 
-          // title editable
-          const tdTitle = document.createElement('td');
-          const titleInput = document.createElement('input');
-          titleInput.className = 'input';
-          titleInput.value = item.title || '';
+          // title cell (editable)
+          const tdTitle = el('td');
+          const titleInput = el('input', { className: 'input', value: item.title || '' });
           tdTitle.appendChild(titleInput);
 
-          // views
-          const tdViews = document.createElement('td');
-          const pillV = document.createElement('span');
-          pillV.className = 'pill';
-          pillV.textContent = (item.views || 0) + ' views';
+          // views cell
+          const tdViews = el('td');
+          const pillV = el('span', { className: 'pill', textContent: (item.views || 0) + ' views' });
           tdViews.appendChild(pillV);
 
-          // status
-          const tdStatus = document.createElement('td');
-          const pillS = document.createElement('span');
-          pillS.className = 'pill ' + (item.published === false ? '' : 'pub');
-          pillS.textContent = item.published === false ? 'Non pubblicato' : 'Pubblicato';
+          // status cell
+          const tdStatus = el('td');
+          const pillS = el('span', { className: 'pill ' + (item.published === false ? '' : 'pub'), textContent: item.published === false ? 'Non pubblicato' : 'Pubblicato' });
           tdStatus.appendChild(pillS);
 
-          // actions
-          const tdActions = document.createElement('td');
-          const actions = document.createElement('div');
-          actions.className = 'actions';
+          // actions cell
+          const tdActions = el('td');
+          const actions = el('div', { className: 'actions' });
 
-          const btnSave = document.createElement('button'); btnSave.className='btn'; btnSave.textContent='💾 Salva';
-          const btnReset = document.createElement('button'); btnReset.className='btn'; btnReset.textContent='🔄 Reset';
-          const btnToggle = document.createElement('button'); btnToggle.className='btn'; btnToggle.textContent = item.published === false ? '📢 Pubblica' : '🙈 Nascondi';
-          const btnDel = document.createElement('button'); btnDel.className='btn danger'; btnDel.textContent='🗑️ Elimina';
+          const btnSave = el('button', { className: 'btn', textContent: '💾 Salva' });
+          const btnReset = el('button', { className: 'btn', textContent: '🔄 Reset' });
+          const btnToggle = el('button', { className: 'btn', textContent: item.published === false ? '📢 Pubblica' : '🙈 Nascondi' });
+          const btnDel = el('button', { className: 'btn danger', textContent: '🗑️ Elimina' });
 
-          actions.append(btnSave, btnReset, btnToggle, btnDel);
+          actions.appendChild(btnSave);
+          actions.appendChild(btnReset);
+          actions.appendChild(btnToggle);
+          actions.appendChild(btnDel);
           tdActions.appendChild(actions);
 
-          tr.append(tdPrev, tdTitle, tdViews, tdStatus, tdActions);
+          tr.appendChild(tdPrev);
+          tr.appendChild(tdTitle);
+          tr.appendChild(tdViews);
+          tr.appendChild(tdStatus);
+          tr.appendChild(tdActions);
           adminBody.appendChild(tr);
 
-          // Handlers
+          // ---------------------
+          // Handlers for actions
+          // ---------------------
           btnSave.addEventListener('click', () => {
             const s = getSaved();
             s[idx].title = titleInput.value.trim();
             setSaved(s);
             renderAdminTable();
             if (typeof window.renderAllVideosPublic === 'function') window.renderAllVideosPublic();
+            showStatus('Titolo aggiornato', 'success');
+            setTimeout(() => showStatus(''), 900);
           });
 
           btnReset.addEventListener('click', () => {
+            if (!confirm('Resetta le views a 0 per questo video?')) return;
             const s = getSaved();
             s[idx].views = 0;
             setSaved(s);
             renderAdminTable();
             if (typeof window.renderAllVideosPublic === 'function') window.renderAllVideosPublic();
+            showStatus('Views resettate', 'success');
+            setTimeout(() => showStatus(''), 900);
           });
 
           btnToggle.addEventListener('click', () => {
@@ -558,20 +596,48 @@
             setSaved(s);
             renderAdminTable();
             if (typeof window.renderAllVideosPublic === 'function') window.renderAllVideosPublic();
+            showStatus(s[idx].published ? 'Video pubblicato' : 'Video nascosto', 'success');
+            setTimeout(() => showStatus(''), 900);
           });
 
           btnDel.addEventListener('click', () => {
+            // delete with undo: keep last action in memory for 6s
+            if (!confirm('Sei sicuro di eliminare questo video dall\'indice locale?')) return;
             const s = getSaved();
-            s.splice(idx, 1);
+            const removed = s.splice(idx, 1)[0];
             setSaved(s);
             renderAdminTable();
             if (typeof window.renderAllVideosPublic === 'function') window.renderAllVideosPublic();
+            // push to action history for undo
+            actionHistory.push({ type: 'delete', item: removed, index: idx, time: Date.now() });
+            showStatus('Video eliminato. Annulla?', 'error');
+            // small undo button via status click
+            statusEl.addEventListener('click', function undoOnce() {
+              const last = actionHistory.pop();
+              if (last && last.type === 'delete') {
+                const cur = getSaved();
+                cur.splice(last.index, 0, last.item);
+                setSaved(cur);
+                renderAdminTable();
+                if (typeof window.renderAllVideosPublic === 'function') window.renderAllVideosPublic();
+                showStatus('Eliminazione annullata', 'success');
+                setTimeout(() => showStatus(''), 900);
+              }
+              statusEl.removeEventListener('click', undoOnce);
+            });
+            // auto-clear history after 6 seconds (prevent stacking)
+            setTimeout(() => {
+              const head = actionHistory[actionHistory.length - 1];
+              if (head && head.type === 'delete' && Date.now() - head.time > 6000) actionHistory.pop();
+            }, 6100);
           });
         });
       }
 
+      // expose
       window.renderAdminTable = renderAdminTable;
 
+      // nav shortcuts
       adminToVideo && adminToVideo.addEventListener('click', () => {
         document.getElementById('videoSection').classList.remove('hidden');
         document.getElementById('adminSection').classList.add('hidden');
@@ -582,6 +648,15 @@
         document.getElementById('adminSection').classList.add('hidden');
       });
     })();
+
+    /* ---------------------------
+       End of script
+       --------------------------- */
+    // quick debug: log existing saved videos on load
+    window.addEventListener('load', () => {
+      try { console.info('Jiorro saved videos:', JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')); }
+      catch (e) { console.warn('Unable to parse saved videos', e); }
+    });
   </script>
 </body>
 </html>
