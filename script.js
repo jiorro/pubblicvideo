@@ -1,168 +1,99 @@
-// Riferimenti agli elementi
-const input = document.getElementById('searchInput');
-const result = document.getElementById('searchResult');
-const searchBtn = document.getElementById('searchBtn');
-const home = document.getElementById('homeSection');
-const video = document.getElementById('videoSection');
+// DEBUG + HANDLER RAPIDO per #uploadBtn
+(async function(){
+  console.clear();
+  console.log('Debug upload handler start');
 
-// 🔍 Accesso con lente
-searchBtn.addEventListener('click', () => {
-  const value = input.value.trim().toLowerCase();
+  const uploadBtn = document.getElementById('uploadBtn');
+  const fileInput = document.getElementById('videoFile');
+  const uploadModal = document.getElementById('uploadModal');
+  const uploadStatus = document.getElementById('uploadStatus') || (function(){
+    const s = document.createElement('div'); s.id='uploadStatus'; s.style.color='#b7b7c3'; document.body.appendChild(s); return s;
+  })();
+  const progressBar = document.getElementById('uploadProgress');
 
-  if (value === 'jiorr0') {
-    result.textContent = '✅ Accesso consentito';
-    result.style.color = '#6f6';
-    setTimeout(() => {
-      home.style.display = 'none';
-      video.style.display = 'block';
-      result.textContent = '';
-      input.value = '';
-    }, 300);
-  } else if (value.length > 0) {
-    result.textContent = '❌ Non trovato';
-    result.style.color = '#f66';
-    video.style.display = 'none';
-    home.style.display = 'block';
-  } else {
-    result.textContent = '';
-    video.style.display = 'none';
-    home.style.display = 'block';
-  }
-});
+  console.log('uploadBtn found:', !!uploadBtn);
+  console.log('videoFile found:', !!fileInput);
+  console.log('uploadModal found:', !!uploadModal);
 
-// 🎥 Upload e gestione video
-const openUpload = document.getElementById('openUpload');
-const closeUpload = document.getElementById('closeUpload');
-const uploadModal = document.getElementById('uploadModal');
-const uploadBtn = document.getElementById('uploadBtn');
-const videoFile = document.getElementById('videoFile');
-const videoTitle = document.getElementById('videoTitle');
-const videoContainer = document.getElementById('videoContainer');
-const searchVideos = document.getElementById('searchVideos');
-const uploadStatus = document.getElementById('uploadStatus');
-
-// 🔁 Carica video salvati e ordina per views
-window.addEventListener('DOMContentLoaded', () => {
-  const savedVideos = JSON.parse(localStorage.getItem('jiorroVideos') || '[]');
-  savedVideos
-    .sort((a, b) => (b.views || 0) - (a.views || 0))
-    .forEach(({ url, title, views }) => {
-      const card = createVideoCard(url, title, views || 0);
-      videoContainer.appendChild(card);
-    });
-});
-
-openUpload.addEventListener('click', () => {
-  uploadModal.classList.remove('hidden');
-  uploadStatus.textContent = '';
-});
-
-closeUpload.addEventListener('click', () => {
-  uploadModal.classList.add('hidden');
-  uploadStatus.textContent = '';
-});
-
-uploadBtn.addEventListener('click', async () => {
-  const file = videoFile.files[0];
-  const title = videoTitle.value.trim();
-
-  if (!file) {
-    uploadStatus.textContent = '❌ Seleziona un file video.';
+  if(!uploadBtn || !fileInput){
+    uploadStatus.textContent = 'Errore: elemento upload non trovato. Controlla id #uploadBtn e #videoFile.';
     return;
   }
 
-  if (!file.type.startsWith('video/')) {
-    uploadStatus.textContent = '❌ Il file non è un video valido.';
-    return;
-  }
+  // rimuove eventuali listener ridondanti
+  uploadBtn.replaceWith(uploadBtn.cloneNode(true));
+  const freshBtn = document.getElementById('uploadBtn');
 
-  uploadStatus.textContent = '⏳ Caricamento in corso...';
+  // leggi configurazione esistente dal window (se presente nel tuo script)
+  const CLOUDINARY_CLOUD = (typeof window.CLOUDINARY_CLOUD !== 'undefined') ? window.CLOUDINARY_CLOUD : (typeof CLOUDINARY_CLOUD !== 'undefined' ? CLOUDINARY_CLOUD : '');
+  const UPLOAD_PRESET = (typeof window.UPLOAD_PRESET !== 'undefined') ? window.UPLOAD_PRESET : (typeof UPLOAD_PRESET !== 'undefined' ? UPLOAD_PRESET : '');
+  const CLOUDINARY_URL = CLOUDINARY_CLOUD ? `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload` : '';
 
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', 'jiorro_upload');
+  console.log('Config — CLOUDINARY_CLOUD:', CLOUDINARY_CLOUD ? 'SET' : 'NOT SET', 'UPLOAD_PRESET:', UPLOAD_PRESET ? 'SET' : 'NOT SET');
 
-  try {
-    const res = await fetch('https://api.cloudinary.com/v1_1/dng8rjd6u/auto/upload', {
-      method: 'POST',
-      body: formData
-    });
+  freshBtn.addEventListener('click', async (ev) => {
+    ev.preventDefault();
+    uploadStatus.textContent = '';
+    try {
+      const f = fileInput.files && fileInput.files[0];
+      if(!f){ uploadStatus.textContent = '❌ Seleziona un file.'; return; }
+      if(!f.type || !f.type.startsWith('video/')){ uploadStatus.textContent = '❌ Il file selezionato non è un video.'; return; }
 
-    const data = await res.json();
+      freshBtn.disabled = true; freshBtn.classList.add('loading');
+      uploadStatus.textContent = `⏳ Preparazione upload: ${f.name}`;
 
-    if (data.error) {
-      uploadStatus.textContent = '❌ Errore Cloudinary: ' + data.error.message;
-      return;
+      // se Cloudinary configurato, prova upload XHR con progress (mostra risposta)
+      if(CLOUDINARY_CLOUD && UPLOAD_PRESET && CLOUDINARY_URL){
+        uploadStatus.textContent = '⏳ Caricamento su Cloudinary...';
+        const form = new FormData(); form.append('file', f); form.append('upload_preset', UPLOAD_PRESET);
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', CLOUDINARY_URL);
+        xhr.upload.onprogress = (ev) => { if(ev.lengthComputable){ const pct = Math.round(ev.loaded/ev.total*100); if(progressBar) progressBar.style.width = pct + '%'; uploadStatus.textContent = `⏳ Caricamento ${pct}%`; } };
+        xhr.onload = () => {
+          try {
+            const res = JSON.parse(xhr.responseText);
+            console.info('Cloudinary response:', res);
+            if(xhr.status >=200 && xhr.status <300 && res && res.secure_url){
+              // salva nel localStorage usato dall'app
+              const key = 'jiorroVideos_v3';
+              const list = JSON.parse(localStorage.getItem(key) || '[]');
+              list.unshift({ url: res.secure_url, title: (document.getElementById('videoTitle')?.value||f.name), views:0, published:true, uploadedAt:Date.now() });
+              localStorage.setItem(key, JSON.stringify(list));
+              uploadStatus.textContent = '✅ Caricamento completato e registrato';
+              if(typeof window.renderAllVideosPublic === 'function') window.renderAllVideosPublic();
+            } else {
+              uploadStatus.textContent = '❌ Upload Cloudinary fallito: controlla console';
+            }
+          } catch(e){
+            console.error('Parsing response errore', e, xhr.responseText);
+            uploadStatus.textContent = '❌ Errore parsing risposta Cloudinary (vedi console)';
+          }
+          freshBtn.disabled = false; freshBtn.classList.remove('loading'); if(progressBar) setTimeout(()=>progressBar.style.width='0%',1500);
+        };
+        xhr.onerror = () => { uploadStatus.textContent = '❌ Errore rete durante upload'; freshBtn.disabled=false; freshBtn.classList.remove('loading'); console.error('XHR error'); };
+        xhr.ontimeout = () => { uploadStatus.textContent = '❌ Timeout upload'; freshBtn.disabled=false; freshBtn.classList.remove('loading'); console.error('XHR timeout'); };
+        xhr.send(form);
+        return;
+      }
+
+      // fallback locale: crea objectURL e salva per test
+      const url = URL.createObjectURL(f);
+      const key = 'jiorroVideos_v3';
+      const saved = JSON.parse(localStorage.getItem(key) || '[]');
+      saved.unshift({ url, title: (document.getElementById('videoTitle')?.value||f.name), views:0, published:true, test:true });
+      localStorage.setItem(key, JSON.stringify(saved));
+      uploadStatus.textContent = '✅ File registrato localmente per test (objectURL)';
+      if(typeof window.renderAllVideosPublic === 'function') window.renderAllVideosPublic();
+      console.info('Saved objectURL for test:', url);
+    } catch(err){
+      console.error('Handler upload error:', err);
+      uploadStatus.textContent = '❌ Errore interno: vedi Console';
+      freshBtn.disabled = false; freshBtn.classList.remove('loading');
+    } finally {
+      freshBtn.disabled = false; freshBtn.classList.remove('loading');
+      setTimeout(()=>uploadStatus.textContent = '', 2500);
     }
-
-    const videoUrl = data.secure_url;
-    if (!videoUrl) {
-      uploadStatus.textContent = '❌ Errore: URL non ricevuto.';
-      return;
-    }
-
-    const card = createVideoCard(videoUrl, title, 0);
-    videoContainer.prepend(card);
-
-    const savedVideos = JSON.parse(localStorage.getItem('jiorroVideos') || '[]');
-    savedVideos.unshift({ url: videoUrl, title, views: 0 });
-    localStorage.setItem('jiorroVideos', JSON.stringify(savedVideos));
-
-    uploadStatus.style.color = 'green';
-    uploadStatus.textContent = '✅ Video caricato!';
-    videoFile.value = '';
-    videoTitle.value = '';
-  } catch (err) {
-    uploadStatus.textContent = '❌ Errore durante l\'upload.';
-  }
-});
-
-// 🔍 Ricerca interna video
-searchVideos.addEventListener('input', () => {
-  const term = searchVideos.value.toLowerCase();
-  const cards = videoContainer.querySelectorAll('.video-card');
-  cards.forEach(card => {
-    const src = card.querySelector('video')?.src.toLowerCase() || '';
-    const title = card.querySelector('.video-title')?.textContent.toLowerCase() || '';
-    const match = src.includes(term) || title.includes(term);
-    card.style.display = match ? 'flex' : 'none';
-  });
-});
-
-// 🧩 Crea card video con views e protezione
-function createVideoCard(url, title, views = 0) {
-  const card = document.createElement('div');
-  card.className = 'video-card';
-
-  const videoEl = document.createElement('video');
-  videoEl.src = url;
-  videoEl.controls = true;
-  videoEl.setAttribute('playsinline', '');
-  videoEl.setAttribute('preload', 'metadata');
-  videoEl.setAttribute('controlsList', 'nodownload'); // 🔒 blocca download
-  videoEl.addEventListener('contextmenu', e => e.preventDefault()); // 🔒 blocca clic destro
-
-  const titleEl = document.createElement('div');
-  titleEl.className = 'video-title';
-  titleEl.textContent = title || 'Video senza titolo';
-
-  const viewsEl = document.createElement('div');
-  viewsEl.className = 'video-views';
-  viewsEl.textContent = `👁️ ${views} views`;
-
-  videoEl.addEventListener('play', () => {
-    views++;
-    viewsEl.textContent = `👁️ ${views} views`;
-
-    const savedVideos = JSON.parse(localStorage.getItem('jiorroVideos') || '[]');
-    const updated = savedVideos.map(v =>
-      v.url === url ? { ...v, views } : v
-    );
-    localStorage.setItem('jiorroVideos', JSON.stringify(updated));
   });
 
-  card.appendChild(videoEl);
-  card.appendChild(titleEl);
-  card.appendChild(viewsEl);
-  return card;
-}
+  console.log('Handler installato. Prova a selezionare un file e premere Carica.');
+})();
