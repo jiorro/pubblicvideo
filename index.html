@@ -8,7 +8,8 @@
     :root{ --bg:#0f0f10; --panel:#17171a; --border:#2b2b30; --text:#e8eefb; --muted:#aeb3bd; --accent:#6ff66f; --brand:#66aaff; --danger:#ff6666; --shadow: rgba(0,0,0,0.35); }
     html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;}
     *{box-sizing:border-box}
-    .topbar{position:fixed;top:0;left:0;right:0;height:64px;display:flex;align-items:center;justify-content:flex-end;padding:0 18px;background:linear-gradient(to bottom, rgba(23,23,26,0.98), rgba(23,23,26,0.8));border-bottom:1px solid var(--border);z-index:1000}
+    .topbar{position:fixed;top:0;left:0;right:0;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:linear-gradient(to bottom, rgba(23,23,26,0.98), rgba(23,23,26,0.8));border-bottom:1px solid var(--border);z-index:1000}
+    .brand{display:flex;gap:10px;align-items:center;font-weight:600;color:var(--text)}
     .lens-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-size:20px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
     .status{position:fixed;top:70px;right:20px;font-size:13px;color:var(--muted);z-index:950;text-align:right;min-width:220px}
     .section{padding-top:96px;min-height:100vh}
@@ -19,9 +20,11 @@
     .btn{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
     .btn.loading{opacity:.6;pointer-events:none}
     .input{background:var(--panel);border:1px solid var(--border);padding:8px 10px;border-radius:10px;color:var(--text)}
+    .select{background:var(--panel);border:1px solid var(--border);padding:8px 10px;border-radius:10px;color:var(--text)}
     .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:12px}
     .card{background:var(--panel);border:1px solid var(--border);padding:10px;border-radius:12px;box-shadow:0 10px 30px var(--shadow);display:flex;flex-direction:column;gap:8px}
     .card video{width:100%;border-radius:8px;background:black}
+    .card .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);z-index:1200}
     .modal.show{display:flex}
     .modal-panel{width:92%;max-width:760px;background:var(--panel);border:1px solid var(--border);padding:18px;border-radius:12px;box-shadow:0 14px 44px var(--shadow)}
@@ -30,19 +33,31 @@
     .status-line{margin-top:8px;color:var(--muted);min-height:18px}
     .overlay-fullscreen{position:fixed;inset:0;z-index:20000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.98)}
     .overlay-fullscreen video{width:100%;height:100%;object-fit:contain;background:black}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid var(--border);border-radius:999px;font-size:12px;color:var(--muted)}
   </style>
 </head>
 <body>
   <header class="topbar" role="banner">
-    <button id="lensBtn" class="lens-btn" aria-label="Apri video">🔍</button>
+    <div class="brand">Jiorro — Video manager</div>
+    <div style="display:flex;gap:10px">
+      <span class="pill" title="Premi J per overlay">Preset: J</span>
+      <button id="lensBtn" class="lens-btn" aria-label="Apri video">🔍</button>
+    </div>
   </header>
 
   <div id="statusEl" class="status" aria-live="polite"></div>
 
   <main id="homeSection" class="section">
     <div class="panel">
-      <h1>Jiorro — Video manager</h1>
-      <p>Premi <strong>J</strong> per il preset full-screen. Usa "Carica" per testare (fallback objectURL) o configura Cloudinary upload preset unsigned per upload reale.</p>
+      <h1>Benvenuto</h1>
+      <p>Importa automaticamente i video da Cloudinary, cerca, riproduci, testa upload e usa l’overlay full-screen con J.</p>
+      <ul>
+        <li class="pill">Import automatico</li>
+        <li class="pill">Runtime .webm → .mp4</li>
+        <li class="pill">Ricerca client</li>
+        <li class="pill">Upload preset / fallback</li>
+      </ul>
+      <p style="color:var(--muted)">Suggerimento: clicca 🔍 per aprire la sezione video.</p>
     </div>
   </main>
 
@@ -51,7 +66,13 @@
       <div class="video-toolbar panel" role="toolbar">
         <button id="openUpload" class="btn" aria-controls="uploadModal" aria-expanded="false">⬆️ Carica</button>
         <input id="searchVideos" class="input" placeholder="Cerca video per titolo o URL" />
+        <select id="sortSelect" class="select" aria-label="Ordina">
+          <option value="recent">Più recenti</option>
+          <option value="views">Più visti</option>
+          <option value="title">Titolo</option>
+        </select>
         <button id="backHome" class="btn">🏠 Home</button>
+        <button id="diagnoseBtn" class="btn">🩺 Diagnostica</button>
       </div>
 
       <div id="videoContainer" class="cards" aria-live="polite" aria-busy="false"></div>
@@ -76,7 +97,7 @@
       </div>
       <div id="uploadStatus" class="status-line" aria-live="polite"></div>
       <hr style="margin-top:12px;border-color:var(--border)">
-      <div style="font-size:13px;color:var(--muted)">Nota: per upload diretto il preset server-side deve essere unsigned o devi usare un backend per firmare le richieste.</div>
+      <div style="font-size:13px;color:var(--muted)">Nota: per upload diretto usa un preset unsigned o un backend che firma le richieste.</div>
     </div>
   </div>
 
@@ -84,8 +105,8 @@
     document.addEventListener('DOMContentLoaded', () => {
       /* CONFIG CLIENT (non includere API secret qui) */
       const STORAGE_KEY = 'jiorroVideos_v3';
-      const CLOUDINARY_CLOUD = 'dng8rjd6u'; // il tuo cloud name
-      const UPLOAD_PRESET = '';             // inserisci preset unsigned se vuoi upload reale dal browser
+      const CLOUDINARY_CLOUD = 'dng8rjd6u';
+      const UPLOAD_PRESET = ''; // se hai un preset unsigned, mettilo qui
       const CLOUDINARY_URL = CLOUDINARY_CLOUD ? `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload` : '';
       const PRESET_LOCAL_PATH = 'https://res.cloudinary.com/dng8rjd6u/video/upload/f_mp4/v1763226447/Screen_recording_2025-11-15_17.24.42_yrffoa.mp4';
 
@@ -109,6 +130,8 @@
       const uploadStatus = document.getElementById('uploadStatus');
       const progressBar = document.getElementById('uploadProgress');
       const searchVideos = document.getElementById('searchVideos');
+      const diagnoseBtn = document.getElementById('diagnoseBtn');
+      const sortSelect = document.getElementById('sortSelect');
 
       /* NAV */
       function showHome(){ homeSection.classList.remove('hidden'); videoSection.classList.add('hidden'); showStatus(''); }
@@ -134,7 +157,8 @@
       function createCard(item){
         const card = document.createElement('div'); card.className='card video-card';
         const v = document.createElement('video');
-        v.controls = true; v.preload = 'metadata'; v.setAttribute('controlsList','nodownload'); v.addEventListener('contextmenu', e=>e.preventDefault());
+        v.controls = true; v.preload = 'metadata'; v.playsInline = true;
+        v.setAttribute('controlsList','nodownload'); v.addEventListener('contextmenu', e=>e.preventDefault());
 
         const candidate = tryMp4FromCloudinary(item.url || '');
         const s = document.createElement('source');
@@ -144,7 +168,10 @@
         v.appendChild(s);
 
         const t = document.createElement('div'); t.className='title'; t.textContent = item.title || 'Video senza titolo';
-        const vw = document.createElement('div'); vw.className='views'; vw.textContent = '👁️ ' + (item.views || 0) + ' views';
+        const meta = document.createElement('div'); meta.className='meta';
+
+        const vw = document.createElement('span'); vw.textContent = '👁️ ' + (item.views || 0) + ' views';
+        const dt = document.createElement('span'); dt.textContent = item.uploadedAt ? new Date(item.uploadedAt).toLocaleString() : '';
 
         let counted = false;
         v.addEventListener('play', () => {
@@ -155,19 +182,28 @@
           vw.textContent = '👁️ ' + ((updated && updated.views) || 0) + ' views';
         });
 
-        card.appendChild(v); card.appendChild(t); card.appendChild(vw);
+        meta.appendChild(vw); meta.appendChild(dt);
+        card.appendChild(v); card.appendChild(t); card.appendChild(meta);
         return card;
       }
 
       function renderAll(){
         if(!videoContainer) return;
         videoContainer.innerHTML = '';
-        const saved = getSaved().filter(v => v.published !== false).sort((a,b)=> (b.views||0)-(a.views||0));
+        let saved = getSaved().filter(v => v.published !== false);
+
+        const sortBy = sortSelect?.value || 'recent';
+        if(sortBy === 'views') saved = saved.sort((a,b)=> (b.views||0)-(a.views||0));
+        else if(sortBy === 'title') saved = saved.sort((a,b)=> (a.title||'').localeCompare(b.title||''));
+        else saved = saved; // recent: come inseriti (unshift)
+
         if(!saved.length){
           const info = document.createElement('div'); info.style.color='var(--muted)'; info.textContent='Nessun video pubblicato. Carica o importa da Cloudinary.'; videoContainer.appendChild(info);
         } else saved.forEach(i => videoContainer.appendChild(createCard(i)));
       }
       window.renderAllVideosPublic = renderAll;
+
+      sortSelect.addEventListener('change', renderAll);
 
       /* UPLOAD handler (robusto) */
       function uploadToCloudinaryXHR(file, preset, cloudUrl, onProgress){
@@ -242,7 +278,10 @@
         overlayVideoEl.focus(); overlayVideoEl.play().catch(()=>{});
       }
       function removeOverlay(){ if(!overlayEl) return; try{ overlayEl.remove(); }catch(e){} overlayEl=null; overlayVideoEl=null; document.documentElement.style.overflow=''; document.body.style.overflow=''; }
-      document.addEventListener('keydown', (e) => { const active = document.activeElement; if(active && (active.tagName==='INPUT' || active.tagName==='TEXTAREA')) return; if(e.key && e.key.toLowerCase()==='j') buildOverlay(PRESET_LOCAL_PATH); });
+      document.addEventListener('keydown', (e) => {
+        const active = document.activeElement; if(active && (active.tagName==='INPUT' || active.tagName==='TEXTAREA')) return;
+        if(e.key && e.key.toLowerCase()==='j'){ const first = getSaved()[0]?.url || PRESET_LOCAL_PATH; buildOverlay(first); }
+      });
 
       /* SEARCH simple */
       searchVideos && searchVideos.addEventListener('input', () => {
@@ -255,9 +294,10 @@
       });
 
       /* DIAGNOSTICA */
+      diagnoseBtn.addEventListener('click', async () => { await window.checkSavedUrls?.(); });
       window.checkSavedUrls = async function(){
         const list = getSaved();
-        if(!list.length){ console.warn('Nessun elemento salvato.'); return; }
+        if(!list.length){ console.warn('Nessun elemento salvato.'); showStatus('Nessun elemento salvato'); return; }
         console.info('Controllo', list.length, 'url salvati...');
         for(let i=0;i<list.length;i++){
           const it=list[i];
@@ -270,6 +310,7 @@
           } catch(err){ console.error('fetch error', err); }
           console.groupEnd();
         }
+        showStatus('Diagnostica completata');
       };
 
       /* IMPORT FROM SERVERLESS (cloudinary-list) */
@@ -285,7 +326,7 @@
           data.items.reverse().forEach(it => {
             const url = it.url;
             const candidate = tryMp4FromCloudinary(url);
-            if(!merged.find(m => m.url === candidate)) merged.unshift({ url: candidate, title: it.title || it.public_id, views:0, published:true });
+            if(candidate && !merged.find(m => m.url === candidate)) merged.unshift({ url: candidate, title: it.title || it.public_id, views:0, published:true, uploadedAt:Date.now() });
           });
           localStorage.setItem(key, JSON.stringify(merged));
           if(typeof window.renderAllVideosPublic === 'function') window.renderAllVideosPublic();
@@ -297,11 +338,10 @@
 
       /* INIT */
       try { renderAll(); ensureUploadHandler(); console.info('Client init complete'); } catch(e){ console.error(e); }
-      // importa da Cloudinary-serverless: chiamala se hai già deployato l'endpoint
-      // se stai testando localmente senza endpoint, commenta la riga seguente
       loadCloudinaryListAndRender();
 
     }); // DOMContentLoaded
   </script>
 </body>
 </html>
+
