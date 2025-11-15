@@ -1,12 +1,14 @@
-// 🔍 Accesso con lente
+// Riferimenti agli elementi
 const input = document.getElementById('searchInput');
 const result = document.getElementById('searchResult');
 const searchBtn = document.getElementById('searchBtn');
 const home = document.getElementById('homeSection');
 const video = document.getElementById('videoSection');
 
+// 🔍 Accesso con lente
 searchBtn.addEventListener('click', () => {
   const value = input.value.trim().toLowerCase();
+
   if (value === 'jiorr0') {
     result.textContent = '✅ Accesso consentito';
     result.style.color = '#6f6';
@@ -28,7 +30,7 @@ searchBtn.addEventListener('click', () => {
   }
 });
 
-// 🎥 Video upload + views
+// 🎥 Upload e gestione video
 const openUpload = document.getElementById('openUpload');
 const closeUpload = document.getElementById('closeUpload');
 const uploadModal = document.getElementById('uploadModal');
@@ -39,10 +41,11 @@ const videoContainer = document.getElementById('videoContainer');
 const searchVideos = document.getElementById('searchVideos');
 const uploadStatus = document.getElementById('uploadStatus');
 
-// 🔁 Carica video salvati
+// 🔁 Carica video salvati e ordina per views
 window.addEventListener('DOMContentLoaded', () => {
   const savedVideos = JSON.parse(localStorage.getItem('jiorroVideos') || '[]');
-  savedVideos.sort((a, b) => (b.views || 0) - (a.views || 0))
+  savedVideos
+    .sort((a, b) => (b.views || 0) - (a.views || 0))
     .forEach(({ url, title, views }) => {
       const card = createVideoCard(url, title, views || 0);
       videoContainer.appendChild(card);
@@ -63,8 +66,13 @@ uploadBtn.addEventListener('click', async () => {
   const file = videoFile.files[0];
   const title = videoTitle.value.trim();
 
-  if (!file || !file.type.startsWith('video/')) {
-    uploadStatus.textContent = '❌ Seleziona un file video valido.';
+  if (!file) {
+    uploadStatus.textContent = '❌ Seleziona un file video.';
+    return;
+  }
+
+  if (!file.type.startsWith('video/')) {
+    uploadStatus.textContent = '❌ Il file non è un video valido.';
     return;
   }
 
@@ -81,12 +89,18 @@ uploadBtn.addEventListener('click', async () => {
     });
 
     const data = await res.json();
-    if (data.error || !data.secure_url) {
-      uploadStatus.textContent = '❌ Errore durante l\'upload.';
+
+    if (data.error) {
+      uploadStatus.textContent = '❌ Errore Cloudinary: ' + data.error.message;
       return;
     }
 
     const videoUrl = data.secure_url;
+    if (!videoUrl) {
+      uploadStatus.textContent = '❌ Errore: URL non ricevuto.';
+      return;
+    }
+
     const card = createVideoCard(videoUrl, title, 0);
     videoContainer.prepend(card);
 
@@ -98,7 +112,7 @@ uploadBtn.addEventListener('click', async () => {
     uploadStatus.textContent = '✅ Video caricato!';
     videoFile.value = '';
     videoTitle.value = '';
-  } catch {
+  } catch (err) {
     uploadStatus.textContent = '❌ Errore durante l\'upload.';
   }
 });
@@ -111,11 +125,11 @@ searchVideos.addEventListener('input', () => {
     const src = card.querySelector('video')?.src.toLowerCase() || '';
     const title = card.querySelector('.video-title')?.textContent.toLowerCase() || '';
     const match = src.includes(term) || title.includes(term);
-    card.style.display = match ? 'block' : 'none';
+    card.style.display = match ? 'flex' : 'none';
   });
 });
 
-// 🧩 Crea card video con views
+// 🧩 Crea card video con views e protezione
 function createVideoCard(url, title, views = 0) {
   const card = document.createElement('div');
   card.className = 'video-card';
@@ -125,8 +139,8 @@ function createVideoCard(url, title, views = 0) {
   videoEl.controls = true;
   videoEl.setAttribute('playsinline', '');
   videoEl.setAttribute('preload', 'metadata');
-  videoEl.setAttribute('controlsList', 'nodownload');
-  videoEl.addEventListener('contextmenu', e => e.preventDefault());
+  videoEl.setAttribute('controlsList', 'nodownload'); // 🔒 blocca download
+  videoEl.addEventListener('contextmenu', e => e.preventDefault()); // 🔒 blocca clic destro
 
   const titleEl = document.createElement('div');
   titleEl.className = 'video-title';
