@@ -1,3 +1,34 @@
+// 🔍 Accesso con lente
+const input = document.getElementById('searchInput');
+const result = document.getElementById('searchResult');
+const searchBtn = document.getElementById('searchBtn');
+const home = document.getElementById('homeSection');
+const video = document.getElementById('videoSection');
+
+searchBtn.addEventListener('click', () => {
+  const value = input.value.trim().toLowerCase();
+  if (value === 'jiorr0') {
+    result.textContent = '✅ Accesso consentito';
+    result.style.color = '#6f6';
+    setTimeout(() => {
+      home.style.display = 'none';
+      video.style.display = 'block';
+      result.textContent = '';
+      input.value = '';
+    }, 300);
+  } else if (value.length > 0) {
+    result.textContent = '❌ Non trovato';
+    result.style.color = '#f66';
+    video.style.display = 'none';
+    home.style.display = 'block';
+  } else {
+    result.textContent = '';
+    video.style.display = 'none';
+    home.style.display = 'block';
+  }
+});
+
+// 🎥 Video upload + views
 const openUpload = document.getElementById('openUpload');
 const closeUpload = document.getElementById('closeUpload');
 const uploadModal = document.getElementById('uploadModal');
@@ -5,14 +36,13 @@ const uploadBtn = document.getElementById('uploadBtn');
 const videoFile = document.getElementById('videoFile');
 const videoTitle = document.getElementById('videoTitle');
 const videoContainer = document.getElementById('videoContainer');
-const searchInput = document.getElementById('searchInput');
+const searchVideos = document.getElementById('searchVideos');
 const uploadStatus = document.getElementById('uploadStatus');
 
-// 🔁 Carica video salvati e ordina per views
+// 🔁 Carica video salvati
 window.addEventListener('DOMContentLoaded', () => {
   const savedVideos = JSON.parse(localStorage.getItem('jiorroVideos') || '[]');
-  savedVideos
-    .sort((a, b) => (b.views || 0) - (a.views || 0))
+  savedVideos.sort((a, b) => (b.views || 0) - (a.views || 0))
     .forEach(({ url, title, views }) => {
       const card = createVideoCard(url, title, views || 0);
       videoContainer.appendChild(card);
@@ -33,13 +63,8 @@ uploadBtn.addEventListener('click', async () => {
   const file = videoFile.files[0];
   const title = videoTitle.value.trim();
 
-  if (!file) {
-    uploadStatus.textContent = '❌ Seleziona un file video.';
-    return;
-  }
-
-  if (!file.type.startsWith('video/')) {
-    uploadStatus.textContent = '❌ Il file non è un video valido.';
+  if (!file || !file.type.startsWith('video/')) {
+    uploadStatus.textContent = '❌ Seleziona un file video valido.';
     return;
   }
 
@@ -56,18 +81,12 @@ uploadBtn.addEventListener('click', async () => {
     });
 
     const data = await res.json();
-
-    if (data.error) {
-      uploadStatus.textContent = '❌ Errore Cloudinary: ' + data.error.message;
+    if (data.error || !data.secure_url) {
+      uploadStatus.textContent = '❌ Errore durante l\'upload.';
       return;
     }
 
     const videoUrl = data.secure_url;
-    if (!videoUrl) {
-      uploadStatus.textContent = '❌ Errore: URL non ricevuto.';
-      return;
-    }
-
     const card = createVideoCard(videoUrl, title, 0);
     videoContainer.prepend(card);
 
@@ -79,24 +98,24 @@ uploadBtn.addEventListener('click', async () => {
     uploadStatus.textContent = '✅ Video caricato!';
     videoFile.value = '';
     videoTitle.value = '';
-  } catch (err) {
+  } catch {
     uploadStatus.textContent = '❌ Errore durante l\'upload.';
   }
 });
 
-// 🔍 Ricerca
-searchInput.addEventListener('input', () => {
-  const term = searchInput.value.toLowerCase();
+// 🔍 Ricerca interna video
+searchVideos.addEventListener('input', () => {
+  const term = searchVideos.value.toLowerCase();
   const cards = videoContainer.querySelectorAll('.video-card');
   cards.forEach(card => {
     const src = card.querySelector('video')?.src.toLowerCase() || '';
     const title = card.querySelector('.video-title')?.textContent.toLowerCase() || '';
     const match = src.includes(term) || title.includes(term);
-    card.style.display = match ? 'flex' : 'none';
+    card.style.display = match ? 'block' : 'none';
   });
 });
 
-// 🧩 Crea card video con views e protezione
+// 🧩 Crea card video con views
 function createVideoCard(url, title, views = 0) {
   const card = document.createElement('div');
   card.className = 'video-card';
@@ -106,8 +125,8 @@ function createVideoCard(url, title, views = 0) {
   videoEl.controls = true;
   videoEl.setAttribute('playsinline', '');
   videoEl.setAttribute('preload', 'metadata');
-  videoEl.setAttribute('controlsList', 'nodownload'); // 🔒 blocca download
-  videoEl.addEventListener('contextmenu', e => e.preventDefault()); // 🔒 blocca clic destro
+  videoEl.setAttribute('controlsList', 'nodownload');
+  videoEl.addEventListener('contextmenu', e => e.preventDefault());
 
   const titleEl = document.createElement('div');
   titleEl.className = 'video-title';
