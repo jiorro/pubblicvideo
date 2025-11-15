@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>ripassastoria Canaan</title>
+  <title>Canaan & Jiorro Video</title>
   <style>
     body {
       margin: 0;
@@ -36,33 +36,16 @@
       position: absolute;
       top: 20px;
       right: 30px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    input[type="text"] {
-      padding: 10px;
-      font-size: 16px;
-      background: #333;
-      color: #fff;
-      border: 1px solid #555;
     }
     .search-icon {
       background: none;
       border: none;
       cursor: pointer;
-      font-size: 22px;
+      font-size: 28px;
       color: #fff;
     }
     .search-icon:hover {
       color: #6f6;
-    }
-    .result {
-      position: absolute;
-      top: 60px;
-      right: 30px;
-      font-size: 18px;
-      color: #f66;
     }
     #videoSection {
       display: none;
@@ -92,12 +75,10 @@
 </head>
 <body>
 
-  <!-- 🔍 Barra di ricerca -->
+  <!-- 🔍 Lente -->
   <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Cerca qualcosa...">
     <button class="search-icon" id="searchBtn">🔍</button>
   </div>
-  <div class="result" id="searchResult"></div>
 
   <!-- 🧭 Home Section -->
   <div id="homeSection">
@@ -108,7 +89,6 @@
         <p>Fenici: Si insediarono principalmente lungo la costa orientale del Mar Mediterraneo, in quella che corrisponde all'odierno Libano. Le loro città-stato più importanti erano Biblo, Sidone e Tiro, da cui partirono per fondare numerose colonie nel Mediterraneo, inclusa Cartagine.</p>
         <p>Ebrei: Si stabilirono nell'entroterra della regione di Canaan, occupando l'area che divenne in seguito la Terra d'Israele o Palestina, una regione percorsa da nord a sud dal fiume Giordano.</p>
         <p>Le mappe storiche mostrano i Fenici stanziati in una stretta striscia costiera a nord, mentre il territorio degli Ebrei si estendeva più a sud e nell'entroterra, fino al Mar Morto. Entrambi i popoli interagirono in questa regione, talvolta in conflitto con le popolazioni cananee originarie e con i Filistei.</p>
-        <p>Per visualizzare queste posizioni, si possono cercare online mappe storiche intitolate "Mappa storica di Canaan" o "Mappa Ebrei e Fenici".</p>
       </div>
       <div class="image-section">
         <img src="canaan-map.jpg" alt="Cartina della regione di Canaan">
@@ -134,37 +114,17 @@
   </div>
 
   <script>
-    const input = document.getElementById('searchInput');
-    const result = document.getElementById('searchResult');
     const searchBtn = document.getElementById('searchBtn');
     const home = document.getElementById('homeSection');
     const video = document.getElementById('videoSection');
 
-    // 🔍 Accesso con lente
+    // 🔍 Basta cliccare la lente per aprire la sezione video
     searchBtn.addEventListener('click', () => {
-      const value = input.value.trim().toLowerCase();
-      if (value === 'jiorr0') {
-        result.textContent = '✅ Accesso consentito';
-        result.style.color = '#6f6';
-        setTimeout(() => {
-          home.style.display = 'none';
-          video.style.display = 'block';
-          result.textContent = '';
-          input.value = '';
-        }, 300);
-      } else if (value.length > 0) {
-        result.textContent = '❌ Non trovato';
-        result.style.color = '#f66';
-        video.style.display = 'none';
-        home.style.display = 'block';
-      } else {
-        result.textContent = '';
-        video.style.display = 'none';
-        home.style.display = 'block';
-      }
+      home.style.display = 'none';
+      video.style.display = 'block';
     });
 
-    // 🎥 JS che mi hai passato
+    // 🎥 Upload e gestione video
     const openUpload = document.getElementById('openUpload');
     const closeUpload = document.getElementById('closeUpload');
     const uploadModal = document.getElementById('uploadModal');
@@ -175,7 +135,6 @@
     const searchVideos = document.getElementById('searchVideos');
     const uploadStatus = document.getElementById('uploadStatus');
 
-    // 🔁 Carica video salvati e ordina per views
     window.addEventListener('DOMContentLoaded', () => {
       const savedVideos = JSON.parse(localStorage.getItem('jiorroVideos') || '[]');
       savedVideos
@@ -217,4 +176,51 @@
       formData.append('upload_preset', 'jiorro_upload');
 
       try {
-        const res = await fetch('https://api.cloudinary.com/v1_
+        const res = await fetch('https://api.cloudinary.com/v1_1/dng8rjd6u/auto/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+
+        if (data.error) {
+          uploadStatus.textContent = '❌ Errore Cloudinary: ' + data.error.message;
+          return;
+        }
+
+        const videoUrl = data.secure_url;
+        if (!videoUrl) {
+          uploadStatus.textContent = '❌ Errore: URL non ricevuto.';
+          return;
+        }
+
+        const card = createVideoCard(videoUrl, title, 0);
+        videoContainer.prepend(card);
+
+        const savedVideos = JSON.parse(localStorage.getItem('jiorroVideos') || '[]');
+        savedVideos.unshift({ url: videoUrl, title, views: 0 });
+        localStorage.setItem('jiorroVideos', JSON.stringify(savedVideos));
+
+        uploadStatus.style.color = 'green';
+        uploadStatus.textContent = '✅ Video caricato!';
+        videoFile.value = '';
+        videoTitle.value = '';
+      } catch (err) {
+        uploadStatus.textContent = '❌ Errore durante l\'upload.';
+      }
+    });
+
+    searchVideos.addEventListener('input', () => {
+      const term = searchVideos.value.toLowerCase();
+      const cards = videoContainer.querySelectorAll('.video-card');
+      cards.forEach(card => {
+        const src = card.querySelector('video')?.src.toLowerCase() || '';
+        const title = card.querySelector('.video-title')?.textContent.toLowerCase() || '';
+        const match = src.includes(term) || title.includes(term);
+        card.style.display = match ? 'flex' : 'none';
+      });
+    });
+
+    function createVideoCard(url, title, views = 0) {
+      const card = document.createElement('div');
+      card.className
