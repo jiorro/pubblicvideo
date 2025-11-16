@@ -339,6 +339,38 @@
       /* INIT */
       try { renderAll(); ensureUploadHandler(); console.info('Client init complete'); } catch(e){ console.error(e); }
       loadCloudinaryListAndRender();
+<script>
+async function loadCloudinaryListAndRender(){
+  try {
+    const r = await fetch('/api/cloudinary-list');
+    if(!r.ok){ console.error('Fetch cloudinary-list failed', r.status); return; }
+    const data = await r.json();
+    if(!Array.isArray(data.items)) { console.warn('No items from cloudinary-list'); return; }
+
+    const key = 'jiorroVideos_v3';
+    const existing = JSON.parse(localStorage.getItem(key) || '[]');
+    const merged = [...existing];
+
+    data.items.reverse().forEach(it => {
+      const candidate = it.url.includes('/video/upload/')
+        ? it.url.replace('/video/upload/','/video/upload/f_mp4/').replace(/\.webm($|\?)/i,'.mp4$1')
+        : it.url;
+      if(candidate && !merged.find(m=>m.url===candidate)){
+        merged.unshift({ url: candidate, title: it.title||it.public_id, views:0, published:true });
+      }
+    });
+
+    localStorage.setItem(key, JSON.stringify(merged));
+    if(typeof window.renderAllVideosPublic === 'function') window.renderAllVideosPublic();
+    console.info('Cloudinary list imported, items:', data.items.length);
+  } catch(e){
+    console.error('loadCloudinaryListAndRender error', e);
+  }
+}
+
+// chiamala all’avvio
+document.addEventListener('DOMContentLoaded', loadCloudinaryListAndRender);
+</script>
 
     }); // DOMContentLoaded
   </script>
