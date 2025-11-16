@@ -1,68 +1,103 @@
 <!doctype html>
 <html lang="it">
 <head>
+  <!-- Meta base -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Jiorro — Video manager</title>
+
+  <!-- Stili: tema scuro pulito, responsive -->
   <style>
-    :root{ --bg:#0f0f10; --panel:#17171a; --border:#2b2b30; --text:#e8eefb; --muted:#aeb3bd; --accent:#6ff66f; --brand:#66aaff; --danger:#ff6666; --shadow: rgba(0,0,0,0.35); }
+    :root{
+      --bg:#0f0f10; --panel:#17171a; --border:#2b2b30; --text:#e8eefb; --muted:#aeb3bd;
+      --accent:#6ff66f; --brand:#66aaff; --danger:#ff6666; --shadow: rgba(0,0,0,0.35);
+    }
     html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;}
     *{box-sizing:border-box}
-    .topbar{position:fixed;top:0;left:0;right:0;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:linear-gradient(to bottom, rgba(23,23,26,0.98), rgba(23,23,26,0.8));border-bottom:1px solid var(--border);z-index:1000}
+
+    /* Topbar e brand */
+    .topbar{
+      position:fixed;top:0;left:0;right:0;height:64px;display:flex;align-items:center;justify-content:space-between;
+      padding:0 18px;background:linear-gradient(to bottom, rgba(23,23,26,0.98), rgba(23,23,26,0.8));
+      border-bottom:1px solid var(--border);z-index:1000
+    }
     .brand{display:flex;gap:10px;align-items:center;font-weight:600;color:var(--text)}
+    .actions{display:flex;gap:10px;align-items:center}
+
+    /* Bottoni, input, pill */
+    .btn{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+    .btn.loading{opacity:.6;pointer-events:none}
     .lens-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-size:20px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
-    .status{position:fixed;top:70px;right:20px;font-size:13px;color:var(--muted);z-index:950;text-align:right;min-width:220px}
+    .input{background:var(--panel);border:1px solid var(--border);padding:8px 10px;border-radius:10px;color:var(--text);min-width:200px}
+    .select{background:var(--panel);border:1px solid var(--border);padding:8px 10px;border-radius:10px;color:var(--text)}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid var(--border);border-radius:999px;font-size:12px;color:var(--muted)}
+
+    /* Layout sezioni */
     .section{padding-top:96px;min-height:100vh}
     .hidden{display:none}
     .panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:0 14px 36px var(--shadow)}
+
+    /* Stato in alto a destra */
+    .status{position:fixed;top:70px;right:20px;font-size:13px;color:var(--muted);z-index:950;text-align:right;min-width:260px}
+    .status.error{color:var(--danger)}
+    .status.success{color:var(--accent)}
+    .status.info{color:var(--brand)}
+
+    /* Griglia video */
     .video-container{padding:28px;display:grid;gap:16px}
     .video-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px;border-radius:12px}
-    .btn{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
-    .btn.loading{opacity:.6;pointer-events:none}
-    .input{background:var(--panel);border:1px solid var(--border);padding:8px 10px;border-radius:10px;color:var(--text)}
-    .select{background:var(--panel);border:1px solid var(--border);padding:8px 10px;border-radius:10px;color:var(--text)}
-    .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:12px}
+    .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:12px}
     .card{background:var(--panel);border:1px solid var(--border);padding:10px;border-radius:12px;box-shadow:0 10px 30px var(--shadow);display:flex;flex-direction:column;gap:8px}
     .card video{width:100%;border-radius:8px;background:black}
+    .card .title{font-weight:600}
     .card .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+    .card .url{font-size:11px;color:var(--muted);word-break:break-all}
+
+    /* Modale upload */
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);z-index:1200}
     .modal.show{display:flex}
     .modal-panel{width:92%;max-width:760px;background:var(--panel);border:1px solid var(--border);padding:18px;border-radius:12px;box-shadow:0 14px 44px var(--shadow)}
     .progress{height:9px;border-radius:999px;background:#0b0b0d;margin-top:8px;overflow:hidden}
     .progress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--accent));transition:width .2s}
-    .status-line{margin-top:8px;color:var(--muted);min-height:18px}
+
+    /* Overlay full‑screen */
     .overlay-fullscreen{position:fixed;inset:0;z-index:20000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.98)}
     .overlay-fullscreen video{width:100%;height:100%;object-fit:contain;background:black}
-    .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid var(--border);border-radius:999px;font-size:12px;color:var(--muted)}
   </style>
 </head>
 <body>
+  <!-- Topbar con brand e azioni -->
   <header class="topbar" role="banner">
     <div class="brand">Jiorro — Video manager</div>
-    <div style="display:flex;gap:10px">
+    <div class="actions">
       <span class="pill" title="Premi J per overlay">Preset: J</span>
       <button id="lensBtn" class="lens-btn" aria-label="Apri video">🔍</button>
     </div>
   </header>
 
+  <!-- Stato globale -->
   <div id="statusEl" class="status" aria-live="polite"></div>
 
+  <!-- Home introduttiva -->
   <main id="homeSection" class="section">
     <div class="panel">
       <h1>Benvenuto</h1>
-      <p>Importa automaticamente i video da Cloudinary, cerca, riproduci, testa upload e usa l’overlay full-screen con J.</p>
-      <ul>
+      <p>Importa automaticamente i video da Cloudinary, cerca, riproduci, testa upload e usa l’overlay full‑screen con J.</p>
+      <ul style="display:flex;gap:8px;flex-wrap:wrap;list-style:none;padding:0">
         <li class="pill">Import automatico</li>
         <li class="pill">Runtime .webm → .mp4</li>
         <li class="pill">Ricerca client</li>
         <li class="pill">Upload preset / fallback</li>
+        <li class="pill">Diagnostica URL</li>
       </ul>
       <p style="color:var(--muted)">Suggerimento: clicca 🔍 per aprire la sezione video.</p>
     </div>
   </main>
 
+  <!-- Sezione Video -->
   <section id="videoSection" class="section hidden" aria-label="Sezione video">
     <div class="video-container">
+      <!-- Toolbar -->
       <div class="video-toolbar panel" role="toolbar">
         <button id="openUpload" class="btn" aria-controls="uploadModal" aria-expanded="false">⬆️ Carica</button>
         <input id="searchVideos" class="input" placeholder="Cerca video per titolo o URL" />
@@ -75,13 +110,17 @@
         <button id="diagnoseBtn" class="btn">🩺 Diagnostica</button>
       </div>
 
+      <!-- Lista dei video -->
       <div id="videoContainer" class="cards" aria-live="polite" aria-busy="false"></div>
     </div>
   </section>
 
+  <!-- Modale Upload -->
   <div id="uploadModal" class="modal" role="dialog" aria-modal="true">
     <div class="modal-panel" role="document">
       <h3 id="uploadTitle">Upload Video</h3>
+
+      <!-- File + titolo -->
       <div style="margin-top:8px">
         <label for="videoFile">File</label><br>
         <input id="videoFile" type="file" accept="video/*" />
@@ -90,32 +129,48 @@
         <label for="videoTitle">Titolo</label><br>
         <input id="videoTitle" class="input" placeholder="Titolo (opzionale)" />
       </div>
+
+      <!-- Avanzamento -->
       <div class="progress" aria-hidden="true"><i id="uploadProgress"></i></div>
-      <div class="modal-actions" style="margin-top:10px">
+
+      <!-- Azioni -->
+      <div class="modal-actions" style="margin-top:10px;display:flex;gap:8px">
         <button id="uploadBtn" class="btn">Carica</button>
         <button id="closeUpload" class="btn">Chiudi</button>
       </div>
-      <div id="uploadStatus" class="status-line" aria-live="polite"></div>
+
+      <!-- Stato upload -->
+      <div id="uploadStatus" class="status-line" aria-live="polite" style="margin-top:8px;color:var(--muted)"></div>
+
       <hr style="margin-top:12px;border-color:var(--border)">
-      <div style="font-size:13px;color:var(--muted)">Nota: per upload diretto usa un preset unsigned o un backend che firma le richieste.</div>
+      <div style="font-size:13px;color:var(--muted)">
+        Nota: per upload diretto usa un preset unsigned o un backend che firma le richieste.
+      </div>
     </div>
   </div>
 
+  <!-- Script principale: tutto agganciato dopo il DOM -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      /* CONFIG CLIENT (non includere API secret qui) */
+      /* ===========================
+         CONFIG CLIENT
+         =========================== */
       const STORAGE_KEY = 'jiorroVideos_v3';
-      const CLOUDINARY_CLOUD = 'dng8rjd6u';
-      const UPLOAD_PRESET = ''; // se hai un preset unsigned, mettilo qui
-      const CLOUDINARY_URL = CLOUDINARY_CLOUD ? `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload` : '';
+      const CLOUDINARY_CLOUD = 'dng8rjd6u';     // cloud name
+      const UPLOAD_PRESET = '';                 // metti qui il tuo preset unsigned (se lo usi)
+      const CLOUDINARY_URL = CLOUDINARY_CLOUD ? \`https://api.cloudinary.com/v1_1/\${CLOUDINARY_CLOUD}/auto/upload\` : '';
       const PRESET_LOCAL_PATH = 'https://res.cloudinary.com/dng8rjd6u/video/upload/f_mp4/v1763226447/Screen_recording_2025-11-15_17.24.42_yrffoa.mp4';
 
-      /* HELPERS */
+      /* ===========================
+         HELPERS & STATO
+         =========================== */
       function getSaved(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e){ return []; } }
       function setSaved(a){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(a)); } catch(e){} }
       function showStatus(msg, type=''){ const s=document.getElementById('statusEl'); s.textContent=msg||''; s.className='status'+(type?(' '+type):''); }
 
-      /* ELEMENTS */
+      /* ===========================
+         ELEMENTI DOM
+         =========================== */
       const lensBtn = document.getElementById('lensBtn');
       const homeSection = document.getElementById('homeSection');
       const videoSection = document.getElementById('videoSection');
@@ -133,7 +188,9 @@
       const diagnoseBtn = document.getElementById('diagnoseBtn');
       const sortSelect = document.getElementById('sortSelect');
 
-      /* NAV */
+      /* ===========================
+         NAVIGAZIONE
+         =========================== */
       function showHome(){ homeSection.classList.remove('hidden'); videoSection.classList.add('hidden'); showStatus(''); }
       function showVideo(){ homeSection.classList.add('hidden'); videoSection.classList.remove('hidden'); showStatus(''); renderAll(); }
       lensBtn.addEventListener('click', showVideo);
@@ -141,38 +198,51 @@
       openUploadBtn.addEventListener('click', ()=>{ uploadModal.classList.add('show'); openUploadBtn.setAttribute('aria-expanded','true'); });
       closeUploadBtn.addEventListener('click', ()=>{ uploadModal.classList.remove('show'); openUploadBtn.setAttribute('aria-expanded','false'); });
 
-      /* MIGRATION webm -> mp4 runtime */
+      /* ===========================
+         MIGRAZIONE webm -> mp4
+         =========================== */
       function tryMp4FromCloudinary(url){
         if(!url) return url;
         try{
           if(url.endsWith('.mp4')) return url;
           if(url.includes('/video/upload/')) {
-            return url.replace('/video/upload/', '/video/upload/f_mp4/').replace(/\.webm($|\?)/i, '.mp4$1');
+            return url.replace('/video/upload/', '/video/upload/f_mp4/').replace(/\\.webm($|\\?)/i, '.mp4$1');
           }
           return url;
         } catch(e){ return url; }
       }
 
-      /* RENDER */
+      /* ===========================
+         RENDER CARD
+         =========================== */
       function createCard(item){
         const card = document.createElement('div'); card.className='card video-card';
+
+        // Video element
         const v = document.createElement('video');
         v.controls = true; v.preload = 'metadata'; v.playsInline = true;
-        v.setAttribute('controlsList','nodownload'); v.addEventListener('contextmenu', e=>e.preventDefault());
+        v.setAttribute('controlsList','nodownload');
+        v.addEventListener('contextmenu', e=>e.preventDefault());
 
+        // Source con conversione mp4
         const candidate = tryMp4FromCloudinary(item.url || '');
         const s = document.createElement('source');
         s.src = candidate || item.url || '';
-        if((s.src||'').match(/\.mp4($|\?)/i)) s.type = 'video/mp4';
-        else if((s.src||'').match(/\.webm($|\?)/i)) s.type = 'video/webm';
+        if((s.src||'').match(/\\.mp4($|\\?)/i)) s.type = 'video/mp4';
+        else if((s.src||'').match(/\\.webm($|\\?)/i)) s.type = 'video/webm';
         v.appendChild(s);
 
+        // Metadati e titolo
         const t = document.createElement('div'); t.className='title'; t.textContent = item.title || 'Video senza titolo';
         const meta = document.createElement('div'); meta.className='meta';
-
         const vw = document.createElement('span'); vw.textContent = '👁️ ' + (item.views || 0) + ' views';
         const dt = document.createElement('span'); dt.textContent = item.uploadedAt ? new Date(item.uploadedAt).toLocaleString() : '';
+        meta.appendChild(vw); meta.appendChild(dt);
 
+        // URL grezzo (utile per debug/ricerca)
+        const urlEl = document.createElement('div'); urlEl.className='url'; urlEl.textContent = s.src;
+
+        // Conteggio views
         let counted = false;
         v.addEventListener('play', () => {
           if(counted) return; counted = true;
@@ -182,30 +252,39 @@
           vw.textContent = '👁️ ' + ((updated && updated.views) || 0) + ' views';
         });
 
-        meta.appendChild(vw); meta.appendChild(dt);
-        card.appendChild(v); card.appendChild(t); card.appendChild(meta);
+        card.appendChild(v); card.appendChild(t); card.appendChild(meta); card.appendChild(urlEl);
         return card;
       }
 
+      /* ===========================
+         RENDER LISTA
+         =========================== */
       function renderAll(){
         if(!videoContainer) return;
         videoContainer.innerHTML = '';
         let saved = getSaved().filter(v => v.published !== false);
 
+        // Ordinamento
         const sortBy = sortSelect?.value || 'recent';
         if(sortBy === 'views') saved = saved.sort((a,b)=> (b.views||0)-(a.views||0));
         else if(sortBy === 'title') saved = saved.sort((a,b)=> (a.title||'').localeCompare(b.title||''));
-        else saved = saved; // recent: come inseriti (unshift)
+        // recent: ordine di inserimento (unshift), quindi lasciamo così
 
+        // Vuoto vs popolato
         if(!saved.length){
-          const info = document.createElement('div'); info.style.color='var(--muted)'; info.textContent='Nessun video pubblicato. Carica o importa da Cloudinary.'; videoContainer.appendChild(info);
-        } else saved.forEach(i => videoContainer.appendChild(createCard(i)));
+          const info = document.createElement('div'); info.style.color='var(--muted)';
+          info.textContent='Nessun video pubblicato. Carica o importa da Cloudinary.';
+          videoContainer.appendChild(info);
+        } else {
+          saved.forEach(i => videoContainer.appendChild(createCard(i)));
+        }
       }
       window.renderAllVideosPublic = renderAll;
-
       sortSelect.addEventListener('change', renderAll);
 
-      /* UPLOAD handler (robusto) */
+      /* ===========================
+         UPLOAD (preset / fallback)
+         =========================== */
       function uploadToCloudinaryXHR(file, preset, cloudUrl, onProgress){
         return new Promise((resolve, reject) => {
           const form = new FormData();
@@ -215,8 +294,12 @@
           xhr.open('POST', cloudUrl);
           xhr.timeout = 3*60*1000;
           xhr.onload = () => {
-            if(xhr.status >= 200 && xhr.status < 300){ try{ resolve(JSON.parse(xhr.responseText)); } catch(e){ reject(new Error('invalid-json')); } }
-            else { try{ const data = JSON.parse(xhr.responseText); reject(new Error(data?.error?.message || 'upload-failed')); } catch(e){ reject(new Error('upload-failed')); } }
+            if(xhr.status >= 200 && xhr.status < 300){
+              try{ resolve(JSON.parse(xhr.responseText)); } catch(e){ reject(new Error('invalid-json')); }
+            } else {
+              try{ const data = JSON.parse(xhr.responseText); reject(new Error(data?.error?.message || 'upload-failed')); }
+              catch(e){ reject(new Error('upload-failed')); }
+            }
           };
           xhr.onerror = () => reject(new Error('network-error'));
           xhr.ontimeout = () => reject(new Error('timeout'));
@@ -229,27 +312,43 @@
         const btn = uploadBtn;
         const fileEl = fileInput;
         if(!btn || !fileEl) return;
+        // reset event listeners
         btn.replaceWith(btn.cloneNode(true));
         const fresh = document.getElementById('uploadBtn');
+
         fresh.addEventListener('click', async (ev) => {
           ev.preventDefault();
           if(uploadStatus) uploadStatus.textContent = '';
           if(progressBar) progressBar.style.width = '0%';
+
           const f = fileEl.files && fileEl.files[0];
           if(!f){ if(uploadStatus) uploadStatus.textContent = '❌ Seleziona un file.'; return; }
           if(!f.type || !f.type.startsWith('video/')){ if(uploadStatus) uploadStatus.textContent = '❌ Seleziona un video.'; return; }
+
           fresh.disabled = true; fresh.classList.add('loading');
           try {
             if(CLOUDINARY_CLOUD && UPLOAD_PRESET && CLOUDINARY_URL){
-              if(uploadStatus) uploadStatus.textContent = `⏳ Upload ${f.name}`;
-              const res = await uploadToCloudinaryXHR(f, UPLOAD_PRESET, CLOUDINARY_URL, pct => { if(progressBar) progressBar.style.width = pct + '%'; if(uploadStatus) uploadStatus.textContent = `⏳ ${pct}%`; });
+              if(uploadStatus) uploadStatus.textContent = \`⏳ Upload \${f.name}\`;
+              const res = await uploadToCloudinaryXHR(
+                f, UPLOAD_PRESET, CLOUDINARY_URL,
+                pct => { if(progressBar) progressBar.style.width = pct + '%'; if(uploadStatus) uploadStatus.textContent = \`⏳ \${pct}%\`; }
+              );
               if(!res || !res.secure_url) throw new Error('no-url-returned');
-              const saved = getSaved(); saved.unshift({ url: res.secure_url, title: (titleInput.value||f.name), views:0, published:true, uploadedAt:Date.now() }); setSaved(saved);
-              renderAll(); if(uploadStatus) uploadStatus.textContent = '✅ Caricamento completato'; setTimeout(()=>uploadModal.classList.remove('show'),700);
+              const saved = getSaved();
+              saved.unshift({ url: res.secure_url, title: (titleInput.value||f.name), views:0, published:true, uploadedAt:Date.now() });
+              setSaved(saved);
+              renderAll();
+              if(uploadStatus) uploadStatus.textContent = '✅ Caricamento completato';
+              setTimeout(()=>uploadModal.classList.remove('show'),700);
             } else {
+              // Fallback locale (solo test, non persiste su Cloudinary)
               const url = URL.createObjectURL(f);
-              const saved = getSaved(); saved.unshift({ url, title:(titleInput.value||f.name), views:0, published:true, uploadedAt:Date.now(), test:true }); setSaved(saved);
-              renderAll(); if(uploadStatus) uploadStatus.textContent = '✅ File registrato localmente (test)'; setTimeout(()=>uploadModal.classList.remove('show'),700);
+              const saved = getSaved();
+              saved.unshift({ url, title:(titleInput.value||f.name), views:0, published:true, uploadedAt:Date.now(), test:true });
+              setSaved(saved);
+              renderAll();
+              if(uploadStatus) uploadStatus.textContent = '✅ File registrato localmente (test)';
+              setTimeout(()=>uploadModal.classList.remove('show'),700);
             }
           } catch(err){
             console.error('Upload error', err);
@@ -262,13 +361,15 @@
         });
       }
 
-      /* PRESET full-screen (J key) */
+      /* ===========================
+         OVERLAY full‑screen (J)
+         =========================== */
       let overlayEl=null, overlayVideoEl=null;
       function buildOverlay(url){
         removeOverlay();
         overlayEl = document.createElement('div'); overlayEl.className='overlay-fullscreen';
         overlayVideoEl = document.createElement('video');
-        overlayVideoEl.src = url;
+        overlayVideoEl.src = tryMp4FromCloudinary(url);
         overlayVideoEl.controls = true; overlayVideoEl.autoplay = true; overlayVideoEl.playsInline = true;
         overlayVideoEl.setAttribute('controlsList','nodownload');
         overlayVideoEl.addEventListener('dblclick', removeOverlay);
@@ -277,23 +378,36 @@
         document.documentElement.style.overflow='hidden'; document.body.style.overflow='hidden';
         overlayVideoEl.focus(); overlayVideoEl.play().catch(()=>{});
       }
-      function removeOverlay(){ if(!overlayEl) return; try{ overlayEl.remove(); }catch(e){} overlayEl=null; overlayVideoEl=null; document.documentElement.style.overflow=''; document.body.style.overflow=''; }
+      function removeOverlay(){
+        if(!overlayEl) return;
+        try{ overlayEl.remove(); }catch(e){}
+        overlayEl=null; overlayVideoEl=null;
+        document.documentElement.style.overflow=''; document.body.style.overflow='';
+      }
       document.addEventListener('keydown', (e) => {
-        const active = document.activeElement; if(active && (active.tagName==='INPUT' || active.tagName==='TEXTAREA')) return;
-        if(e.key && e.key.toLowerCase()==='j'){ const first = getSaved()[0]?.url || PRESET_LOCAL_PATH; buildOverlay(first); }
+        const active = document.activeElement;
+        if(active && (active.tagName==='INPUT' || active.tagName==='TEXTAREA')) return;
+        if(e.key && e.key.toLowerCase()==='j'){
+          const first = getSaved()[0]?.url || PRESET_LOCAL_PATH;
+          buildOverlay(first);
+        }
       });
 
-      /* SEARCH simple */
+      /* ===========================
+         SEARCH live
+         =========================== */
       searchVideos && searchVideos.addEventListener('input', () => {
         const term = (searchVideos.value||'').toLowerCase();
         document.querySelectorAll('.video-card').forEach(card => {
-          const src = (card.querySelector('video')?.src||'').toLowerCase();
+          const src = (card.querySelector('video')?.querySelector('source')?.src||'').toLowerCase();
           const title = (card.querySelector('.title')?.textContent||'').toLowerCase();
           card.style.display = (!term || src.includes(term) || title.includes(term)) ? '' : 'none';
         });
       });
 
-      /* DIAGNOSTICA */
+      /* ===========================
+         DIAGNOSTICA URL
+         =========================== */
       diagnoseBtn.addEventListener('click', async () => { await window.checkSavedUrls?.(); });
       window.checkSavedUrls = async function(){
         const list = getSaved();
@@ -301,79 +415,70 @@
         console.info('Controllo', list.length, 'url salvati...');
         for(let i=0;i<list.length;i++){
           const it=list[i];
-          console.group(`Item ${i+1}: ${it.title || it.url}`);
+          console.group(\`Item \${i+1}: \${it.title || it.url}\`);
           console.log('stored url:', it.url);
           try{
             let res = await fetch(it.url, { method:'HEAD' }).catch(()=>null);
-            if(!res || !res.ok){ res = await fetch(it.url).catch(err=>{ throw err; }); console.log('GET status', res.status, 'content-type', res.headers.get('content-type'), 'x-cld-error', res.headers.get('x-cld-error')); }
-            else console.log('HEAD ok', res.status, 'content-type', res.headers.get('content-type'), 'x-cld-error', res.headers.get('x-cld-error'));
-          } catch(err){ console.error('fetch error', err); }
+            if(!res || !res.ok){
+              res = await fetch(it.url).catch(err=>{ throw err; });
+              console.log('GET status', res.status, 'content-type', res.headers.get('content-type'), 'x-cld-error', res.headers.get('x-cld-error'));
+            } else {
+              console.log('HEAD ok', res.status, 'content-type', res.headers.get('content-type'), 'x-cld-error', res.headers.get('x-cld-error'));
+            }
+          }catch(err){ console.error('fetch error', err); }
           console.groupEnd();
         }
-        showStatus('Diagnostica completata');
+        showStatus('Diagnostica completata', 'info');
       };
 
-      /* IMPORT FROM SERVERLESS (cloudinary-list) */
+      /* ===========================
+         IMPORT da /api/cloudinary-list
+         =========================== */
       async function loadCloudinaryListAndRender(){
         try {
+          showStatus('Import da Cloudinary in corso...', 'info');
           const r = await fetch('/api/cloudinary-list');
-          if(!r.ok){ console.error('Fetch cloudinary-list failed', r.status); return; }
+          if(!r.ok){ console.error('Fetch cloudinary-list failed', r.status); showStatus('Import fallito: '+r.status, 'error'); return; }
           const data = await r.json();
-          if(!Array.isArray(data.items)) { console.warn('No items from cloudinary-list'); return; }
-          const key = STORAGE_KEY;
-          const existing = JSON.parse(localStorage.getItem(key) || '[]');
+          if(!Array.isArray(data.items)) { console.warn('No items from cloudinary-list'); showStatus('Nessun item dal serverless', 'error'); return; }
+
+          const existing = getSaved();
           const merged = [...existing];
-          data.items.reverse().forEach(it => {
-            const url = it.url;
-            const candidate = tryMp4FromCloudinary(url);
-            if(candidate && !merged.find(m => m.url === candidate)) merged.unshift({ url: candidate, title: it.title || it.public_id, views:0, published:true, uploadedAt:Date.now() });
+
+          (data.items||[]).reverse().forEach(it => {
+            const candidate = tryMp4FromCloudinary(it.url);
+            if(candidate && !merged.find(m => m.url === candidate)){
+              merged.unshift({
+                url: candidate,
+                title: it.title || it.public_id,
+                views: 0,
+                published: true,
+                uploadedAt: Date.now()
+              });
+            }
           });
-          localStorage.setItem(key, JSON.stringify(merged));
-          if(typeof window.renderAllVideosPublic === 'function') window.renderAllVideosPublic();
+
+          setSaved(merged);
+          renderAll();
+          showStatus('Import completato: '+(data.items?.length||0)+' elementi', 'success');
           console.info('Cloudinary list imported, items:', data.items.length);
         } catch(e){
           console.error('loadCloudinaryListAndRender error', e);
+          showStatus('Errore import: vedi console', 'error');
         }
       }
 
-      /* INIT */
-      try { renderAll(); ensureUploadHandler(); console.info('Client init complete'); } catch(e){ console.error(e); }
-      loadCloudinaryListAndRender();
-<script>
-async function loadCloudinaryListAndRender(){
-  try {
-    const r = await fetch('/api/cloudinary-list');
-    if(!r.ok){ console.error('Fetch cloudinary-list failed', r.status); return; }
-    const data = await r.json();
-    if(!Array.isArray(data.items)) { console.warn('No items from cloudinary-list'); return; }
-
-    const key = 'jiorroVideos_v3';
-    const existing = JSON.parse(localStorage.getItem(key) || '[]');
-    const merged = [...existing];
-
-    data.items.reverse().forEach(it => {
-      const candidate = it.url.includes('/video/upload/')
-        ? it.url.replace('/video/upload/','/video/upload/f_mp4/').replace(/\.webm($|\?)/i,'.mp4$1')
-        : it.url;
-      if(candidate && !merged.find(m=>m.url===candidate)){
-        merged.unshift({ url: candidate, title: it.title||it.public_id, views:0, published:true });
-      }
-    });
-
-    localStorage.setItem(key, JSON.stringify(merged));
-    if(typeof window.renderAllVideosPublic === 'function') window.renderAllVideosPublic();
-    console.info('Cloudinary list imported, items:', data.items.length);
-  } catch(e){
-    console.error('loadCloudinaryListAndRender error', e);
-  }
-}
-
-// chiamala all’avvio
-document.addEventListener('DOMContentLoaded', loadCloudinaryListAndRender);
-</script>
+      /* ===========================
+         INIT
+         =========================== */
+      try {
+        renderAll();       // render iniziale (se localStorage già contiene qualcosa)
+        ensureUploadHandler(); // aggancia upload
+        console.info('Client init complete');
+      } catch(e){ console.error(e); }
+      loadCloudinaryListAndRender(); // importa sempre all'avvio per aggiornare
 
     }); // DOMContentLoaded
   </script>
 </body>
 </html>
-
