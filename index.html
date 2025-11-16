@@ -1,447 +1,140 @@
 <!doctype html>
 <html lang="it">
 <head>
-  <!-- Meta base -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Jiorro — Video manager (robusto)</title>
-
-  <!-- Stili: tema scuro pulito, responsive -->
+  <title>Jiorro — Video manager</title>
   <style>
-    :root{
-      --bg:#0f0f10; --panel:#17171a; --border:#2b2b30; --text:#e8eefb; --muted:#aeb3bd;
-      --accent:#6ff66f; --brand:#66aaff; --danger:#ff6666; --shadow: rgba(0,0,0,0.35);
-    }
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;}
-    *{box-sizing:border-box}
-
-    /* Topbar e brand */
-    .topbar{
-      position:fixed;top:0;left:0;right:0;height:64px;display:flex;align-items:center;justify-content:space-between;
-      padding:0 18px;background:linear-gradient(to bottom, rgba(23,23,26,0.98), rgba(23,23,26,0.8));
-      border-bottom:1px solid var(--border);z-index:1000
-    }
-    .brand{display:flex;gap:10px;align-items:center;font-weight:600;color:var(--text)}
-    .actions{display:flex;gap:10px;align-items:center}
-    .lens-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-size:20px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
-
-    /* Stato */
-    .status{position:fixed;top:70px;right:20px;font-size:13px;color:var(--muted);z-index:950;text-align:right;min-width:260px}
-    .status.error{color:var(--danger)}
-    .status.success{color:var(--accent)}
-    .status.info{color:var(--brand)}
-
-    /* Sezioni e pannelli */
-    .section{padding-top:96px;min-height:100vh}
+    body{margin:0;font-family:sans-serif;background:#0f0f10;color:#e8eefb}
+    .topbar{position:fixed;top:0;left:0;right:0;height:64px;display:flex;justify-content:space-between;align-items:center;padding:0 18px;background:#17171a;border-bottom:1px solid #2b2b30}
+    .lens-btn{cursor:pointer;background:#17171a;border:1px solid #2b2b30;border-radius:8px;padding:8px;color:#e8eefb}
+    .section{padding-top:80px}
     .hidden{display:none}
-    .panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:0 14px 36px var(--shadow)}
-
-    /* Toolbar e controlli */
-    .video-container{padding:28px;display:grid;gap:16px}
-    .video-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px;border-radius:12px}
-    .btn{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
-    .btn.loading{opacity:.6;pointer-events:none}
-    .input{background:var(--panel);border:1px solid var(--border);padding:8px 10px;border-radius:10px;color:var(--text);min-width:200px}
-    .select{background:var(--panel);border:1px solid var(--border);padding:8px 10px;border-radius:10px;color:var(--text)}
-    .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid var(--border);border-radius:999px;font-size:12px;color:var(--muted)}
-
-    /* Cards video */
-    .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-top:12px}
-    .card{background:var(--panel);border:1px solid var(--border);padding:10px;border-radius:12px;box-shadow:0 10px 30px var(--shadow);display:flex;flex-direction:column;gap:8px}
+    .panel{background:#17171a;border:1px solid #2b2b30;border-radius:12px;padding:20px}
+    .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:12px}
+    .card{background:#17171a;border:1px solid #2b2b30;border-radius:12px;padding:10px}
     .card video{width:100%;border-radius:8px;background:black}
-    .card .title{font-weight:600}
-    .card .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
-    .card .url{font-size:11px;color:var(--muted);word-break:break-all}
-
-    /* Modale upload */
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);z-index:1200}
-    .modal.show{display:flex}
-    .modal-panel{width:92%;max-width:760px;background:var(--panel);border:1px solid var(--border);padding:18px;border-radius:12px;box-shadow:0 14px 44px var(--shadow)}
-    .progress{height:9px;border-radius:999px;background:#0b0b0d;margin-top:8px;overflow:hidden}
-    .progress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--accent));transition:width .2s}
-
-    /* Overlay full‑screen */
-    .overlay-fullscreen{position:fixed;inset:0;z-index:20000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.98)}
-    .overlay-fullscreen video{width:100%;height:100%;object-fit:contain;background:black}
+    .overlay-fullscreen{position:fixed;inset:0;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;z-index:2000}
+    .overlay-fullscreen video{width:100%;height:100%;object-fit:contain}
   </style>
 </head>
 <body>
-  <!-- Topbar -->
-  <header class="topbar" role="banner">
-    <div class="brand">Jiorro — Video manager</div>
-    <div class="actions">
-      <span class="pill" title="Premi J per overlay">Preset: J</span>
-      <button id="lensBtn" class="lens-btn" aria-label="Apri video">🔍</button>
-    </div>
+  <header class="topbar">
+    <div>Jiorro — Video manager</div>
+    <button id="lensBtn" class="lens-btn">🔍</button>
   </header>
 
-  <!-- Stato -->
-  <div id="statusEl" class="status" aria-live="polite"></div>
-
-  <!-- Home -->
   <main id="homeSection" class="section">
     <div class="panel">
       <h1>Benvenuto</h1>
       <p>Clicca 🔍 per aprire la sezione video. Premi J per overlay full‑screen.</p>
-      <ul style="display:flex;gap:8px;flex-wrap:wrap;list-style:none;padding:0">
-        <li class="pill">Import automatico</li>
-        <li class="pill">Runtime .webm → .mp4</li>
-        <li class="pill">Ricerca</li>
-        <li class="pill">Upload preset / fallback</li>
-        <li class="pill">Diagnostica URL</li>
-      </ul>
     </div>
   </main>
 
-  <!-- Sezione video -->
-  <section id="videoSection" class="section hidden" aria-label="Sezione video">
-    <div class="video-container">
-      <div class="video-toolbar panel" role="toolbar">
-        <button id="openUpload" class="btn" aria-controls="uploadModal" aria-expanded="false">⬆️ Carica</button>
-        <input id="searchVideos" class="input" placeholder="Cerca video per titolo o URL" />
-        <select id="sortSelect" class="select" aria-label="Ordina">
-          <option value="recent">Più recenti</option>
-          <option value="views">Più visti</option>
-          <option value="title">Titolo</option>
-        </select>
-        <button id="backHome" class="btn">🏠 Home</button>
-        <button id="diagnoseBtn" class="btn">🩺 Diagnostica</button>
-      </div>
-      <div id="videoContainer" class="cards" aria-live="polite" aria-busy="false"></div>
+  <section id="videoSection" class="section hidden">
+    <div class="panel">
+      <button id="backHome">🏠 Home</button>
+      <input id="searchVideos" placeholder="Cerca video" />
+      <div id="videoContainer" class="cards"></div>
     </div>
   </section>
 
-  <!-- Modale upload -->
-  <div id="uploadModal" class="modal" role="dialog" aria-modal="true">
-    <div class="modal-panel" role="document">
-      <h3 id="uploadTitle">Upload Video</h3>
-      <div style="margin-top:8px">
-        <label for="videoFile">File</label><br>
-        <input id="videoFile" type="file" accept="video/*" />
-      </div>
-      <div style="margin-top:8px">
-        <label for="videoTitle">Titolo</label><br>
-        <input id="videoTitle" class="input" placeholder="Titolo (opzionale)" />
-      </div>
-      <div class="progress" aria-hidden="true"><i id="uploadProgress"></i></div>
-      <div class="modal-actions" style="margin-top:10px;display:flex;gap:8px">
-        <button id="uploadBtn" class="btn">Carica</button>
-        <button id="closeUpload" class="btn">Chiudi</button>
-      </div>
-      <div id="uploadStatus" class="status-line" aria-live="polite" style="margin-top:8px;color:var(--muted)"></div>
-      <hr style="margin-top:12px;border-color:var(--border)">
-      <div style="font-size:13px;color:var(--muted)">Nota: per upload diretto usa un preset unsigned o un backend che firma le richieste.</div>
-    </div>
-  </div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('JS caricato');
 
-  <!-- Script principale: posizionato alla fine del body -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      console.info('[INIT] DOMContentLoaded fired');
+  const STORAGE_KEY = 'jiorroVideos_v3';
+  const lensBtn = document.getElementById('lensBtn');
+  const backHome = document.getElementById('backHome');
+  const homeSection = document.getElementById('homeSection');
+  const videoSection = document.getElementById('videoSection');
+  const videoContainer = document.getElementById('videoContainer');
+  const searchVideos = document.getElementById('searchVideos');
 
-      /* Config */
-      const STORAGE_KEY = 'jiorroVideos_v3';
-      const CLOUDINARY_CLOUD = 'dng8rjd6u';
-      const UPLOAD_PRESET = ''; // se hai preset unsigned, mettilo qui
-      const CLOUDINARY_URL = CLOUDINARY_CLOUD ? \`https://api.cloudinary.com/v1_1/\${CLOUDINARY_CLOUD}/auto/upload\` : '';
-      const PRESET_LOCAL_PATH = 'https://res.cloudinary.com/dng8rjd6u/video/upload/f_mp4/v1763226447/Screen_recording_2025-11-15_17.24.42_yrffoa.mp4';
+  function getSaved(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); }catch(e){ return []; } }
+  function setSaved(a){ localStorage.setItem(STORAGE_KEY, JSON.stringify(a)); }
 
-      /* Helpers */
-      function getSaved(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e){ return []; } }
-      function setSaved(a){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(a)); } catch(e){} }
-      function showStatus(msg, type=''){ const s=document.getElementById('statusEl'); if(!s) return; s.textContent=msg||''; s.className='status'+(type?(' '+type):''); }
+  function showHome(){ homeSection.classList.remove('hidden'); videoSection.classList.add('hidden'); }
+  function showVideo(){ homeSection.classList.add('hidden'); videoSection.classList.remove('hidden'); renderAll(); }
 
-      /* Elementi */
-      const lensBtn = document.getElementById('lensBtn');
-      const homeSection = document.getElementById('homeSection');
-      const videoSection = document.getElementById('videoSection');
-      const backHome = document.getElementById('backHome');
-      const videoContainer = document.getElementById('videoContainer');
-      const openUploadBtn = document.getElementById('openUpload');
-      const uploadModal = document.getElementById('uploadModal');
-      const closeUploadBtn = document.getElementById('closeUpload');
-      const uploadBtn = document.getElementById('uploadBtn');
-      const fileInput = document.getElementById('videoFile');
-      const titleInput = document.getElementById('videoTitle');
-      const uploadStatus = document.getElementById('uploadStatus');
-      const progressBar = document.getElementById('uploadProgress');
-      const searchVideos = document.getElementById('searchVideos');
-      const diagnoseBtn = document.getElementById('diagnoseBtn');
-      const sortSelect = document.getElementById('sortSelect');
+  lensBtn.addEventListener('click', () => { console.log('Lens cliccata'); showVideo(); });
+  backHome.addEventListener('click', () => { console.log('Home cliccata'); showHome(); });
 
-      /* Check aggancio elementi */
-      function ensure(el, name){
-        if(!el){ console.error('[MISSING]', name, 'non trovato nel DOM'); showStatus('Elemento mancante: '+name, 'error'); return false; }
-        return true;
-      }
-      ensure(lensBtn,'lensBtn'); ensure(homeSection,'homeSection'); ensure(videoSection,'videoSection');
-      ensure(backHome,'backHome'); ensure(videoContainer,'videoContainer');
-      ensure(openUploadBtn,'openUpload'); ensure(uploadModal,'uploadModal'); ensure(closeUploadBtn,'closeUpload');
-      ensure(uploadBtn,'uploadBtn'); ensure(fileInput,'videoFile'); ensure(titleInput,'videoTitle');
-      ensure(uploadStatus,'uploadStatus'); ensure(progressBar,'uploadProgress');
-      ensure(searchVideos,'searchVideos'); ensure(diagnoseBtn,'diagnoseBtn'); ensure(sortSelect,'sortSelect');
+  function tryMp4(url){
+    if(!url) return url;
+    if(url.endsWith('.mp4')) return url;
+    if(url.includes('/video/upload/')) return url.replace('/video/upload/','/video/upload/f_mp4/').replace(/\.webm($|\?)/i,'.mp4$1');
+    return url;
+  }
 
-      /* Nav */
-      function showHome(){ if(!ensure(homeSection,'homeSection')||!ensure(videoSection,'videoSection')) return; homeSection.classList.remove('hidden'); videoSection.classList.add('hidden'); showStatus(''); }
-      function showVideo(){ if(!ensure(homeSection,'homeSection')||!ensure(videoSection,'videoSection')) return; homeSection.classList.add('hidden'); videoSection.classList.remove('hidden'); showStatus(''); renderAll(); }
+  function createCard(item){
+    const card=document.createElement('div'); card.className='card';
+    const v=document.createElement('video'); v.controls=true;
+    const s=document.createElement('source'); s.src=tryMp4(item.url); s.type='video/mp4';
+    v.appendChild(s);
+    const t=document.createElement('div'); t.textContent=item.title||'Video';
+    card.appendChild(v); card.appendChild(t);
+    return card;
+  }
 
-      if(ensure(lensBtn,'lensBtn')) lensBtn.addEventListener('click', () => { console.info('[CLICK] lensBtn'); showVideo(); });
-      if(ensure(backHome,'backHome')) backHome.addEventListener('click', () => { console.info('[CLICK] backHome'); showHome(); });
-      if(ensure(openUploadBtn,'openUpload')) openUploadBtn.addEventListener('click', () => {
-        console.info('[CLICK] openUpload');
-        if(ensure(uploadModal,'uploadModal')){ uploadModal.classList.add('show'); openUploadBtn.setAttribute('aria-expanded','true'); }
-      });
-      if(ensure(closeUploadBtn,'closeUpload')) closeUploadBtn.addEventListener('click', () => {
-        console.info('[CLICK] closeUpload');
-        if(ensure(uploadModal,'uploadModal')){ uploadModal.classList.remove('show'); openUploadBtn.setAttribute('aria-expanded','false'); }
-      });
+  function renderAll(){
+    videoContainer.innerHTML='';
+    const saved=getSaved();
+    if(!saved.length){ videoContainer.textContent='Nessun video pubblicato.'; return; }
+    saved.forEach(i=>videoContainer.appendChild(createCard(i)));
+  }
 
-      /* Migration webm -> mp4 */
-      function tryMp4FromCloudinary(url){
-        if(!url) return url;
-        try{
-          if(url.endsWith('.mp4')) return url;
-          if(url.includes('/video/upload/')) {
-            return url.replace('/video/upload/', '/video/upload/f_mp4/').replace(/\\.webm($|\\?)/i, '.mp4$1');
-          }
-          return url;
-        } catch(e){ return url; }
-      }
-
-      /* Render */
-      function createCard(item){
-        const card = document.createElement('div'); card.className='card video-card';
-
-        const v = document.createElement('video');
-        v.controls = true; v.preload = 'metadata'; v.playsInline = true;
-        v.setAttribute('controlsList','nodownload'); v.addEventListener('contextmenu', e=>e.preventDefault());
-
-        const candidate = tryMp4FromCloudinary(item.url || '');
-        const s = document.createElement('source');
-        s.src = candidate || item.url || '';
-        if((s.src||'').match(/\\.mp4($|\\?)/i)) s.type = 'video/mp4';
-        else if((s.src||'').match(/\\.webm($|\\?)/i)) s.type = 'video/webm';
-        v.appendChild(s);
-
-        const t = document.createElement('div'); t.className='title'; t.textContent = item.title || 'Video senza titolo';
-        const meta = document.createElement('div'); meta.className='meta';
-        const vw = document.createElement('span'); vw.textContent = '👁️ ' + (item.views || 0) + ' views';
-        const dt = document.createElement('span'); dt.textContent = item.uploadedAt ? new Date(item.uploadedAt).toLocaleString() : '';
-        meta.appendChild(vw); meta.appendChild(dt);
-
-        const urlEl = document.createElement('div'); urlEl.className='url'; urlEl.textContent = s.src;
-
-        let counted = false;
-        v.addEventListener('play', () => {
-          if(counted) return; counted = true;
-          const saved = getSaved().map(sv => { if(sv.url === item.url) sv.views = (sv.views || 0) + 1; return sv; });
-          setSaved(saved);
-          const updated = saved.find(sv => sv.url === item.url);
-          vw.textContent = '👁️ ' + ((updated && updated.views) || 0) + ' views';
-        });
-
-        card.appendChild(v); card.appendChild(t); card.appendChild(meta); card.appendChild(urlEl);
-        return card;
-      }
-
-      function renderAll(){
-        if(!ensure(videoContainer,'videoContainer')) return;
-        videoContainer.innerHTML = '';
-        let saved = getSaved().filter(v => v.published !== false);
-
-        const sortBy = (sortSelect && sortSelect.value) || 'recent';
-        if(sortBy === 'views') saved = saved.sort((a,b)=> (b.views||0)-(a.views||0));
-        else if(sortBy === 'title') saved = saved.sort((a,b)=> (a.title||'').localeCompare(b.title||''));
-        // recent: ordine di inserimento (unshift)
-
-        if(!saved.length){
-          const info = document.createElement('div'); info.style.color='var(--muted)';
-          info.textContent='Nessun video pubblicato. Carica o importa da Cloudinary.';
-          videoContainer.appendChild(info);
-        } else {
-          saved.forEach(i => videoContainer.appendChild(createCard(i)));
-        }
-      }
-      window.renderAllVideosPublic = renderAll;
-      if(ensure(sortSelect,'sortSelect')) sortSelect.addEventListener('change', () => { console.info('[CHANGE] sortSelect', sortSelect.value); renderAll(); });
-
-      /* Upload */
-      function uploadToCloudinaryXHR(file, preset, cloudUrl, onProgress){
-        return new Promise((resolve, reject) => {
-          const form = new FormData();
-          form.append('file', file);
-          form.append('upload_preset', preset);
-          const xhr = new XMLHttpRequest();
-          xhr.open('POST', cloudUrl);
-          xhr.timeout = 3*60*1000;
-          xhr.onload = () => {
-            if(xhr.status >= 200 && xhr.status < 300){
-              try{ resolve(JSON.parse(xhr.responseText)); } catch(e){ reject(new Error('invalid-json')); }
-            } else {
-              try{ const data = JSON.parse(xhr.responseText); reject(new Error(data?.error?.message || 'upload-failed')); }
-              catch(e){ reject(new Error('upload-failed')); }
-            }
-          };
-          xhr.onerror = () => reject(new Error('network-error'));
-          xhr.ontimeout = () => reject(new Error('timeout'));
-          xhr.upload.onprogress = ev => { if(ev.lengthComputable && typeof onProgress === 'function') onProgress(Math.round(ev.loaded/ev.total*100)); };
-          xhr.send(form);
-        });
-      }
-
-      function ensureUploadHandler(){
-        if(!ensure(uploadBtn,'uploadBtn') || !ensure(fileInput,'videoFile')) return;
-        uploadBtn.replaceWith(uploadBtn.cloneNode(true));
-        const fresh = document.getElementById('uploadBtn');
-
-        fresh.addEventListener('click', async (ev) => {
-          ev.preventDefault();
-          console.info('[CLICK] uploadBtn');
-          if(uploadStatus) uploadStatus.textContent = '';
-          if(progressBar) progressBar.style.width = '0%';
-
-          const f = fileInput.files && fileInput.files[0];
-          if(!f){ if(uploadStatus) uploadStatus.textContent = '❌ Seleziona un file.'; return; }
-          if(!f.type || !f.type.startsWith('video/')){ if(uploadStatus) uploadStatus.textContent = '❌ Seleziona un video.'; return; }
-
-          fresh.disabled = true; fresh.classList.add('loading');
-          try {
-            if(CLOUDINARY_CLOUD && UPLOAD_PRESET && CLOUDINARY_URL){
-              if(uploadStatus) uploadStatus.textContent = \`⏳ Upload \${f.name}\`;
-              const res = await uploadToCloudinaryXHR(f, UPLOAD_PRESET, CLOUDINARY_URL, pct => {
-                if(progressBar) progressBar.style.width = pct + '%';
-                if(uploadStatus) uploadStatus.textContent = \`⏳ \${pct}%\`;
-              });
-              if(!res || !res.secure_url) throw new Error('no-url-returned');
-              const saved = getSaved();
-              saved.unshift({ url: res.secure_url, title: (titleInput.value||f.name), views:0, published:true, uploadedAt:Date.now() });
-              setSaved(saved);
-              renderAll();
-              if(uploadStatus) uploadStatus.textContent = '✅ Caricamento completato';
-              setTimeout(()=>uploadModal.classList.remove('show'),700);
-            } else {
-              const url = URL.createObjectURL(f);
-              const saved = getSaved();
-              saved.unshift({ url, title:(titleInput.value||f.name), views:0, published:true, uploadedAt:Date.now(), test:true });
-              setSaved(saved);
-              renderAll();
-              if(uploadStatus) uploadStatus.textContent = '✅ File registrato localmente (test)';
-              setTimeout(()=>uploadModal.classList.remove('show'),700);
-            }
-          } catch(err){
-            console.error('Upload error', err);
-            if(uploadStatus) uploadStatus.textContent = '❌ Upload fallito: vedi console';
-            showStatus('Upload fallito', 'error');
-          } finally {
-            fresh.disabled = false; fresh.classList.remove('loading');
-            setTimeout(()=>{ if(uploadStatus) uploadStatus.textContent=''; if(progressBar) progressBar.style.width='0%'; }, 2200);
-          }
-        });
-      }
-      ensureUploadHandler();
-
-      /* Overlay full‑screen (J) */
-      let overlayEl=null, overlayVideoEl=null;
-      function buildOverlay(url){
-        removeOverlay();
-        overlayEl = document.createElement('div'); overlayEl.className='overlay-fullscreen';
-        overlayVideoEl = document.createElement('video');
-        overlayVideoEl.src = tryMp4FromCloudinary(url);
-        overlayVideoEl.controls = true; overlayVideoEl.autoplay = true; overlayVideoEl.playsInline = true;
-        overlayVideoEl.setAttribute('controlsList','nodownload');
-        overlayVideoEl.addEventListener('dblclick', removeOverlay);
-        overlayVideoEl.addEventListener('ended', removeOverlay);
-        overlayEl.appendChild(overlayVideoEl); document.body.appendChild(overlayEl);
-        document.documentElement.style.overflow='hidden'; document.body.style.overflow='hidden';
-        overlayVideoEl.focus(); overlayVideoEl.play().catch(()=>{});
-      }
-      function removeOverlay(){
-        if(!overlayEl) return;
-        try{ overlayEl.remove(); }catch(e){}
-        overlayEl=null; overlayVideoEl=null;
-        document.documentElement.style.overflow=''; document.body.style.overflow='';
-      }
-      document.addEventListener('keydown', (e) => {
-        const active = document.activeElement;
-        if(active && (active.tagName==='INPUT' || active.tagName==='TEXTAREA')) return;
-        if(e.key && e.key.toLowerCase()==='j'){
-          console.info('[KEY] J overlay');
-          const first = getSaved()[0]?.url || PRESET_LOCAL_PATH;
-          buildOverlay(first);
+  // Import da serverless
+  async function loadCloudinary(){
+    try{
+      const r=await fetch('/api/cloudinary-list');
+      const data=await r.json();
+      const merged=[];
+      (data.items||[]).reverse().forEach(it=>{
+        const candidate=tryMp4(it.url);
+        if(candidate && !merged.find(m=>m.url===candidate)){
+          merged.unshift({url:candidate,title:it.title||it.public_id,views:0,published:true});
         }
       });
+      setSaved(merged);
+      renderAll();
+      console.log('Importati', merged.length, 'video');
+    }catch(e){ console.error('Errore import', e); }
+  }
 
-      /* Ricerca live */
-      if(ensure(searchVideos,'searchVideos')) searchVideos.addEventListener('input', () => {
-        const term = (searchVideos.value||'').toLowerCase();
-        console.info('[SEARCH]', term);
-        document.querySelectorAll('.video-card').forEach(card => {
-          const src = (card.querySelector('video')?.querySelector('source')?.src||'').toLowerCase();
-          const title = (card.querySelector('.title')?.textContent||'').toLowerCase();
-          card.style.display = (!term || src.includes(term) || title.includes(term)) ? '' : 'none';
-        });
-      });
-
-      /* Diagnostica URL */
-      if(ensure(diagnoseBtn,'diagnoseBtn')) diagnoseBtn.addEventListener('click', async () => { console.info('[CLICK] diagnoseBtn'); await window.checkSavedUrls?.(); });
-      window.checkSavedUrls = async function(){
-        const list = getSaved();
-        if(!list.length){ console.warn('Nessun elemento salvato.'); showStatus('Nessun elemento salvato'); return; }
-        console.info('Controllo', list.length, 'url salvati...');
-        for(let i=0;i<list.length;i++){
-          const it=list[i];
-          console.group(\`Item \${i+1}: \${it.title || it.url}\`);
-          console.log('stored url:', it.url);
-          try{
-            let res = await fetch(it.url, { method:'HEAD' }).catch(()=>null);
-            if(!res || !res.ok){
-              res = await fetch(it.url).catch(err=>{ throw err; });
-              console.log('GET status', res.status, 'content-type', res.headers.get('content-type'), 'x-cld-error', res.headers.get('x-cld-error'));
-            } else {
-              console.log('HEAD ok', res.status, 'content-type', res.headers.get('content-type'), 'x-cld-error', res.headers.get('x-cld-error'));
-            }
-          }catch(err){ console.error('fetch error', err); }
-          console.groupEnd();
-        }
-        showStatus('Diagnostica completata', 'info');
-      };
-
-      /* Import da /api/cloudinary-list */
-      async function loadCloudinaryListAndRender(){
-        try {
-          showStatus('Import da Cloudinary in corso...', 'info');
-          const r = await fetch('/api/cloudinary-list');
-          if(!r.ok){ console.error('Fetch cloudinary-list failed', r.status); showStatus('Import fallito: '+r.status, 'error'); return; }
-          const data = await r.json();
-          if(!Array.isArray(data.items)) { console.warn('No items from cloudinary-list'); showStatus('Nessun item dal serverless', 'error'); return; }
-
-          const existing = getSaved();
-          const merged = [...existing];
-          (data.items||[]).reverse().forEach(it => {
-            const candidate = tryMp4FromCloudinary(it.url);
-            if(candidate && !merged.find(m => m.url === candidate)){
-              merged.unshift({ url: candidate, title: it.title || it.public_id, views: 0, published: true, uploadedAt: Date.now() });
-            }
-          });
-
-          setSaved(merged);
-          renderAll();
-          showStatus('Import completato: '+(data.items?.length||0)+' elementi', 'success');
-          console.info('Cloudinary list imported, items:', data.items.length);
-        } catch(e){
-          console.error('loadCloudinaryListAndRender error', e);
-          showStatus('Errore import: vedi console', 'error');
-        }
-      }
-
-      /* Init */
-      try {
-        renderAll();
-        ensureUploadHandler();
-        console.info('[INIT] Client ready');
-      } catch(e){ console.error(e); }
-      loadCloudinaryListAndRender();
+  // Ricerca
+  searchVideos.addEventListener('input', ()=>{
+    const term=(searchVideos.value||'').toLowerCase();
+    document.querySelectorAll('.card').forEach(card=>{
+      const txt=card.textContent.toLowerCase();
+      card.style.display = (!term || txt.includes(term)) ? '' : 'none';
     });
-  </script>
+  });
+
+  // Overlay con J
+  let overlayEl=null;
+  function buildOverlay(url){
+    removeOverlay();
+    overlayEl=document.createElement('div'); overlayEl.className='overlay-fullscreen';
+    const v=document.createElement('video'); v.src=url; v.controls=true; v.autoplay=true;
+    overlayEl.appendChild(v); document.body.appendChild(overlayEl);
+    v.addEventListener('ended', removeOverlay);
+    v.addEventListener('dblclick', removeOverlay);
+  }
+  function removeOverlay(){ if(overlayEl){ overlayEl.remove(); overlayEl=null; } }
+  document.addEventListener('keydown', e=>{
+    console.log('Key pressed', e.key);
+    if(e.key.toLowerCase()==='j'){
+      const first=getSaved()[0]?.url;
+      if(first) buildOverlay(first);
+    }
+  });
+
+  // Init
+  renderAll();
+  loadCloudinary();
+});
+</script>
 </body>
 </html>
+
