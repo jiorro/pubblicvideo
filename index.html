@@ -16,6 +16,9 @@
     .card video{width:100%;border-radius:8px;background:black}
     .overlay-fullscreen{position:fixed;inset:0;background:rgba(0,0,0,0.95);display:flex;align-items:center;justify-content:center;z-index:2000}
     .overlay-fullscreen video{width:100%;height:100%;object-fit:contain}
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);z-index:1200}
+    .modal.show{display:flex}
+    .modal .panel{max-width:500px;width:90%}
   </style>
 </head>
 <body>
@@ -34,10 +37,23 @@
   <section id="videoSection" class="section hidden">
     <div class="panel">
       <button id="backHome">🏠 Home</button>
+      <button id="openUpload">⬆️ Carica</button>
       <input id="searchVideos" placeholder="Cerca video" />
       <div id="videoContainer" class="cards"></div>
     </div>
   </section>
+
+  <!-- Modale Upload -->
+  <div id="uploadModal" class="modal">
+    <div class="panel">
+      <h3>Carica Video</h3>
+      <input id="videoFile" type="file" accept="video/*" />
+      <input id="videoTitle" placeholder="Titolo (opzionale)" />
+      <button id="uploadBtn">Carica</button>
+      <button id="closeUpload">Chiudi</button>
+      <div id="uploadStatus"></div>
+    </div>
+  </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -51,6 +67,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const videoContainer = document.getElementById('videoContainer');
   const searchVideos = document.getElementById('searchVideos');
 
+  // Upload elements
+  const openUploadBtn=document.getElementById('openUpload');
+  const uploadModal=document.getElementById('uploadModal');
+  const closeUploadBtn=document.getElementById('closeUpload');
+  const uploadBtn=document.getElementById('uploadBtn');
+  const fileInput=document.getElementById('videoFile');
+  const titleInput=document.getElementById('videoTitle');
+  const uploadStatus=document.getElementById('uploadStatus');
+
   function getSaved(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); }catch(e){ return []; } }
   function setSaved(a){ localStorage.setItem(STORAGE_KEY, JSON.stringify(a)); }
 
@@ -59,6 +84,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   lensBtn.addEventListener('click', () => { console.log('Lens cliccata'); showVideo(); });
   backHome.addEventListener('click', () => { console.log('Home cliccata'); showHome(); });
+
+  // Upload modal
+  openUploadBtn.addEventListener('click', ()=>uploadModal.classList.add('show'));
+  closeUploadBtn.addEventListener('click', ()=>uploadModal.classList.remove('show'));
+  uploadBtn.addEventListener('click', ()=>{
+    const f=fileInput.files[0];
+    if(!f){ uploadStatus.textContent='❌ Seleziona un file'; return; }
+    const url=URL.createObjectURL(f); // fallback locale
+    const saved=getSaved();
+    saved.unshift({url,title:(titleInput.value||f.name),views:0,published:true,uploadedAt:Date.now(),test:true});
+    setSaved(saved);
+    renderAll();
+    uploadStatus.textContent='✅ File registrato localmente (test)';
+    setTimeout(()=>uploadModal.classList.remove('show'),1000);
+  });
 
   function tryMp4(url){
     if(!url) return url;
@@ -137,4 +177,3 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-
