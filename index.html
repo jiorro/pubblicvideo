@@ -39,6 +39,12 @@
       <button id="backHome">🏠 Home</button>
       <button id="openUpload">⬆️ Carica</button>
       <input id="searchVideos" placeholder="Cerca video" />
+      <select id="sortSelect">
+        <option value="recent">Più recenti</option>
+        <option value="views">Più visti</option>
+        <option value="title">Titolo</option>
+      </select>
+      <button id="diagnoseBtn">🩺 Diagnostica</button>
       <div id="videoContainer" class="cards"></div>
     </div>
   </section>
@@ -60,14 +66,19 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('JS caricato');
 
   const STORAGE_KEY = 'jiorroVideos_v3';
-  const lensBtn = document.getElementById('lensBtn');
-  const backHome = document.getElementById('backHome');
-  const homeSection = document.getElementById('homeSection');
-  const videoSection = document.getElementById('videoSection');
-  const videoContainer = document.getElementById('videoContainer');
-  const searchVideos = document.getElementById('searchVideos');
+  const CLOUDINARY_CLOUD = 'dng8rjd6u'; // il tuo cloud name
+  const UPLOAD_PRESET = 'nome_preset_unsigned'; // <-- metti qui il tuo preset unsigned
+  const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`;
 
-  // Upload elements
+  const lensBtn=document.getElementById('lensBtn');
+  const backHome=document.getElementById('backHome');
+  const homeSection=document.getElementById('homeSection');
+  const videoSection=document.getElementById('videoSection');
+  const videoContainer=document.getElementById('videoContainer');
+  const searchVideos=document.getElementById('searchVideos');
+  const sortSelect=document.getElementById('sortSelect');
+  const diagnoseBtn=document.getElementById('diagnoseBtn');
+
   const openUploadBtn=document.getElementById('openUpload');
   const uploadModal=document.getElementById('uploadModal');
   const closeUploadBtn=document.getElementById('closeUpload');
@@ -82,22 +93,33 @@ document.addEventListener('DOMContentLoaded', () => {
   function showHome(){ homeSection.classList.remove('hidden'); videoSection.classList.add('hidden'); }
   function showVideo(){ homeSection.classList.add('hidden'); videoSection.classList.remove('hidden'); renderAll(); }
 
-  lensBtn.addEventListener('click', () => { console.log('Lens cliccata'); showVideo(); });
-  backHome.addEventListener('click', () => { console.log('Home cliccata'); showHome(); });
+  lensBtn.addEventListener('click', showVideo);
+  backHome.addEventListener('click', showHome);
 
   // Upload modal
   openUploadBtn.addEventListener('click', ()=>uploadModal.classList.add('show'));
   closeUploadBtn.addEventListener('click', ()=>uploadModal.classList.remove('show'));
-  uploadBtn.addEventListener('click', ()=>{
+
+  uploadBtn.addEventListener('click', async ()=>{
     const f=fileInput.files[0];
     if(!f){ uploadStatus.textContent='❌ Seleziona un file'; return; }
-    const url=URL.createObjectURL(f); // fallback locale
-    const saved=getSaved();
-    saved.unshift({url,title:(titleInput.value||f.name),views:0,published:true,uploadedAt:Date.now(),test:true});
-    setSaved(saved);
-    renderAll();
-    uploadStatus.textContent='✅ File registrato localmente (test)';
-    setTimeout(()=>uploadModal.classList.remove('show'),1000);
+    try {
+      const form=new FormData();
+      form.append('file', f);
+      form.append('upload_preset', UPLOAD_PRESET);
+      const r=await fetch(CLOUDINARY_URL,{method:'POST',body:form});
+      const data=await r.json();
+      if(!data.secure_url){ uploadStatus.textContent='❌ Upload fallito'; return; }
+      const saved=getSaved();
+      saved.unshift({url:data.secure_url,title:(titleInput.value||f.name),views:0,published:true,uploadedAt:Date.now()});
+      setSaved(saved);
+      renderAll();
+      uploadStatus.textContent='✅ Caricato su Cloudinary';
+      setTimeout(()=>uploadModal.classList.remove('show'),1000);
+    } catch(e){
+      console.error(e);
+      uploadStatus.textContent='❌ Errore upload';
+    }
   });
 
   function tryMp4(url){
@@ -119,7 +141,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderAll(){
     videoContainer.innerHTML='';
-    const saved=getSaved();
+    let saved=getSaved();
+    const sortBy=sortSelect.value;
+    if(sortBy==='views') saved=saved.sort((a,b)=>(b.views||0)-(a.views||0));
+    else if(sortBy==='title') saved=saved.sort((a,b)=>(a.title||'').localeCompare(b.title||''));
     if(!saved.length){ videoContainer.textContent='Nessun video pubblicato.'; return; }
     saved.forEach(i=>videoContainer.appendChild(createCard(i)));
   }
@@ -129,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try{
       const r=await fetch('/api/cloudinary-list');
       const data=await r.json();
-      const merged=[];
+      const merged=getSaved();
       (data.items||[]).reverse().forEach(it=>{
         const candidate=tryMp4(it.url);
         if(candidate && !merged.find(m=>m.url===candidate)){
@@ -138,42 +163,4 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       setSaved(merged);
       renderAll();
-      console.log('Importati', merged.length, 'video');
-    }catch(e){ console.error('Errore import', e); }
-  }
-
-  // Ricerca
-  searchVideos.addEventListener('input', ()=>{
-    const term=(searchVideos.value||'').toLowerCase();
-    document.querySelectorAll('.card').forEach(card=>{
-      const txt=card.textContent.toLowerCase();
-      card.style.display = (!term || txt.includes(term)) ? '' : 'none';
-    });
-  });
-
-  // Overlay con J
-  let overlayEl=null;
-  function buildOverlay(url){
-    removeOverlay();
-    overlayEl=document.createElement('div'); overlayEl.className='overlay-fullscreen';
-    const v=document.createElement('video'); v.src=url; v.controls=true; v.autoplay=true;
-    overlayEl.appendChild(v); document.body.appendChild(overlayEl);
-    v.addEventListener('ended', removeOverlay);
-    v.addEventListener('dblclick', removeOverlay);
-  }
-  function removeOverlay(){ if(overlayEl){ overlayEl.remove(); overlayEl=null; } }
-  document.addEventListener('keydown', e=>{
-    console.log('Key pressed', e.key);
-    if(e.key.toLowerCase()==='j'){
-      const first=getSaved()[0]?.url;
-      if(first) buildOverlay(first);
-    }
-  });
-
-  // Init
-  renderAll();
-  loadCloudinary();
-});
-</script>
-</body>
-</html>
+      console.log('Importati
