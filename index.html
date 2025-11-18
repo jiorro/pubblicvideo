@@ -3,11 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Jiorro Video — Upload, Admin & Overlay J</title>
+  <title>Jiorro Video — Login, Upload, Admin & Overlay J</title>
   <style>
-    /* -------------------------
-       Theme e layout principali
-       ------------------------- */
     :root{
       --bg:#0f0f10; --panel:#18181b; --border:#2a2a31; --text:#fff;
       --muted:#b7b7c3; --accent:#6ff66f; --brand:#66aaff; --danger:#ff6666;
@@ -21,7 +18,6 @@
     .status.success{color:var(--accent)} .status.error{color:var(--danger)} .status.info{color:var(--brand)}
     .section{padding-top:96px;min-height:100vh}
     .hidden{display:none}
-    .home-container{display:grid;grid-template-columns:1.1fr .9fr;gap:20px;padding:28px}
     .panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:0 14px 36px var(--shadow)}
     .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#202025;color:var(--muted);border:1px solid var(--border);font-size:13px;margin:2px}
     .video-container{padding:28px;display:grid;gap:16px}
@@ -33,13 +29,11 @@
     .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:12px}
     .card{background:var(--panel);border:1px solid var(--border);padding:10px;border-radius:12px;box-shadow:0 10px 30px var(--shadow);display:flex;flex-direction:column;gap:8px}
     .card video{width:100%;border-radius:8px;background:black}
-    table.admin-grid{width:100%;border-collapse:collapse;margin-top:12px}
-    table.admin-grid th, table.admin-grid td{padding:10px;border-top:1px solid var(--border);vertical-align:middle}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th, td{padding:10px;border-top:1px solid var(--border);vertical-align:middle}
     .actions{display:flex;gap:8px;flex-wrap:wrap}
-    /* overlay styles */
     .overlay-fullscreen{position:fixed;inset:0;z-index:20000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.98)}
     .overlay-fullscreen video{width:100%;height:100%;object-fit:contain;background:black}
-    /* modal upload */
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);z-index:1200}
     .modal.show{display:flex}
     .modal-panel{width:92%;max-width:680px;background:var(--panel);border:1px solid var(--border);padding:18px;border-radius:12px;box-shadow:0 14px 44px var(--shadow)}
@@ -47,12 +41,11 @@
     .progress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--accent));transition:width .2s}
     .status-line{margin-top:8px;color:var(--muted);min-height:18px}
     .status-line.success{color:var(--accent)} .status-line.error{color:var(--danger)}
-    /* admin anchor (discreto) */
     .admin-anchor{position:fixed;left:12px;bottom:12px;z-index:1300;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
     .admin-btn{width:44px;height:44px;border-radius:999px;background:var(--panel);border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;color:var(--text);font-size:18px;cursor:pointer}
     .admin-input-wrap{display:none;gap:8px;align-items:center}
     .admin-input{width:220px;padding:8px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--text);outline:none;caret-color:var(--text)}
-    @media(max-width:980px){.home-container{grid-template-columns:1fr}.admin-input{width:150px}}
+    @media(max-width:980px){.admin-input{width:150px}}
   </style>
 </head>
 <body>
@@ -62,6 +55,20 @@
   </header>
 
   <div id="statusEl" class="status" role="status" aria-live="polite"></div>
+
+  <!-- Login -->
+  <div id="loginModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <div class="modal-panel" role="document">
+      <h3 id="loginTitle">Accesso</h3>
+      <p style="color:var(--muted)">Inserisci una passphrase sicura. Se è la prima volta, scegli un username.</p>
+      <input id="passphraseInput" class="input" placeholder="Passphrase" />
+      <input id="usernameInput" class="input" placeholder="Username (se nuovo)" />
+      <div class="actions" style="margin-top:10px">
+        <button id="loginBtn" class="btn">Entra</button>
+      </div>
+      <div id="loginStatus" class="status-line" aria-live="polite"></div>
+    </div>
+  </div>
 
   <!-- Home -->
   <main id="homeSection" class="section" aria-label="Home">
@@ -94,10 +101,16 @@
   <section id="adminSection" class="section hidden" aria-label="Admin">
     <div class="panel">
       <h2>🔧 Pannello amministrazione</h2>
-      <p style="color:var(--muted)">Modifica titoli, resetta views, elimina, pubblica/nascondi. Persistenza locale (localStorage) e upload su Cloudinary.</p>
-      <table class="admin-grid" id="adminGrid">
+      <p style="color:var(--muted)">Modifica titoli, resetta views, elimina, pubblica/nascondi. Analytics locali per utenti e video. Puoi bloccare/sbloccare utenti.</p>
+      <table id="adminGrid">
         <thead><tr><th>Anteprima</th><th>Titolo</th><th>Views</th><th>Stato</th><th>Azioni</th></tr></thead>
         <tbody id="adminBody"></tbody>
+      </table>
+      <hr style="border-color:var(--border)">
+      <h3>Utenti</h3>
+      <table id="userGrid">
+        <thead><tr><th>Viewer ID</th><th>Username</th><th>Bloccato</th><th>Azioni</th></tr></thead>
+        <tbody id="userBody"></tbody>
       </table>
     </div>
   </section>
@@ -124,12 +137,10 @@
         <button id="closeUpload" class="btn">Chiudi</button>
       </div>
       <div id="uploadStatus" class="status-line" aria-live="polite"></div>
-      <hr style="margin-top:12px;border-color:var(--border)">
-      <div style="font-size:13px;color:var(--muted)">Nota: il preset deve essere unsigned per gli upload diretti dal browser. Verifica cloud name e preset sotto.</div>
     </div>
   </div>
 
-  <!-- Admin anchor (discreto) -->
+  <!-- Admin anchor -->
   <div class="admin-anchor" aria-label="Admin anchor">
     <button id="adminAnchorBtn" class="admin-btn" title="Sblocca admin">🔑</button>
     <div id="adminInputWrap" class="admin-input-wrap" aria-hidden="true">
@@ -142,32 +153,26 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      /* ============= CONFIG (modifica qui se necessario) ============= */
+      // Config
       const STORAGE_KEY = 'jiorroVideos_secure_v1';
-      const ADMIN_PASS = 'JIORR0CON$=LE'; // case-sensitive
-      const CLOUDINARY_CLOUD = 'dng8rjd6u'; // il tuo cloud name
-      const UPLOAD_PRESET = 'jiorro_upload'; // deve essere unsigned per upload client-side
+      const USERS_KEY = 'jiorroUsers_v1';
+      const ANALYTICS_KEY = 'jiorroAnalytics_v2';
+      const SESSION_KEY = 'jiorroSession_v1';
+
+      const CLOUDINARY_CLOUD = 'dng8rjd6u';
+      const UPLOAD_PRESET = 'jiorro_upload';
       const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`;
-      const MAX_FILE_MB = 800; // difesa client; il piano può limitare
-      const UPLOAD_TIMEOUT_MS = 3 * 60 * 1000; // timeout upload
-      const FALLBACK_OVERLAY_URL = 'https://res.cloudinary.com/demo/video/upload/sample.mp4';
+      const MAX_FILE_MB = 800;
+      const UPLOAD_TIMEOUT_MS = 3 * 60 * 1000;
 
-      /* ============= Helper storage & UI ============= */
-      function getSaved(){
-        try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : []; }
-        catch(e){ console.error('getSaved parse error', e); return []; }
-      }
-      function setSaved(arr){
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr || [])); }
-        catch(e){ console.error('setSaved error', e); }
-      }
-      function showStatus(msg, type){
-        const s = document.getElementById('statusEl');
-        s.textContent = msg || '';
-        s.className = 'status' + (type ? ' ' + type : '');
-      }
+      const VIDEO_J_DEFAULT = 'https://res.cloudinary.com/demo/video/upload/sample.mp4';
 
-      /* ============= Refs ============= */
+      // Admin offuscato
+      const ADMIN_HASH = '7d3f6f4e87b2d8c9b4f0a1be4b69a2b1'; // sostituisci con tuo hash forte
+      const PEPPER = 'X2f!_jR9';
+
+      // DOM refs
+      const statusEl = document.getElementById('statusEl');
       const lensBtn = document.getElementById('lensBtn');
       const homeSection = document.getElementById('homeSection');
       const videoSection = document.getElementById('videoSection');
@@ -175,6 +180,13 @@
       const backHome = document.getElementById('backHome');
       const videoContainer = document.getElementById('videoContainer');
       const searchVideos = document.getElementById('searchVideos');
+
+      const loginModal = document.getElementById('loginModal');
+      const passphraseInput = document.getElementById('passphraseInput');
+      const usernameInput = document.getElementById('usernameInput');
+      const loginBtn = document.getElementById('loginBtn');
+      const loginStatus = document.getElementById('loginStatus');
+
       const openUploadBtn = document.getElementById('openUpload');
       const uploadModal = document.getElementById('uploadModal');
       const closeUploadBtn = document.getElementById('closeUpload');
@@ -184,90 +196,173 @@
       const overlaySrcInput = document.getElementById('overlaySrc');
       const uploadStatus = document.getElementById('uploadStatus');
       const uploadProgress = document.getElementById('uploadProgress');
+
       const adminAnchorBtn = document.getElementById('adminAnchorBtn');
       const adminInputWrap = document.getElementById('adminInputWrap');
       const adminInput = document.getElementById('adminInput');
       const adminSubmit = document.getElementById('adminSubmit');
       const adminBody = document.getElementById('adminBody');
+      const userBody = document.getElementById('userBody');
       const adminToVideo = document.getElementById('adminToVideo');
       const adminToHome = document.getElementById('adminToHome');
 
-      /* ============= NAV helpers ============= */
-      function showHome(){
-        homeSection.classList.remove('hidden');
-        videoSection.classList.add('hidden');
-        adminSection.classList.add('hidden');
-        showStatus('');
-        lensBtn.setAttribute('aria-expanded','false');
-      }
-      function showVideo(){
-        homeSection.classList.add('hidden');
-        adminSection.classList.add('hidden');
-        videoSection.classList.remove('hidden');
-        showStatus('✅ Sezione video aperta','success');
-        setTimeout(()=>showStatus(''),900);
-        lensBtn.setAttribute('aria-expanded','true');
-        renderAll();
-      }
-      function showAdmin(){
-        homeSection.classList.add('hidden');
-        videoSection.classList.add('hidden');
-        adminSection.classList.remove('hidden');
-        showStatus('🔧 Admin sbloccato','success');
-        setTimeout(()=>showStatus(''),900);
-        if(typeof window.renderAdminTable==='function') window.renderAdminTable();
+      // Helpers
+      function showStatus(msg, type){ statusEl.textContent = msg || ''; statusEl.className = 'status' + (type ? ' ' + type : ''); }
+      function getSaved(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); } catch(e){ return []; } }
+      function setSaved(a){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(a||[])); } catch(e){} }
+      function getUsers(){ try { return JSON.parse(localStorage.getItem(USERS_KEY)||'{}'); } catch(e){ return {}; } }
+      function setUsers(u){ try { localStorage.setItem(USERS_KEY, JSON.stringify(u||{})); } catch(e){} }
+      function getAnalytics(){ try { return JSON.parse(localStorage.getItem(ANALYTICS_KEY) || '{"events":[],"counters":{}}'); } catch(e){ return { events:[], counters:{} }; } }
+      function setAnalytics(a){ try { localStorage.setItem(ANALYTICS_KEY, JSON.stringify(a || { events:[], counters:{} })); } catch(e){} }
+      function getSession(){ try { return JSON.parse(localStorage.getItem(SESSION_KEY)||'{}'); } catch(e){ return {}; } }
+      function setSession(s){ try { localStorage.setItem(SESSION_KEY, JSON.stringify(s||{})); } catch(e){} }
+
+      async function subtleHash(s){
+        const enc = new TextEncoder().encode(s);
+        const buf = await crypto.subtle.digest('SHA-256', enc);
+        return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
       }
 
-      lensBtn.addEventListener('click', showVideo);
+      // Track
+      function track(type, payload={}){
+        const sess = getSession();
+        const viewerId = sess.viewerId || 'anon';
+        const username = sess.username || null;
+        const a = getAnalytics();
+        const evt = { ts: Date.now(), type, viewerId, username, payload };
+        a.events.push(evt);
+        if(payload.url){
+          a.counters[payload.url] = a.counters[payload.url] || { plays:0, overlays:0, viewers:{} };
+          if(type === 'video_play') a.counters[payload.url].plays++;
+          if(type === 'overlay_open') a.counters[payload.url].overlays++;
+          const key = username || viewerId;
+          a.counters[payload.url].viewers[key] = (a.counters[payload.url].viewers[key] || 0) + 1;
+        }
+        setAnalytics(a);
+      }
+
+      // Login flow
+      function isPassphraseStrong(p){
+        // requisiti tipo "password Google": 12+ char, maiuscole, minuscole, numeri, simboli
+        const lengthOK = p.length >= 12;
+        const upper = /[A-Z]/.test(p);
+        const lower = /[a-z]/.test(p);
+        const digit = /[0-9]/.test(p);
+        const symbol = /[^A-Za-z0-9]/.test(p);
+        return lengthOK && upper && lower && digit && symbol;
+      }
+
+      function genViewerId(){
+        const rand = crypto.getRandomValues(new Uint8Array(16));
+        return Array.from(rand).map(b=>b.toString(16).padStart(2,'0')).join('');
+      }
+
+      async function ensureLogin(){
+        const sess = getSession();
+        const users = getUsers();
+
+        // Se blocco esiste per viewerId/username, impedisci accesso
+        if(sess.viewerId && users[sess.viewerId]?.blocked){ showStatus('Accesso bloccato', 'error'); return false; }
+
+        // Se sessione già valida, ok
+        if(sess.viewerId && sess.token){ return true; }
+
+        // Altrimenti mostra login
+        loginModal.classList.add('show');
+        return false;
+      }
+
+      loginBtn.addEventListener('click', async () => {
+        const phrase = (passphraseInput.value||'').trim();
+        const uname = (usernameInput.value||'').trim();
+
+        if(!isPassphraseStrong(phrase)){ loginStatus.textContent='❌ Passphrase debole: usa 12+ caratteri con maiuscole, minuscole, numeri e simboli'; return; }
+
+        const viewerId = genViewerId();
+        const token = await subtleHash(phrase + viewerId + PEPPER);
+
+        // Persisti username (riuso se già presente)
+        const users = getUsers();
+        const finalUsername = uname || users[viewerId]?.username || `user_${viewerId.slice(0,6)}`;
+        users[viewerId] = users[viewerId] || { username: finalUsername, blocked: false, createdAt: Date.now() };
+        setUsers(users);
+
+        setSession({ viewerId, token, username: finalUsername, ts: Date.now() });
+        loginStatus.textContent='✅ Accesso eseguito';
+        setTimeout(()=>loginModal.classList.remove('show'), 600);
+        showStatus(`Benvenuto, ${finalUsername}`, 'success');
+      });
+
+      // Navigation
+      function showHome(){ homeSection.classList.remove('hidden'); videoSection.classList.add('hidden'); adminSection.classList.add('hidden'); showStatus('',''); lensBtn.setAttribute('aria-expanded','false'); }
+      function showVideo(){ homeSection.classList.add('hidden'); adminSection.classList.add('hidden'); videoSection.classList.remove('hidden'); showStatus('✅ Sezione video aperta','success'); setTimeout(()=>showStatus(''),900); lensBtn.setAttribute('aria-expanded','true'); renderAll(); }
+      function showAdmin(){ homeSection.classList.add('hidden'); videoSection.classList.add('hidden'); adminSection.classList.remove('hidden'); showStatus('🔧 Admin sbloccato','success'); setTimeout(()=>showStatus(''),900); renderAdminTables(); }
+
+      lensBtn.addEventListener('click', async () => { const ok = await ensureLogin(); if(ok) showVideo(); });
       backHome && backHome.addEventListener('click', showHome);
 
-      /* ============= Render pubblico ============= */
+      // Upload
+      function openUpload(){ uploadModal.classList.add('show'); openUploadBtn && openUploadBtn.setAttribute('aria-expanded','true'); }
+      function closeUpload(){ uploadModal.classList.remove('show'); openUploadBtn && openUploadBtn.setAttribute('aria-expanded','false'); uploadStatus.textContent=''; uploadProgress.style.width='0%'; fileInput.value=''; titleInput.value=''; overlaySrcInput.value=''; }
+      openUploadBtn && openUploadBtn.addEventListener('click', async ()=>{ const ok = await ensureLogin(); if(ok) openUpload(); });
+      closeUploadBtn && closeUploadBtn.addEventListener('click', closeUpload);
+
+      function tryMp4(url){
+        if(!url) return url;
+        if(url.endsWith('.mp4')) return url;
+        if(url.includes('/video/upload/')) return url.replace('/video/upload/','/video/upload/f_mp4/').replace(/\.webm($|\?)/i,'.mp4$1');
+        return url;
+      }
+
       function createCard(item){
         const card = document.createElement('div'); card.className = 'card video-card';
         const v = document.createElement('video');
-        v.src = item.url;
-        v.controls = true;
-        v.preload = 'metadata';
-        v.setAttribute('controlsList','nodownload');
+        v.src = tryMp4(item.url);
+        v.controls = true; v.preload = 'metadata'; v.setAttribute('controlsList','nodownload');
         v.addEventListener('contextmenu', e => e.preventDefault());
-        if (item.overlaySrc) v.dataset.overlaySrc = item.overlaySrc;
+        if(item.overlaySrc) v.dataset.overlaySrc = item.overlaySrc;
 
         const t = document.createElement('div'); t.className='title'; t.textContent = item.title || 'Video senza titolo';
         const vw = document.createElement('div'); vw.className='views'; vw.textContent = '👁️ ' + (item.views || 0) + ' views';
 
         let counted = false;
         v.addEventListener('play', () => {
+          // Se utente bloccato, impedisci
+          const sess = getSession(); const users = getUsers();
+          if(sess.viewerId && users[sess.viewerId]?.blocked){ v.pause(); showStatus('Utente bloccato: visione negata', 'error'); return; }
+
           if (counted) return; counted = true;
           const saved = getSaved().map(s => { if (s.url === item.url) s.views = (s.views || 0) + 1; return s; });
           setSaved(saved);
           const updated = saved.find(s => s.url === item.url);
           vw.textContent = '👁️ ' + ((updated && updated.views) || 0) + ' views';
-          if (typeof window.renderAdminTable === 'function') window.renderAdminTable();
+          track('video_play', { url: item.url, title: item.title || null });
+          if (typeof window.renderAdminTables === 'function') window.renderAdminTables();
         });
 
-        card.appendChild(v); card.appendChild(t); card.appendChild(vw);
+        card.append(v,t,vw);
         return card;
       }
 
       function renderAll(){
         if(!videoContainer) return;
-        videoContainer.innerHTML = '';
+        videoContainer.innerHTML='';
         const saved = getSaved().filter(v => v.published !== false).sort((a,b) => (b.views || 0) - (a.views || 0));
-        if (!saved.length){
-          const info = document.createElement('div'); info.style.color = 'var(--muted)'; info.textContent = 'Nessun video pubblicato. Carica un video per iniziare.'; videoContainer.appendChild(info);
-        } else {
-          saved.forEach(i => videoContainer.appendChild(createCard(i)));
-        }
+        if(!saved.length){ const info = document.createElement('div'); info.style.color='var(--muted)'; info.textContent='Nessun video pubblicato. Carica un video per iniziare.'; videoContainer.appendChild(info); return; }
+        saved.forEach(i => videoContainer.appendChild(createCard(i)));
       }
-      window.renderAllVideosPublic = renderAll;
 
-      /* ============= Upload robusto con progress ============= */
-      function openUpload(){ uploadModal.classList.add('show'); openUploadBtn && openUploadBtn.setAttribute('aria-expanded','true'); }
-      function closeUpload(){ uploadModal.classList.remove('show'); openUploadBtn && openUploadBtn.setAttribute('aria-expanded','false'); uploadStatus.textContent=''; uploadProgress.style.width='0%'; fileInput.value=''; titleInput.value=''; overlaySrcInput.value=''; }
+      searchVideos && searchVideos.addEventListener('input', () => {
+        const term = (searchVideos.value || '').toLowerCase();
+        track('search', { term });
+        document.querySelectorAll('.video-card').forEach(card => {
+          const src = (card.querySelector('video')?.src || '').toLowerCase();
+          const title = (card.querySelector('.title')?.textContent || '').toLowerCase();
+          card.style.display = (!term || src.includes(term) || title.includes(term)) ? '' : 'none';
+        });
+      });
 
-      openUploadBtn && openUploadBtn.addEventListener('click', openUpload);
-      closeUploadBtn && closeUploadBtn.addEventListener('click', closeUpload);
-
+      // Upload (XHR per progress)
       function humanFileSize(bytes){
         const thresh = 1024;
         if(Math.abs(bytes) < thresh) return bytes + ' B';
@@ -277,269 +372,242 @@
         return bytes.toFixed(1) + ' ' + units[u];
       }
 
-      async function uploadToCloudinary(file, title, overlaySrc, onProgress){
-        if(!file) throw new Error('no-file');
-        const sizeMb = file.size / (1024*1024);
-        if(sizeMb > MAX_FILE_MB) throw new Error('file-too-large');
-
+      function uploadToCloudinaryXHR(file, title, onProgress){
         const form = new FormData();
         form.append('file', file);
         form.append('upload_preset', UPLOAD_PRESET);
         form.append('context', `caption=${title || ''}`);
-
         return new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();
           xhr.open('POST', CLOUDINARY_URL);
           xhr.timeout = UPLOAD_TIMEOUT_MS;
-          xhr.onload = function(){
+          xhr.onload = () => {
             if(xhr.status >= 200 && xhr.status < 300){
-              try { const data = JSON.parse(xhr.responseText); if (data && data.secure_url) resolve(data); else reject(new Error('no-url')); }
-              catch(e){ reject(e); }
+              try { resolve(JSON.parse(xhr.responseText)); } catch(e){ reject(e); }
             } else {
               try { const err = JSON.parse(xhr.responseText); reject(new Error(err?.error?.message || 'upload-failed')); } catch(e){ reject(new Error('upload-failed')); }
             }
           };
-          xhr.onerror = function(){ reject(new Error('network-error')); };
-          xhr.ontimeout = function(){ reject(new Error('timeout')); };
-          xhr.upload.onprogress = function(ev){
+          xhr.onerror = () => reject(new Error('network-error'));
+          xhr.ontimeout = () => reject(new Error('timeout'));
+          xhr.upload.onprogress = ev => {
             if(ev.lengthComputable && typeof onProgress === 'function'){
-              const pct = Math.round((ev.loaded / ev.total) * 100);
-              onProgress(pct, ev.loaded, ev.total);
+              onProgress(Math.round(ev.loaded / ev.total * 100), ev.loaded, ev.total);
             }
           };
           xhr.send(form);
         });
       }
 
-      async function handleUpload(){
-        uploadStatus.textContent = '';
+      uploadBtn && uploadBtn.addEventListener('click', async () => {
         const file = fileInput.files && fileInput.files[0];
         const title = (titleInput.value || '').trim();
         const overlaySrc = (overlaySrcInput.value || '').trim() || null;
 
-        if(!file){ uploadStatus.textContent = '❌ Seleziona un file video.'; return; }
-        if(!file.type || !file.type.startsWith('video/')){ uploadStatus.textContent = '❌ Il file selezionato non è un video.'; return; }
-
+        if(!file || !file.type.startsWith('video/')){ uploadStatus.textContent='❌ Seleziona un file video valido'; return; }
         const sizeMb = (file.size / (1024*1024)).toFixed(1);
-        if(sizeMb > MAX_FILE_MB){ uploadStatus.textContent = `❌ File troppo grande: ${sizeMb} MB (limite locale ${MAX_FILE_MB} MB).`; return; }
+        if(sizeMb > MAX_FILE_MB){ uploadStatus.textContent = `❌ File troppo grande: ${sizeMb} MB (limite locale ${MAX_FILE_MB} MB)`; return; }
 
-        uploadStatus.textContent = `⏳ Caricamento ${sizeMb} MB...`;
-        uploadProgress.style.width = '0%'; uploadProgress.parentElement.setAttribute('aria-hidden','false');
+        uploadStatus.textContent=`⏳ Caricamento ${humanFileSize(file.size)}...`;
+        uploadProgress.style.width='0%'; uploadProgress.parentElement.setAttribute('aria-hidden','false');
 
-        try {
-          const res = await uploadToCloudinary(file, title, overlaySrc, (pct) => {
+        try{
+          const data = await uploadToCloudinaryXHR(file, title, pct => {
             uploadProgress.style.width = pct + '%';
-            uploadStatus.textContent = `⏳ Caricamento ${pct}%`;
+            uploadStatus.textContent = `⏳ ${pct}%`;
           });
-
-          const url = res.secure_url;
-          if(!url) throw new Error('no-url-returned');
+          const url = data.secure_url;
+          if(!url){ uploadStatus.textContent='❌ Nessun URL ricevuto'; return; }
 
           const saved = getSaved();
-          saved.unshift({ url, title, overlaySrc, views: 0, published:true, uploadedAt: Date.now(), cloudResponse: { public_id: res.public_id } });
+          saved.unshift({ url, title, overlaySrc, views:0, published:true, uploadedAt: Date.now(), cloudId: data.public_id });
           setSaved(saved);
 
-          renderAll();
-          if(typeof window.renderAdminTable === 'function') window.renderAdminTable();
-
-          uploadStatus.textContent = '✅ Caricamento completato';
-          uploadProgress.style.width = '100%';
-          setTimeout(() => { closeUpload(); showStatus('Video caricato e pubblicato', 'success'); setTimeout(()=>showStatus(''), 900); }, 700);
-        } catch (err) {
-          console.error('upload failed:', err);
-          const msg = (err && err.message) ? err.message : String(err);
-          uploadStatus.textContent = `❌ Upload fallito: ${msg}`;
-          showStatus('Upload fallito: controlla console e impostazioni Cloudinary', 'error');
-        }
-      }
-      uploadBtn && uploadBtn.addEventListener('click', handleUpload);
-
-      /* ============= Admin anchor & unlock ============= */
-      adminAnchorBtn.addEventListener('click', () => {
-        const open = adminInputWrap.style.display === 'flex';
-        if(open){
-          adminInputWrap.style.display='none'; adminInputWrap.setAttribute('aria-hidden','true'); adminInput.value='';
-        } else {
-          adminInputWrap.style.display='flex'; adminInputWrap.setAttribute('aria-hidden','false'); adminInput.focus(); adminInput.select();
+          uploadStatus.textContent='✅ Caricato su Cloudinary'; uploadProgress.style.width='100%';
+          track('upload_success', { url, title });
+          setTimeout(() => { closeUpload(); renderAll(); }, 600);
+        }catch(err){
+          console.error(err);
+          uploadStatus.textContent='❌ Upload fallito';
+          track('upload_error', { message: err?.message || String(err) });
         }
       });
 
-      function tryUnlockAdmin(){
+      // Admin unlock (hash + pepper)
+      adminAnchorBtn.addEventListener('click', () => {
+        const open = adminInputWrap.style.display === 'flex';
+        if(open){ adminInputWrap.style.display='none'; adminInputWrap.setAttribute('aria-hidden','true'); adminInput.value=''; }
+        else { adminInputWrap.style.display='flex'; adminInputWrap.setAttribute('aria-hidden','false'); adminInput.focus(); adminInput.select(); }
+      });
+
+      adminSubmit.addEventListener('click', async () => {
         const v = (adminInput.value || '').trim();
-        if(v === ADMIN_PASS){
-          adminInputWrap.style.display='none'; adminInput.value='';
-          if(typeof window.renderAdminTable === 'function') window.renderAdminTable();
-          else setTimeout(()=>{ if(typeof window.renderAdminTable === 'function') window.renderAdminTable(); },100);
-          showAdmin();
+        if(!v){ adminInput.focus(); return; }
+        const candidate = await subtleHash(v + PEPPER);
+        if(candidate === ADMIN_HASH){
+          adminInput.value=''; showAdmin();
         } else {
-          adminInput.style.transition = 'transform .12s';
-          adminInput.style.transform='translateX(-6px)'; setTimeout(()=>adminInput.style.transform='translateX(6px)',120); setTimeout(()=>adminInput.style.transform='',240);
-          adminInput.value=''; adminInput.focus();
+          adminInput.style.transition='transform .12s';
+          adminInput.style.transform='translateX(-6px)';
+          setTimeout(()=>adminInput.style.transform='translateX(6px)',120);
+          setTimeout(()=>adminInput.style.transform='',240);
         }
-      }
-      adminSubmit.addEventListener('click', tryUnlockAdmin);
-      adminInput.addEventListener('keydown', e => { if(e.key==='Enter') tryUnlockAdmin(); });
+      });
 
-      /* ============= Admin panel render & actions ============= */
-      function renderAdminTable(){
-        adminBody.innerHTML = '';
-        const saved = getSaved();
-        if(!saved.length){
-          const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan=5; td.textContent='Nessun video salvato.'; td.style.color='var(--muted)'; tr.appendChild(td); adminBody.appendChild(tr); return;
-        }
-        saved.forEach((item, idx) => {
-          const tr = document.createElement('tr');
-
-          const tdPrev = document.createElement('td');
-          const prevV = document.createElement('video'); prevV.src = item.url; prevV.preload = 'metadata'; prevV.controls = true; prevV.style.maxWidth='160px'; prevV.setAttribute('controlsList','nodownload'); prevV.addEventListener('contextmenu', e => e.preventDefault());
-          if(item.overlaySrc) prevV.dataset.overlaySrc = item.overlaySrc;
-          tdPrev.appendChild(prevV);
-
-          const tdTitle = document.createElement('td');
-          const titleInput = document.createElement('input'); titleInput.className='input'; titleInput.value=item.title||'';
-          tdTitle.appendChild(titleInput);
-
-          const tdViews = document.createElement('td');
-          const pillV = document.createElement('span'); pillV.className='pill'; pillV.textContent=(item.views||0)+' views';
-          tdViews.appendChild(pillV);
-
-          const tdStatus = document.createElement('td');
-          const pillS = document.createElement('span'); pillS.className='pill '+(item.published===false?'':'pub'); pillS.textContent = item.published===false ? 'Non pubblicato' : 'Pubblicato';
-          tdStatus.appendChild(pillS);
-
-          const tdActions = document.createElement('td'); const actions = document.createElement('div'); actions.className='actions';
-          const btnSave=document.createElement('button');btnSave.className='btn';btnSave.textContent='💾 Salva';
-          const btnReset=document.createElement('button');btnReset.className='btn';btnReset.textContent='🔄 Reset';
-          const btnToggle=document.createElement('button');btnToggle.className='btn';btnToggle.textContent=item.published===false?'📢 Pubblica':'🙈 Nascondi';
-          const btnDel=document.createElement('button');btnDel.className='btn danger';btnDel.textContent='🗑️ Elimina';
-          actions.append(btnSave,btnReset,btnToggle,btnDel); tdActions.appendChild(actions);
-
-          tr.append(tdPrev,tdTitle,tdViews,tdStatus,tdActions); adminBody.appendChild(tr);
-
-          btnSave.addEventListener('click', () => {
-            const s=getSaved(); s[idx].title=titleInput.value.trim(); setSaved(s); renderAdminTable(); renderAll(); showStatus('Titolo aggiornato','success'); setTimeout(()=>showStatus(''),900);
-          });
-          btnReset.addEventListener('click', () => {
-            if(!confirm('Resetta le views a 0 per questo video?')) return;
-            const s=getSaved(); s[idx].views=0; setSaved(s); renderAdminTable(); renderAll(); showStatus('Views resettate','success'); setTimeout(()=>showStatus(''),900);
-          });
-          btnToggle.addEventListener('click', () => {
-            const s=getSaved(); s[idx].published=!(s[idx].published===false); setSaved(s); renderAdminTable(); renderAll(); showStatus(s[idx].published ? 'Video pubblicato':'Video nascosto','success'); setTimeout(()=>showStatus(''),900);
-          });
-          btnDel.addEventListener('click', () => {
-            if(!confirm("Sei sicuro di eliminare questo video dall'indice locale?")) return;
-            const s=getSaved(); s.splice(idx,1); setSaved(s); renderAdminTable(); renderAll(); showStatus('Video eliminato','error'); setTimeout(()=>showStatus(''),1200);
-          });
-        });
-      }
-      window.renderAdminTable = renderAdminTable;
       adminToVideo && adminToVideo.addEventListener('click', ()=>{ videoSection.classList.remove('hidden'); adminSection.classList.add('hidden'); renderAll(); });
       adminToHome && adminToHome.addEventListener('click', ()=>{ homeSection.classList.remove('hidden'); adminSection.classList.add('hidden'); });
 
-      /* ============= Ricerca client ============= */
-      searchVideos && searchVideos.addEventListener('input', () => {
-        const term = (searchVideos.value || '').toLowerCase();
-        document.querySelectorAll('.video-card').forEach(card => {
-          const src = (card.querySelector('video')?.src || '').toLowerCase();
-          const title = (card.querySelector('.title')?.textContent || '').toLowerCase();
-          card.style.display = (!term || src.includes(term) || title.includes(term)) ? '' : 'none';
-        });
-      });
+      // Admin tables
+      function renderAdminTables(){
+        // Videos
+        adminBody.innerHTML='';
+        const saved = getSaved();
+        if(!saved.length){
+          const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan=5; td.textContent='Nessun video salvato.'; td.style.color='var(--muted)';
+          tr.appendChild(td); adminBody.appendChild(tr);
+        } else {
+          saved.forEach((item, idx) => {
+            const tr = document.createElement('tr');
 
-      /* ============= Overlay fullscreen J ============= */
-      let overlayEl = null, overlayVideoEl = null;
-      let underlying = null, underlyingState = { wasPlaying:false, muted:false, time:0 };
+            const tdPrev = document.createElement('td');
+            const prevV = document.createElement('video'); prevV.src=item.url; prevV.preload='metadata'; prevV.controls=true; prevV.style.maxWidth='160px'; prevV.setAttribute('controlsList','nodownload'); prevV.addEventListener('contextmenu', e=>e.preventDefault());
+            if(item.overlaySrc) prevV.dataset.overlaySrc=item.overlaySrc; tdPrev.appendChild(prevV);
+
+            const tdTitle = document.createElement('td'); const titleInputEl = document.createElement('input'); titleInputEl.className='input'; titleInputEl.value=item.title||''; tdTitle.appendChild(titleInputEl);
+
+            const tdViews = document.createElement('td'); const pillV = document.createElement('span'); pillV.className='pill'; pillV.textContent=(item.views||0)+' views'; tdViews.appendChild(pillV);
+
+            const tdStatus = document.createElement('td'); const pillS = document.createElement('span'); pillS.className='pill '+(item.published===false?'':'pub'); pillS.textContent = item.published===false ? 'Non pubblicato' : 'Pubblicato'; tdStatus.appendChild(pillS);
+
+            const tdActions = document.createElement('td'); const actions = document.createElement('div'); actions.className='actions';
+            const btnSave=document.createElement('button');btnSave.className='btn';btnSave.textContent='💾 Salva';
+            const btnReset=document.createElement('button');btnReset.className='btn';btnReset.textContent='🔄 Reset';
+            const btnToggle=document.createElement('button');btnToggle.className='btn';btnToggle.textContent=item.published===false?'📢 Pubblica':'🙈 Nascondi';
+            const btnDel=document.createElement('button');btnDel.className='btn danger';btnDel.textContent='🗑️ Elimina';
+            actions.append(btnSave,btnReset,btnToggle,btnDel); tdActions.appendChild(actions);
+
+            tr.append(tdPrev,tdTitle,tdViews,tdStatus,tdActions); adminBody.appendChild(tr);
+
+            btnSave.addEventListener('click', () => { const s=getSaved(); s[idx].title=titleInputEl.value.trim(); setSaved(s); renderAdminTables(); renderAll(); showStatus('Titolo aggiornato','success'); setTimeout(()=>showStatus(''),900); });
+            btnReset.addEventListener('click', () => { if(!confirm('Resetta le views a 0 per questo video?')) return; const s=getSaved(); s[idx].views=0; setSaved(s); renderAdminTables(); renderAll(); showStatus('Views resettate','success'); setTimeout(()=>showStatus(''),900); });
+            btnToggle.addEventListener('click', () => { const s=getSaved(); s[idx].published=!(s[idx].published===false); setSaved(s); renderAdminTables(); renderAll(); showStatus(s[idx].published ? 'Video pubblicato':'Video nascosto','success'); setTimeout(()=>showStatus(''),900); });
+            btnDel.addEventListener('click', () => { if(!confirm("Sei sicuro di eliminare questo video dall'indice locale?")) return; const s=getSaved(); s.splice(idx,1); setSaved(s); renderAdminTables(); renderAll(); showStatus('Video eliminato','error'); setTimeout(()=>showStatus(''),1200); });
+          });
+        }
+
+        // Users
+        userBody.innerHTML='';
+        const users = getUsers();
+        const entries = Object.entries(users);
+        if(!entries.length){
+          const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan=4; td.textContent='Nessun utente registrato.'; td.style.color='var(--muted)';
+          tr.appendChild(td); userBody.appendChild(tr);
+        } else {
+          entries.forEach(([viewerId, info])=>{
+            const tr = document.createElement('tr');
+            const tdId = document.createElement('td'); tdId.textContent = viewerId;
+            const tdU = document.createElement('td'); tdU.textContent = info.username || '(senza nome)';
+            const tdB = document.createElement('td'); tdB.textContent = info.blocked ? 'Sì' : 'No';
+            const tdA = document.createElement('td'); const actions = document.createElement('div'); actions.className='actions';
+            const btnBlock=document.createElement('button');btnBlock.className='btn';btnBlock.textContent= info.blocked ? '✅ Sblocca' : '🚫 Blocca';
+            const btnDelete=document.createElement('button');btnDelete.className='btn danger';btnDelete.textContent='🗑️ Elimina';
+            actions.append(btnBlock,btnDelete); tdA.appendChild(actions);
+            tr.append(tdId,tdU,tdB,tdA); userBody.appendChild(tr);
+
+            btnBlock.addEventListener('click', () => {
+              const u=getUsers(); u[viewerId].blocked = !u[viewerId].blocked; setUsers(u); renderAdminTables(); showStatus(u[viewerId].blocked ? 'Utente bloccato' : 'Utente sbloccato', u[viewerId].blocked ? 'error':'success');
+            });
+            btnDelete.addEventListener('click', () => {
+              if(!confirm('Eliminare questo utente dal registro locale?')) return;
+              const u=getUsers(); delete u[viewerId]; setUsers(u); renderAdminTables(); showStatus('Utente eliminato', 'error');
+            });
+          });
+        }
+      }
+      window.renderAdminTables = renderAdminTables;
+
+      // Overlay J
+      let overlayEl=null, overlayVideoEl=null;
+      let underlying=null, underlyingState={ wasPlaying:false, muted:false, time:0 };
 
       function findActiveUnderlyingVideo(){
         const vids = Array.from(document.querySelectorAll('.video-card video, video')).filter(v => v.offsetParent !== null);
-        if(!vids.length) return null;
         const playing = vids.find(v => !v.paused && !v.ended);
-        return playing || vids[0];
+        return playing || vids[0] || null;
       }
 
       function buildOverlay(url){
         removeOverlay();
         overlayEl = document.createElement('div'); overlayEl.className = 'overlay-fullscreen';
         overlayVideoEl = document.createElement('video');
-        overlayVideoEl.src = url;
-        overlayVideoEl.controls = true;
-        overlayVideoEl.autoplay = true;
-        overlayVideoEl.playsInline = true;
-        overlayVideoEl.style.outline = 'none';
-        overlayVideoEl.setAttribute('controlsList','nodownload');
-        overlayVideoEl.addEventListener('contextmenu', e => e.preventDefault());
-        overlayVideoEl.addEventListener('dblclick', removeOverlay);
-        overlayVideoEl.addEventListener('ended', removeOverlay);
-
-        function escHandler(e){ if(e.key === 'Escape') removeOverlay(); }
-        document.addEventListener('keydown', escHandler);
-        overlayEl._escHandler = escHandler;
-
-        overlayEl.appendChild(overlayVideoEl);
-        document.body.appendChild(overlayEl);
-        document.documentElement.style.overflow = 'hidden';
-        document.body.style.overflow = 'hidden';
-        overlayVideoEl.focus();
+        overlayVideoEl.src = url; overlayVideoEl.controls = true; overlayVideoEl.autoplay = true; overlayVideoEl.playsInline = true;
+        overlayVideoEl.setAttribute('controlsList','nodownload'); overlayVideoEl.addEventListener('contextmenu', e => e.preventDefault());
+        overlayVideoEl.addEventListener('dblclick', removeOverlay); overlayVideoEl.addEventListener('ended', removeOverlay);
+        function esc(e){ if(e.key === 'Escape') removeOverlay(); } document.addEventListener('keydown', esc); overlayEl._esc = esc;
+        overlayEl.appendChild(overlayVideoEl); document.body.appendChild(overlayEl);
+        document.documentElement.style.overflow='hidden'; document.body.style.overflow='hidden';
         overlayVideoEl.play().catch(()=>{});
+        track('overlay_open', { url });
       }
 
       function removeOverlay(){
         if(!overlayEl) return;
+        try { document.removeEventListener('keydown', overlayEl._esc); } catch(e){}
+        try { overlayEl.remove(); } catch(e){}
+        overlayEl=null; overlayVideoEl=null;
+        document.documentElement.style.overflow=''; document.body.style.overflow='';
+        track('overlay_close', {});
         if(underlying){
-          try {
+          try{
             underlying.muted = underlyingState.muted;
             if(underlyingState.wasPlaying){
               underlying.currentTime = underlyingState.time || underlying.currentTime;
               underlying.play().catch(()=>{});
             }
-          } catch(e){ console.warn('restore underlying failed', e); }
-          underlying = null;
+          }catch(e){}
+          underlying=null;
         }
-        try { document.removeEventListener('keydown', overlayEl._escHandler); } catch(e){}
-        try { overlayEl.remove(); } catch(e){}
-        overlayEl = null; overlayVideoEl = null;
-        document.documentElement.style.overflow = ''; document.body.style.overflow = '';
       }
 
-      function toggleOverlayVideo(url){
+      function toggleOverlayVideo(explicitUrl){
         if(overlayEl){ removeOverlay(); return; }
+        const users = getUsers(); const sess = getSession();
+        if(sess.viewerId && users[sess.viewerId]?.blocked){ showStatus('Utente bloccato: overlay negato', 'error'); return; }
+
         const target = findActiveUnderlyingVideo();
         underlying = target;
         if(underlying){
-          underlyingState.wasPlaying = !underlying.paused && !underlying.ended;
-          underlyingState.muted = underlying.muted;
-          underlyingState.time = underlying.currentTime || 0;
+          underlyingState = { wasPlaying: !underlying.paused && !underlying.ended, muted: underlying.muted, time: underlying.currentTime || 0 };
           try { underlying.muted = true; underlying.pause(); } catch(e){}
         } else {
           underlyingState = { wasPlaying:false, muted:false, time:0 };
         }
-        // prefer overlaySrc dataset; fallback to provided url; last fallback: first saved url
-        let src = (underlying && underlying.dataset && underlying.dataset.overlaySrc) || url || '';
+        let src = (underlying && underlying.dataset && underlying.dataset.overlaySrc) || explicitUrl || VIDEO_J_DEFAULT;
         if(!src){
           const saved = getSaved();
-          src = (saved && saved[0] && saved[0].url) || FALLBACK_OVERLAY_URL;
+          src = (saved[0] && saved[0].overlaySrc) || (saved[0] && saved[0].url) || VIDEO_J_DEFAULT;
         }
+        if(!src){ showStatus('Nessun overlay disponibile', 'error'); return; }
         buildOverlay(src);
       }
       window.toggleOverlayVideo = toggleOverlayVideo;
 
-      document.addEventListener('keydown', (e) => {
+      document.addEventListener('keydown', async (e) => {
         const active = document.activeElement;
-        const tag = active && active.tagName;
-        const isTyping = tag === 'INPUT' || tag === 'TEXTAREA' || (active && active.isContentEditable);
-        if(isTyping) return;
+        const typing = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
+        if(typing) return;
         if(e.key && e.key.toLowerCase() === 'j'){
+          const ok = await ensureLogin(); if(!ok) return;
           toggleOverlayVideo('');
         }
       });
 
-      /* ============= Init & diagnostica base ============= */
-      renderAll();
-      console.info('Overlay FULLSCREEN J ready. Press J to toggle. Fallback overlay:', FALLBACK_OVERLAY_URL);
-      console.info('Cloudinary URL:', CLOUDINARY_URL, 'Preset:', UPLOAD_PRESET);
-      console.info('Saved videos:', getSaved());
+      // Init
+      (async () => {
+        const ok = await ensureLogin();
+        if(ok){ renderAll(); }
+      })();
     });
   </script>
 </body>
 </html>
-
