@@ -1,171 +1,130 @@
-document.addEventListener('DOMContentLoaded', () => {
-  /* ============= CONFIG ============= */
-  const STORAGE_KEY = 'jiorroVideos_secure_v1';
-  const ADMIN_PASS = 'JIORR0CON$=LE'; // case-sensitive
-  const CLOUDINARY_CLOUD = 'dng8rjd6u';
-  const UPLOAD_PRESET = 'jiorro_upload';
-  const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`;
-  const MAX_FILE_MB = 800;
-  const UPLOAD_TIMEOUT_MS = 3 * 60 * 1000;
-
-  /* ============= Helper storage & UI ============= */
-  function getSaved(){
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-    catch(e){ return []; }
-  }
-  function setSaved(arr){ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr || [])); }
-  function showStatus(msg, type){
-    const s = document.getElementById('statusEl');
-    s.textContent = msg || '';
-    s.className = 'status' + (type ? ' ' + type : '');
-  }
-
-  /* ============= Refs ============= */
-  const lensBtn = document.getElementById('lensBtn');
-  const homeSection = document.getElementById('homeSection');
-  const videoSection = document.getElementById('videoSection');
-  const adminSection = document.getElementById('adminSection');
-  const backHome = document.getElementById('backHome');
-  const videoContainer = document.getElementById('videoContainer');
-  const searchVideos = document.getElementById('searchVideos');
-  const openUploadBtn = document.getElementById('openUpload');
-  const uploadModal = document.getElementById('uploadModal');
-  const closeUploadBtn = document.getElementById('closeUpload');
-  const uploadBtn = document.getElementById('uploadBtn');
-  const fileInput = document.getElementById('videoFile');
-  const titleInput = document.getElementById('videoTitle');
-  const overlaySrcInput = document.getElementById('overlaySrc');
-  const uploadStatus = document.getElementById('uploadStatus');
-  const uploadProgress = document.getElementById('uploadProgress');
-  const adminAnchorBtn = document.getElementById('adminAnchorBtn');
-  const adminInputWrap = document.getElementById('adminInputWrap');
-  const adminInput = document.getElementById('adminInput');
-  const adminSubmit = document.getElementById('adminSubmit');
-  const adminBody = document.getElementById('adminBody');
-  const adminToVideo = document.getElementById('adminToVideo');
-  const adminToHome = document.getElementById('adminToHome');
-
-  /* ============= NAV helpers ============= */
-  function showHome(){
-    homeSection.classList.remove('hidden');
-    videoSection.classList.add('hidden');
-    adminSection.classList.add('hidden');
-    showStatus('');
-  }
-  function showVideo(){
-    homeSection.classList.add('hidden');
-    adminSection.classList.add('hidden');
-    videoSection.classList.remove('hidden');
-    renderAll();
-  }
-  function showAdmin(){
-    homeSection.classList.add('hidden');
-    videoSection.classList.add('hidden');
-    adminSection.classList.remove('hidden');
-    renderAdminTable();
-  }
-
-  lensBtn.addEventListener('click', showVideo);
-  backHome && backHome.addEventListener('click', showHome);
-
-  /* ============= Render pubblico ============= */
-  function createCard(item){
-    const card = document.createElement('div'); card.className = 'card video-card';
-    const v = document.createElement('video');
-    v.src = item.url;
-    v.controls = true;
-    v.preload = 'metadata';
-    v.setAttribute('controlsList','nodownload');
-    v.addEventListener('contextmenu', e => e.preventDefault());
-    if (item.overlaySrc) v.dataset.overlaySrc = item.overlaySrc;
-
-    const t = document.createElement('div'); t.className='title'; t.textContent = item.title || 'Video senza titolo';
-    const vw = document.createElement('div'); vw.className='views'; vw.textContent = '👁️ ' + (item.views || 0) + ' views';
-
-    let counted = false;
-    v.addEventListener('play', () => {
-      if (counted) return; counted = true;
-      const saved = getSaved().map(s => { if (s.url === item.url) s.views = (s.views || 0) + 1; return s; });
-      setSaved(saved);
-      const updated = saved.find(s => s.url === item.url);
-      vw.textContent = '👁️ ' + ((updated && updated.views) || 0) + ' views';
-      renderAdminTable();
-    });
-
-    card.appendChild(v); card.appendChild(t); card.appendChild(vw);
-    return card;
-  }
-
-  function renderAll(){
-    videoContainer.innerHTML = '';
-    const saved = getSaved().filter(v => v.published !== false);
-    if (!saved.length){
-      const info = document.createElement('div'); info.style.color = 'var(--muted)'; info.textContent = 'Nessun video pubblicato.'; videoContainer.appendChild(info);
-    } else {
-      saved.forEach(i => videoContainer.appendChild(createCard(i)));
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Jiorro Video Manager</title>
+  <style>
+    :root{
+      --bg:#0f0f10; --panel:#18181b; --border:#2a2a31; --text:#fff;
+      --muted:#b7b7c3; --accent:#6ff66f; --brand:#66aaff; --danger:#ff6666;
+      --shadow:rgba(0,0,0,0.35);
     }
-  }
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;}
+    *{box-sizing:border-box}
+    .topbar{position:fixed;top:0;left:0;right:0;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:linear-gradient(to bottom, rgba(24,24,27,0.95), rgba(24,24,27,0.7));border-bottom:1px solid var(--border);z-index:1000;backdrop-filter:blur(6px)}
+    .lens-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-size:20px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+    .status{position:fixed;top:70px;right:20px;font-size:13px;color:var(--muted);z-index:950;text-align:right}
+    .status.success{color:var(--accent)} .status.error{color:var(--danger)}
+    .section{padding-top:96px;min-height:100vh}
+    .hidden{display:none}
+    .panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:0 14px 36px var(--shadow)}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;background:#202025;color:var(--muted);border:1px solid var(--border);font-size:13px;margin:2px}
+    .pill-list{display:flex;flex-wrap:wrap;padding:0;margin:0;list-style:none}
+    .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:12px}
+    .card{background:var(--panel);border:1px solid var(--border);padding:10px;border-radius:12px;box-shadow:0 10px 30px var(--shadow);display:flex;flex-direction:column;gap:8px}
+    .card video{width:100%;border-radius:8px;background:black}
+    table.admin-grid{width:100%;border-collapse:collapse;margin-top:12px}
+    table.admin-grid th, table.admin-grid td{padding:10px;border-top:1px solid var(--border);vertical-align:middle}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);z-index:1200}
+    .modal.show{display:flex}
+    .admin-anchor{position:fixed;left:12px;bottom:12px;z-index:1300;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+    .admin-btn{width:44px;height:44px;border-radius:999px;background:var(--panel);border:1px solid var(--border);display:inline-flex;align-items:center;justify-content:center;color:var(--text);font-size:18px;cursor:pointer}
+    .admin-input-wrap{display:none;gap:8px;align-items:center}
+    .admin-input{width:220px;padding:8px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--text)}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div>Jiorro Video Manager</div>
+    <button id="lensBtn" class="lens-btn">🔍</button>
+  </header>
 
-  /* ============= Upload ============= */
-  function openUpload(){ uploadModal.classList.add('show'); }
-  function closeUpload(){ uploadModal.classList.remove('show'); fileInput.value=''; titleInput.value=''; overlaySrcInput.value=''; uploadStatus.textContent=''; uploadProgress.style.width='0%'; }
-  openUploadBtn && openUploadBtn.addEventListener('click', openUpload);
-  closeUploadBtn && closeUploadBtn.addEventListener('click', closeUpload);
+  <div id="statusEl" class="status"></div>
 
-  async function handleUpload(){
-    const file = fileInput.files && fileInput.files[0];
-    const title = (titleInput.value || '').trim();
-    const overlaySrc = (overlaySrcInput.value || '').trim() || null;
-    if(!file){ uploadStatus.textContent = '❌ Seleziona un file video.'; return; }
-    uploadStatus.textContent = '⏳ Caricamento...';
-    uploadProgress.style.width = '50%';
-    // simulazione upload
-    setTimeout(() => {
-      const url = URL.createObjectURL(file);
-      const saved = getSaved();
-      saved.unshift({ url, title, overlaySrc, views: 0, published:true });
-      setSaved(saved);
-      renderAll();
-      renderAdminTable();
-      uploadStatus.textContent = '✅ Caricato';
-      uploadProgress.style.width = '100%';
-      setTimeout(closeUpload, 1000);
-    }, 1500);
-  }
-  uploadBtn && uploadBtn.addEventListener('click', handleUpload);
+  <!-- Home -->
+  <main id="homeSection" class="section">
+    <div class="panel">
+      <h1>La regione di Canaan</h1>
+      <p>Import automatico, ricerca client, upload e overlay J.</p>
+      <ul class="pill-list">
+        <li class="pill">Import automatico</li>
+        <li class="pill">Runtime .webm → .mp4</li>
+        <li class="pill">Ricerca client</li>
+        <li class="pill">Upload preset / fallback</li>
+        <li class="pill">Diagnostica URL</li>
+      </ul>
+    </div>
+  </main>
 
-  /* ============= Admin unlock ============= */
-  adminAnchorBtn.addEventListener('click', () => {
-    adminInputWrap.style.display = adminInputWrap.style.display==='flex' ? 'none' : 'flex';
-  });
-  function tryUnlockAdmin(){
-    const v = (adminInput.value || '').trim();
-    if(v === ADMIN_PASS){ adminInput.value=''; showAdmin(); }
-    else { adminInput.value=''; }
-  }
-  adminSubmit.addEventListener('click', tryUnlockAdmin);
+  <!-- Video -->
+  <section id="videoSection" class="section hidden">
+    <div class="panel">
+      <button id="backHome">🏠 Home</button>
+      <button id="openUpload">⬆️ Carica</button>
+      <input id="searchVideos" class="input" placeholder="Cerca video" />
+      <div id="videoContainer" class="cards"></div>
+    </div>
+  </section>
 
-  /* ============= Admin table ============= */
-  function renderAdminTable(){
-    adminBody.innerHTML = '';
-    const saved = getSaved();
-    if(!saved.length){
-      const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan=5; td.textContent='Nessun video salvato.'; tr.appendChild(td); adminBody.appendChild(tr); return;
-    }
-    saved.forEach((item, idx) => {
-      const tr = document.createElement('tr');
-      const tdPrev = document.createElement('td'); const prevV = document.createElement('video'); prevV.src=item.url; prevV.controls=true; prevV.style.maxWidth='160px'; tdPrev.appendChild(prevV);
-      const tdTitle = document.createElement('td'); const titleInput=document.createElement('input'); titleInput.className='input'; titleInput.value=item.title||''; tdTitle.appendChild(titleInput);
-      const tdViews = document.createElement('td'); tdViews.textContent=(item.views||0)+' views';
-      const tdStatus = document.createElement('td'); tdStatus.textContent=item.published===false?'Non pubblicato':'Pubblicato';
-      const tdActions = document.createElement('td'); const btnDel=document.createElement('button'); btnDel.className='btn danger'; btnDel.textContent='🗑️'; tdActions.appendChild(btnDel);
-      tr.append(tdPrev,tdTitle,tdViews,tdStatus,tdActions); adminBody.appendChild(tr);
-      btnDel.addEventListener('click', () => { const s=getSaved(); s.splice(idx,1); setSaved(s); renderAdminTable(); renderAll(); });
-    });
-  }
+  <!-- Admin -->
+  <section id="adminSection" class="section hidden">
+    <div class="panel">
+      <h2>🔧 Pannello amministrazione</h2>
+      <table class="admin-grid">
+        <thead><tr><th>Anteprima</th><th>Titolo</th><th>Views</th><th>Stato</th><th>Azioni</th></tr></thead>
+        <tbody id="adminBody"></tbody>
+      </table>
+    </div>
+  </section>
 
-  adminToVideo && adminToVideo.addEventListener('click', showVideo);
-  adminToHome && adminToHome.addEventListener('click', showHome);
+  <!-- Upload Modal -->
+  <div id="uploadModal" class="modal">
+    <div class="panel">
+      <h3>Carica Video</h3>
+      <input id="videoFile" type="file" accept="video/*" />
+      <input id="videoTitle" class="input" placeholder="Titolo (opzionale)" />
+      <input id="overlaySrc" class="input" placeholder="Overlay source (opzionale)" />
+      <button id="uploadBtn" class="btn">Carica</button>
+      <button id="closeUpload" class="btn">Chiudi</button>
+      <div id="uploadStatus"></div>
+    </div>
+  </div>
 
-  /* ============= Ricerca client ============= */
-  searchVideos && searchVideos.addEventListener('input', ()
+  <!-- Admin anchor -->
+  <div class="admin-anchor">
+    <button id="adminAnchorBtn" class="admin-btn">🔑</button>
+    <div id="adminInputWrap" class="admin-input-wrap">
+      <input id="adminInput" class="admin-input" placeholder="Password admin" />
+      <button id="adminSubmit" class="btn">Sblocca</button>
+      <button id="adminToHome" class="btn">Home</button>
+      <button id="adminToVideo" class="btn">Video</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const STORAGE_KEY = 'jiorroVideos_secure_v1';
+      const ADMIN_PASS = 'JIORR0CON$=LE';
+
+      const lensBtn = document.getElementById('lensBtn');
+      const homeSection = document.getElementById('homeSection');
+      const videoSection = document.getElementById('videoSection');
+      const adminSection = document.getElementById('adminSection');
+      const backHome = document.getElementById('backHome');
+      const videoContainer = document.getElementById('videoContainer');
+      const searchVideos = document.getElementById('searchVideos');
+      const openUploadBtn = document.getElementById('openUpload');
+      const uploadModal = document.getElementById('uploadModal');
+      const closeUploadBtn = document.getElementById('closeUpload');
+      const uploadBtn = document.getElementById('uploadBtn');
+      const fileInput = document.getElementById('videoFile');
+      const titleInput = document.getElementById('videoTitle');
+      const overlaySrcInput = document.getElementById('overlaySrc');
+      const uploadStatus = document.getElementById('uploadStatus');
+      const adminAnchorBtn = document.getElementById('adminAnchorBtn');
+      const adminInputWrap = document.getElementById('adminInputWrap');
+      const adminInput = document.getElementById('adminInput');
+      const adminSubmit = document.getElementById('adminSubmit');
+      const adminBody = document.getElementById
