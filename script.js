@@ -1,99 +1,171 @@
-// DEBUG + HANDLER RAPIDO per #uploadBtn
-(async function(){
-  console.clear();
-  console.log('Debug upload handler start');
+document.addEventListener('DOMContentLoaded', () => {
+  /* ============= CONFIG ============= */
+  const STORAGE_KEY = 'jiorroVideos_secure_v1';
+  const ADMIN_PASS = 'JIORR0CON$=LE'; // case-sensitive
+  const CLOUDINARY_CLOUD = 'dng8rjd6u';
+  const UPLOAD_PRESET = 'jiorro_upload';
+  const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`;
+  const MAX_FILE_MB = 800;
+  const UPLOAD_TIMEOUT_MS = 3 * 60 * 1000;
 
-  const uploadBtn = document.getElementById('uploadBtn');
-  const fileInput = document.getElementById('videoFile');
-  const uploadModal = document.getElementById('uploadModal');
-  const uploadStatus = document.getElementById('uploadStatus') || (function(){
-    const s = document.createElement('div'); s.id='uploadStatus'; s.style.color='#b7b7c3'; document.body.appendChild(s); return s;
-  })();
-  const progressBar = document.getElementById('uploadProgress');
-
-  console.log('uploadBtn found:', !!uploadBtn);
-  console.log('videoFile found:', !!fileInput);
-  console.log('uploadModal found:', !!uploadModal);
-
-  if(!uploadBtn || !fileInput){
-    uploadStatus.textContent = 'Errore: elemento upload non trovato. Controlla id #uploadBtn e #videoFile.';
-    return;
+  /* ============= Helper storage & UI ============= */
+  function getSaved(){
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    catch(e){ return []; }
+  }
+  function setSaved(arr){ localStorage.setItem(STORAGE_KEY, JSON.stringify(arr || [])); }
+  function showStatus(msg, type){
+    const s = document.getElementById('statusEl');
+    s.textContent = msg || '';
+    s.className = 'status' + (type ? ' ' + type : '');
   }
 
-  // rimuove eventuali listener ridondanti
-  uploadBtn.replaceWith(uploadBtn.cloneNode(true));
-  const freshBtn = document.getElementById('uploadBtn');
+  /* ============= Refs ============= */
+  const lensBtn = document.getElementById('lensBtn');
+  const homeSection = document.getElementById('homeSection');
+  const videoSection = document.getElementById('videoSection');
+  const adminSection = document.getElementById('adminSection');
+  const backHome = document.getElementById('backHome');
+  const videoContainer = document.getElementById('videoContainer');
+  const searchVideos = document.getElementById('searchVideos');
+  const openUploadBtn = document.getElementById('openUpload');
+  const uploadModal = document.getElementById('uploadModal');
+  const closeUploadBtn = document.getElementById('closeUpload');
+  const uploadBtn = document.getElementById('uploadBtn');
+  const fileInput = document.getElementById('videoFile');
+  const titleInput = document.getElementById('videoTitle');
+  const overlaySrcInput = document.getElementById('overlaySrc');
+  const uploadStatus = document.getElementById('uploadStatus');
+  const uploadProgress = document.getElementById('uploadProgress');
+  const adminAnchorBtn = document.getElementById('adminAnchorBtn');
+  const adminInputWrap = document.getElementById('adminInputWrap');
+  const adminInput = document.getElementById('adminInput');
+  const adminSubmit = document.getElementById('adminSubmit');
+  const adminBody = document.getElementById('adminBody');
+  const adminToVideo = document.getElementById('adminToVideo');
+  const adminToHome = document.getElementById('adminToHome');
 
-  // leggi configurazione esistente dal window (se presente nel tuo script)
-  const CLOUDINARY_CLOUD = (typeof window.CLOUDINARY_CLOUD !== 'undefined') ? window.CLOUDINARY_CLOUD : (typeof CLOUDINARY_CLOUD !== 'undefined' ? CLOUDINARY_CLOUD : '');
-  const UPLOAD_PRESET = (typeof window.UPLOAD_PRESET !== 'undefined') ? window.UPLOAD_PRESET : (typeof UPLOAD_PRESET !== 'undefined' ? UPLOAD_PRESET : '');
-  const CLOUDINARY_URL = CLOUDINARY_CLOUD ? `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload` : '';
+  /* ============= NAV helpers ============= */
+  function showHome(){
+    homeSection.classList.remove('hidden');
+    videoSection.classList.add('hidden');
+    adminSection.classList.add('hidden');
+    showStatus('');
+  }
+  function showVideo(){
+    homeSection.classList.add('hidden');
+    adminSection.classList.add('hidden');
+    videoSection.classList.remove('hidden');
+    renderAll();
+  }
+  function showAdmin(){
+    homeSection.classList.add('hidden');
+    videoSection.classList.add('hidden');
+    adminSection.classList.remove('hidden');
+    renderAdminTable();
+  }
 
-  console.log('Config — CLOUDINARY_CLOUD:', CLOUDINARY_CLOUD ? 'SET' : 'NOT SET', 'UPLOAD_PRESET:', UPLOAD_PRESET ? 'SET' : 'NOT SET');
+  lensBtn.addEventListener('click', showVideo);
+  backHome && backHome.addEventListener('click', showHome);
 
-  freshBtn.addEventListener('click', async (ev) => {
-    ev.preventDefault();
-    uploadStatus.textContent = '';
-    try {
-      const f = fileInput.files && fileInput.files[0];
-      if(!f){ uploadStatus.textContent = '❌ Seleziona un file.'; return; }
-      if(!f.type || !f.type.startsWith('video/')){ uploadStatus.textContent = '❌ Il file selezionato non è un video.'; return; }
+  /* ============= Render pubblico ============= */
+  function createCard(item){
+    const card = document.createElement('div'); card.className = 'card video-card';
+    const v = document.createElement('video');
+    v.src = item.url;
+    v.controls = true;
+    v.preload = 'metadata';
+    v.setAttribute('controlsList','nodownload');
+    v.addEventListener('contextmenu', e => e.preventDefault());
+    if (item.overlaySrc) v.dataset.overlaySrc = item.overlaySrc;
 
-      freshBtn.disabled = true; freshBtn.classList.add('loading');
-      uploadStatus.textContent = `⏳ Preparazione upload: ${f.name}`;
+    const t = document.createElement('div'); t.className='title'; t.textContent = item.title || 'Video senza titolo';
+    const vw = document.createElement('div'); vw.className='views'; vw.textContent = '👁️ ' + (item.views || 0) + ' views';
 
-      // se Cloudinary configurato, prova upload XHR con progress (mostra risposta)
-      if(CLOUDINARY_CLOUD && UPLOAD_PRESET && CLOUDINARY_URL){
-        uploadStatus.textContent = '⏳ Caricamento su Cloudinary...';
-        const form = new FormData(); form.append('file', f); form.append('upload_preset', UPLOAD_PRESET);
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', CLOUDINARY_URL);
-        xhr.upload.onprogress = (ev) => { if(ev.lengthComputable){ const pct = Math.round(ev.loaded/ev.total*100); if(progressBar) progressBar.style.width = pct + '%'; uploadStatus.textContent = `⏳ Caricamento ${pct}%`; } };
-        xhr.onload = () => {
-          try {
-            const res = JSON.parse(xhr.responseText);
-            console.info('Cloudinary response:', res);
-            if(xhr.status >=200 && xhr.status <300 && res && res.secure_url){
-              // salva nel localStorage usato dall'app
-              const key = 'jiorroVideos_v3';
-              const list = JSON.parse(localStorage.getItem(key) || '[]');
-              list.unshift({ url: res.secure_url, title: (document.getElementById('videoTitle')?.value||f.name), views:0, published:true, uploadedAt:Date.now() });
-              localStorage.setItem(key, JSON.stringify(list));
-              uploadStatus.textContent = '✅ Caricamento completato e registrato';
-              if(typeof window.renderAllVideosPublic === 'function') window.renderAllVideosPublic();
-            } else {
-              uploadStatus.textContent = '❌ Upload Cloudinary fallito: controlla console';
-            }
-          } catch(e){
-            console.error('Parsing response errore', e, xhr.responseText);
-            uploadStatus.textContent = '❌ Errore parsing risposta Cloudinary (vedi console)';
-          }
-          freshBtn.disabled = false; freshBtn.classList.remove('loading'); if(progressBar) setTimeout(()=>progressBar.style.width='0%',1500);
-        };
-        xhr.onerror = () => { uploadStatus.textContent = '❌ Errore rete durante upload'; freshBtn.disabled=false; freshBtn.classList.remove('loading'); console.error('XHR error'); };
-        xhr.ontimeout = () => { uploadStatus.textContent = '❌ Timeout upload'; freshBtn.disabled=false; freshBtn.classList.remove('loading'); console.error('XHR timeout'); };
-        xhr.send(form);
-        return;
-      }
+    let counted = false;
+    v.addEventListener('play', () => {
+      if (counted) return; counted = true;
+      const saved = getSaved().map(s => { if (s.url === item.url) s.views = (s.views || 0) + 1; return s; });
+      setSaved(saved);
+      const updated = saved.find(s => s.url === item.url);
+      vw.textContent = '👁️ ' + ((updated && updated.views) || 0) + ' views';
+      renderAdminTable();
+    });
 
-      // fallback locale: crea objectURL e salva per test
-      const url = URL.createObjectURL(f);
-      const key = 'jiorroVideos_v3';
-      const saved = JSON.parse(localStorage.getItem(key) || '[]');
-      saved.unshift({ url, title: (document.getElementById('videoTitle')?.value||f.name), views:0, published:true, test:true });
-      localStorage.setItem(key, JSON.stringify(saved));
-      uploadStatus.textContent = '✅ File registrato localmente per test (objectURL)';
-      if(typeof window.renderAllVideosPublic === 'function') window.renderAllVideosPublic();
-      console.info('Saved objectURL for test:', url);
-    } catch(err){
-      console.error('Handler upload error:', err);
-      uploadStatus.textContent = '❌ Errore interno: vedi Console';
-      freshBtn.disabled = false; freshBtn.classList.remove('loading');
-    } finally {
-      freshBtn.disabled = false; freshBtn.classList.remove('loading');
-      setTimeout(()=>uploadStatus.textContent = '', 2500);
+    card.appendChild(v); card.appendChild(t); card.appendChild(vw);
+    return card;
+  }
+
+  function renderAll(){
+    videoContainer.innerHTML = '';
+    const saved = getSaved().filter(v => v.published !== false);
+    if (!saved.length){
+      const info = document.createElement('div'); info.style.color = 'var(--muted)'; info.textContent = 'Nessun video pubblicato.'; videoContainer.appendChild(info);
+    } else {
+      saved.forEach(i => videoContainer.appendChild(createCard(i)));
     }
-  });
+  }
 
-  console.log('Handler installato. Prova a selezionare un file e premere Carica.');
-})();
+  /* ============= Upload ============= */
+  function openUpload(){ uploadModal.classList.add('show'); }
+  function closeUpload(){ uploadModal.classList.remove('show'); fileInput.value=''; titleInput.value=''; overlaySrcInput.value=''; uploadStatus.textContent=''; uploadProgress.style.width='0%'; }
+  openUploadBtn && openUploadBtn.addEventListener('click', openUpload);
+  closeUploadBtn && closeUploadBtn.addEventListener('click', closeUpload);
+
+  async function handleUpload(){
+    const file = fileInput.files && fileInput.files[0];
+    const title = (titleInput.value || '').trim();
+    const overlaySrc = (overlaySrcInput.value || '').trim() || null;
+    if(!file){ uploadStatus.textContent = '❌ Seleziona un file video.'; return; }
+    uploadStatus.textContent = '⏳ Caricamento...';
+    uploadProgress.style.width = '50%';
+    // simulazione upload
+    setTimeout(() => {
+      const url = URL.createObjectURL(file);
+      const saved = getSaved();
+      saved.unshift({ url, title, overlaySrc, views: 0, published:true });
+      setSaved(saved);
+      renderAll();
+      renderAdminTable();
+      uploadStatus.textContent = '✅ Caricato';
+      uploadProgress.style.width = '100%';
+      setTimeout(closeUpload, 1000);
+    }, 1500);
+  }
+  uploadBtn && uploadBtn.addEventListener('click', handleUpload);
+
+  /* ============= Admin unlock ============= */
+  adminAnchorBtn.addEventListener('click', () => {
+    adminInputWrap.style.display = adminInputWrap.style.display==='flex' ? 'none' : 'flex';
+  });
+  function tryUnlockAdmin(){
+    const v = (adminInput.value || '').trim();
+    if(v === ADMIN_PASS){ adminInput.value=''; showAdmin(); }
+    else { adminInput.value=''; }
+  }
+  adminSubmit.addEventListener('click', tryUnlockAdmin);
+
+  /* ============= Admin table ============= */
+  function renderAdminTable(){
+    adminBody.innerHTML = '';
+    const saved = getSaved();
+    if(!saved.length){
+      const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan=5; td.textContent='Nessun video salvato.'; tr.appendChild(td); adminBody.appendChild(tr); return;
+    }
+    saved.forEach((item, idx) => {
+      const tr = document.createElement('tr');
+      const tdPrev = document.createElement('td'); const prevV = document.createElement('video'); prevV.src=item.url; prevV.controls=true; prevV.style.maxWidth='160px'; tdPrev.appendChild(prevV);
+      const tdTitle = document.createElement('td'); const titleInput=document.createElement('input'); titleInput.className='input'; titleInput.value=item.title||''; tdTitle.appendChild(titleInput);
+      const tdViews = document.createElement('td'); tdViews.textContent=(item.views||0)+' views';
+      const tdStatus = document.createElement('td'); tdStatus.textContent=item.published===false?'Non pubblicato':'Pubblicato';
+      const tdActions = document.createElement('td'); const btnDel=document.createElement('button'); btnDel.className='btn danger'; btnDel.textContent='🗑️'; tdActions.appendChild(btnDel);
+      tr.append(tdPrev,tdTitle,tdViews,tdStatus,tdActions); adminBody.appendChild(tr);
+      btnDel.addEventListener('click', () => { const s=getSaved(); s.splice(idx,1); setSaved(s); renderAdminTable(); renderAll(); });
+    });
+  }
+
+  adminToVideo && adminToVideo.addEventListener('click', showVideo);
+  adminToHome && adminToHome.addEventListener('click', showHome);
+
+  /* ============= Ricerca client ============= */
+  searchVideos && searchVideos.addEventListener('input', ()
