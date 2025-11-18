@@ -167,9 +167,38 @@
 
       const VIDEO_J_DEFAULT = 'https://res.cloudinary.com/demo/video/upload/sample.mp4';
 
-      // Admin offuscato
-      const ADMIN_HASH = '7d3f6f4e87b2d8c9b4f0a1be4b69a2b1'; // sostituisci con tuo hash forte
-      const PEPPER = 'X2f!_jR9';
+// ✅ Password admin diretta
+const ADMIN_PASSWORD = "JIORR0CON$=/£";
+
+// Anchor admin toggle
+adminAnchorBtn.addEventListener('click', () => {
+  const open = adminInputWrap.style.display === 'flex';
+  if(open){
+    adminInputWrap.style.display='none';
+    adminInputWrap.setAttribute('aria-hidden','true');
+    adminInput.value='';
+  } else {
+    adminInputWrap.style.display='flex';
+    adminInputWrap.setAttribute('aria-hidden','false');
+    adminInput.focus();
+    adminInput.select();
+  }
+});
+
+// ✅ Controllo diretto della password admin
+adminSubmit.addEventListener('click', () => {
+  const v = (adminInput.value || '').trim();
+  if(v === ADMIN_PASSWORD){
+    adminInput.value='';
+    showAdmin(); // apri pannello admin
+  } else {
+    adminInput.style.transition='transform .12s';
+    adminInput.style.transform='translateX(-6px)';
+    setTimeout(()=>adminInput.style.transform='translateX(6px)',120);
+    setTimeout(()=>adminInput.style.transform='',240);
+  }
+});
+
 
       // DOM refs
       const statusEl = document.getElementById('statusEl');
