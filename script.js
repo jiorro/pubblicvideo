@@ -3,131 +3,94 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Jiorro Video Manager — Dark</title>
+  <title>Jiorro Video Manager</title>
   <meta name="color-scheme" content="dark">
-  <meta name="theme-color" content="#0b0b0d">
   <style>
-    /* Reset essenziale per evitare colori di default */
-    * { box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; height: 100%; }
-
-    /* Tema scuro FORZATO */
     :root{
-      --bg:#0b0b0d;           /* sfondo pagina */
-      --panel:#121216;        /* pannelli */
-      --panel-2:#16161b;      /* varianti */
-      --text:#e6e6ea;         /* testo principale */
-      --muted:#9ca0aa;        /* testo secondario */
-      --border:#23232a;       /* bordi */
-      --accent:#69f0ae;       /* accento verde tenue */
-      --brand:#82aaff;        /* accento blu */
-      --danger:#ff6b6b;       /* errore */
+      --bg:#0b0b0d; --panel:#16171a; --panel-2:#1b1c21; --border:#2a2f38; --text:#e6e6ea;
+      --muted:#9ca0aa; --accent:#00ff88; --brand:#66aaff; --danger:#ff6b6b;
       --shadow:rgba(0,0,0,0.55);
-      --btn-bg:#181820;
-      --btn-border:#2a2a33;
-      --input-bg:#141419;
-      --input-border:#2a2a33;
+      --btn-bg:#1a1b1f; --btn-border:#2c313a; --input-bg:#14151a; --input-border:#2c313a;
+      --neon:#00ff88; --neon-soft:rgba(0,255,136,0.35);
     }
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    *{box-sizing:border-box}
 
-    html,body{
-      background: var(--bg);
-      color: var(--text);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
-    }
-
-    /* Topbar scura */
+    /* Topbar */
     .topbar{
-      position: fixed; top: 0; left: 0; right: 0; height: 64px;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 18px;
-      background: linear-gradient(to bottom, rgba(18,18,22,0.95), rgba(18,18,22,0.78));
-      border-bottom: 1px solid var(--border);
-      z-index: 1000;
-      backdrop-filter: blur(6px);
+      position:fixed;top:0;left:0;right:0;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;
+      background:linear-gradient(to bottom, rgba(22,23,26,0.95), rgba(22,23,26,0.75));
+      border-bottom:1px solid var(--border); z-index:1000; backdrop-filter:blur(6px)
     }
-    .lens-btn{
-      width: 44px; height: 44px; border-radius: 12px;
-      border: 1px solid var(--btn-border); background: var(--btn-bg);
-      color: var(--text); font-size: 20px; display: inline-flex;
-      align-items: center; justify-content: center; cursor: pointer;
-      box-shadow: 0 8px 24px var(--shadow);
+    .brand{font-weight:700;letter-spacing:.2px}
+    .lens-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--btn-border);background:var(--btn-bg);color:var(--text);font-size:20px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 24px var(--shadow)}
+
+    /* Status */
+    .status{position:fixed;top:70px;right:20px;font-size:13px;color:var(--muted);z-index:950;text-align:right}
+    .status.success{color:var(--accent)} .status.error{color:var(--danger)} .status.info{color:var(--brand)}
+
+    /* Sections */
+    .section{padding-top:96px;min-height:100vh}
+    .hidden{display:none}
+    .panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:0 14px 36px var(--shadow)}
+
+    /* Home layout */
+    .home-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;padding:20px}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:var(--panel-2);color:var(--muted);border:1px solid var(--border);font-size:12px;margin:3px}
+    .pill-list{display:flex;flex-wrap:wrap;padding:0;margin:0;list-style:none}
+
+    /* Buttons & Inputs */
+    .btn{background:var(--btn-bg);border:1px solid var(--btn-border);color:var(--text);padding:8px 12px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+    .btn:hover{transform:translateY(-2px)}
+    .btn.danger{border-color:#5a1f1f;color:#ffdddd}
+    .input{background:var(--input-bg);border:1px solid var(--input-border);padding:8px 10px;border-radius:10px;color:var(--text);outline:none}
+    .input::placeholder{color:#8c919b}
+
+    /* Video cards + neon edges */
+    .video-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px;border-radius:12px;background:var(--panel-2);border:1px solid var(--border)}
+    .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:12px}
+    .card{background:var(--panel);border:1px solid var(--border);padding:10px;border-radius:12px;box-shadow:0 10px 30px var(--shadow);display:flex;flex-direction:column;gap:8px}
+    .card video{
+      width:100%; border-radius:10px; background:black;
+      border:2px solid var(--neon); box-shadow:0 0 18px var(--neon-soft), inset 0 0 6px rgba(0,0,0,0.5)
     }
+    .card .title{font-weight:600}
+    .card .views{color:var(--muted);font-size:13px}
 
-    /* Stato */
-    .status{ position: fixed; top: 70px; right: 20px; font-size: 13px; color: var(--muted); z-index: 950; text-align: right }
-    .status.success{ color: var(--accent) } .status.error{ color: var(--danger) } .status.info{ color: var(--brand) }
-
-    /* Sezioni e pannelli */
-    .section{ padding-top: 96px; min-height: 100vh }
-    .hidden{ display: none }
-    .panel{
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 14px 36px var(--shadow);
-    }
-    .home-container{ display: grid; grid-template-columns: 1.1fr .9fr; gap: 20px; padding: 28px }
-
-    /* Pill, bottoni, input */
-    .pill{ display: inline-block; padding: 4px 8px; border-radius: 999px; background: #15151a; color: var(--muted); border: 1px solid var(--border); font-size: 13px; margin: 2px }
-    .pill-list{ display: flex; flex-wrap: wrap; padding: 0; margin: 0; list-style: none }
-    .btn{
-      background: var(--btn-bg); border: 1px solid var(--btn-border); color: var(--text);
-      padding: 8px 12px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
-      transition: transform .12s ease, box-shadow .12s ease;
-    }
-    .btn:hover{ transform: translateY(-2px); box-shadow: 0 10px 26px var(--shadow) }
-    .btn.danger{ border-color: #4a1f1f; color: #ffcfcf }
-    .input{ background: var(--input-bg); border: 1px solid var(--input-border); padding: 8px 10px; border-radius: 10px; color: var(--text); outline: none; }
-    .input::placeholder{ color: #7b7f89 }
-
-    /* Cards video */
-    .video-container{ padding: 28px; display: grid; gap: 16px }
-    .video-toolbar{ display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 12px; border-radius: 12px; background: var(--panel-2); border: 1px solid var(--border) }
-    .cards{ display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 14px; margin-top: 12px }
-    .card{ background: var(--panel); border: 1px solid var(--border); padding: 12px; border-radius: 12px; box-shadow: 0 10px 30px var(--shadow); display: flex; flex-direction: column; gap: 8px }
-    .card video{ width: 100%; border-radius: 8px; background: #000 }
-    .card .title{ font-weight: 600 }
-    .card .views{ color: var(--muted); font-size: 13px }
-
-    /* Tabella admin */
-    table.admin-grid{ width: 100%; border-collapse: collapse; margin-top: 12px }
-    table.admin-grid th, table.admin-grid td{ padding: 10px; border-top: 1px solid var(--border); vertical-align: middle }
-    .actions{ display: flex; gap: 8px; flex-wrap: wrap }
+    /* Admin table */
+    table.admin-grid{width:100%;border-collapse:collapse;margin-top:12px}
+    table.admin-grid th, table.admin-grid td{padding:10px;border-top:1px solid var(--border);vertical-align:middle}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
 
     /* Modal upload */
-    .modal{ position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); z-index: 1200 }
-    .modal.show{ display: flex }
-    .modal-panel{ width: 92%; max-width: 680px; background: var(--panel); border: 1px solid var(--border); padding: 18px; border-radius: 12px; box-shadow: 0 14px 44px var(--shadow) }
-    .progress{ height: 8px; border-radius: 999px; background: #0e0e12; margin-top: 8px; overflow: hidden }
-    .progress > i{ display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--brand), var(--accent)); transition: width .2s }
-    .status-line{ margin-top: 8px; color: var(--muted); min-height: 18px }
-    .status-line.success{ color: var(--accent) } .status-line.error{ color: var(--danger) }
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);z-index:1200}
+    .modal.show{display:flex}
+    .modal-panel{width:92%;max-width:680px;background:var(--panel);border:1px solid var(--border);padding:18px;border-radius:12px;box-shadow:0 14px 44px var(--shadow)}
+    .progress{height:8px;border-radius:999px;background:#0f1114;margin-top:8px;overflow:hidden;border:1px solid var(--border)}
+    .progress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--accent));transition:width .2s}
+    .status-line{margin-top:8px;color:var(--muted);min-height:18px}
+    .status-line.success{color:var(--accent)} .status-line.error{color:var(--danger)}
 
     /* Admin anchor */
-    .admin-anchor{ position: fixed; left: 12px; bottom: 12px; z-index: 1300; display: flex; flex-direction: column; align-items: flex-start; gap: 8px }
-    .admin-btn{ width: 44px; height: 44px; border-radius: 999px; background: var(--btn-bg); border: 1px solid var(--btn-border); display: inline-flex; align-items: center; justify-content: center; color: var(--text); font-size: 18px; cursor: pointer; box-shadow: 0 8px 24px var(--shadow) }
-    .admin-input-wrap{ display: none; gap: 8px; align-items: center }
-    .admin-input{ width: 220px; padding: 8px; border-radius: 10px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text); outline: none; caret-color: var(--text) }
+    .admin-anchor{position:fixed;left:12px;bottom:12px;z-index:1300;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+    .admin-btn{width:44px;height:44px;border-radius:999px;background:var(--btn-bg);border:1px solid var(--btn-border);display:inline-flex;align-items:center;justify-content:center;color:var(--text);font-size:18px;cursor:pointer;box-shadow:0 8px 24px var(--shadow)}
+    .admin-input-wrap{display:none;gap:8px;align-items:center}
+    .admin-input{width:220px;padding:8px;border-radius:10px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text);outline:none;caret-color:var(--text)}
 
-    @media(max-width:980px){
-      .home-container{ grid-template-columns: 1fr }
-      .admin-input{ width: 150px }
-    }
+    @media(max-width:980px){ .home-grid{grid-template-columns:1fr} .admin-input{width:160px} }
   </style>
 </head>
 <body>
-  <header class="topbar" aria-label="Navbar">
-    <div>Jiorro Video Manager</div>
-    <button id="lensBtn" class="lens-btn" aria-controls="videoSection" aria-expanded="false" title="Apri sezione video">🔍</button>
+  <header class="topbar">
+    <div class="brand">Jiorro Video Manager</div>
+    <button id="lensBtn" class="lens-btn" title="Apri sezione video">🔍</button>
   </header>
 
   <div id="statusEl" class="status" role="status" aria-live="polite"></div>
 
-  <!-- Home -->
+  <!-- Home visibile -->
   <main id="homeSection" class="section" aria-label="Home">
-    <div class="home-container">
+    <div class="home-grid">
       <div class="panel">
         <h1>La regione di Canaan</h1>
         <p>Importa, cerca, riproduci e gestisci i tuoi video. Admin completo, upload con progress e tracking views.</p>
@@ -140,22 +103,22 @@
         </ul>
       </div>
       <div class="panel">
-        <h3>Consigli rapidi</h3>
+        <h3>Suggerimenti</h3>
         <ul style="list-style:none;padding-left:0">
-          <li class="pill">Premi 🔍 per entrare nella sezione video</li>
-          <li class="pill">Usa Admin per pubblicare/nascondere</li>
-          <li class="pill">Premi J per aprire un link</li>
+          <li class="pill">🔍 Apri i video dalla navbar</li>
+          <li class="pill">🔑 Sblocca l’admin in basso a sinistra</li>
+          <li class="pill">J apre un link esterno</li>
         </ul>
       </div>
     </div>
   </main>
 
   <!-- Video -->
-  <section id="videoSection" class="section hidden" aria-label="Sezione video">
-    <div class="video-container">
-      <div class="video-toolbar panel" role="toolbar" aria-label="Strumenti video">
+  <section id="videoSection" class="section hidden" aria-label="Video">
+    <div class="panel">
+      <div class="video-toolbar" role="toolbar" aria-label="Strumenti video">
         <button id="openUpload" class="btn" aria-controls="uploadModal" aria-expanded="false">⬆️ Carica</button>
-        <input id="searchVideos" class="input" placeholder="Cerca video per titolo o URL" aria-label="Cerca video" />
+        <input id="searchVideos" class="input" placeholder="Cerca per titolo o URL" aria-label="Cerca video" />
         <button id="backHome" class="btn">🏠 Home</button>
       </div>
       <div id="videoContainer" class="cards" aria-live="polite" aria-busy="false"></div>
@@ -167,7 +130,7 @@
     <div class="panel">
       <h2>🔧 Pannello amministrazione</h2>
       <p style="color:var(--muted)">Modifica titoli, resetta views, pubblica/nascondi, elimina. Dati persistiti in localStorage.</p>
-      <table class="admin-grid" id="adminGrid">
+      <table class="admin-grid">
         <thead><tr><th>Anteprima</th><th>Titolo</th><th>Views</th><th>Stato</th><th>Azioni</th></tr></thead>
         <tbody id="adminBody"></tbody>
       </table>
@@ -180,7 +143,7 @@
       <h3 id="uploadTitle">Upload Video</h3>
       <div style="margin-top:8px">
         <label for="videoFile">File</label><br>
-        <input id="videoFile" type="file" accept="video/*" />
+        <input id="videoFile" type="file" accept="video/*" class="input" />
       </div>
       <div style="margin-top:8px">
         <label for="videoTitle">Titolo</label><br>
@@ -212,43 +175,53 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      /* CONFIG */
+      /* ========================== CONFIG ========================== */
       const STORAGE_KEY = 'jiorroVideos_secure_v1';
       const ADMIN_PASS = 'JIORR0CON$=LE';
       const MAX_FILE_MB = 800;
-      const LINK_J_DEFAULT = "https://it.wikipedia.org/wiki/Antonio_D%27Agostino";
+      const LINK_J_DEFAULT = "https://it.wikipedia.org/wiki/Antonio_D%27Agostino"; // J apre questo
 
-      /* Helpers */
-      function getSaved(){ try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : []; } catch(e){ console.error('getSaved parse',e); return []; } }
-      function setSaved(arr){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr || [])); } catch(e){ console.error('setSaved', e); } }
-      function showStatus(msg, type){ const s=document.getElementById('statusEl'); s.textContent=msg||''; s.className='status'+(type?' '+type:''); }
+      /* ========================== HELPERS ========================== */
+      function getSaved(){
+        try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : []; }
+        catch(e){ console.error('getSaved parse error', e); return []; }
+      }
+      function setSaved(arr){
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr || [])); }
+        catch(e){ console.error('setSaved error', e); }
+      }
+      function showStatus(msg, type){
+        const s = document.getElementById('statusEl');
+        s.textContent = msg || '';
+        s.className = 'status' + (type ? ' ' + type : '');
+      }
 
-      /* Refs */
-      const lensBtn=document.getElementById('lensBtn');
-      const homeSection=document.getElementById('homeSection');
-      const videoSection=document.getElementById('videoSection');
-      const adminSection=document.getElementById('adminSection');
-      const backHome=document.getElementById('backHome');
-      const videoContainer=document.getElementById('videoContainer');
-      const searchVideos=document.getElementById('searchVideos');
-      const openUploadBtn=document.getElementById('openUpload');
-      const uploadModal=document.getElementById('uploadModal');
-      const closeUploadBtn=document.getElementById('closeUpload');
-      const uploadBtn=document.getElementById('uploadBtn');
-      const fileInput=document.getElementById('videoFile');
-      const titleInput=document.getElementById('videoTitle');
-      const overlaySrcInput=document.getElementById('overlaySrc');
-      const uploadStatus=document.getElementById('uploadStatus');
-      const uploadProgress=document.getElementById('uploadProgress');
-      const adminAnchorBtn=document.getElementById('adminAnchorBtn');
-      const adminInputWrap=document.getElementById('adminInputWrap');
-      const adminInput=document.getElementById('adminInput');
-      const adminSubmit=document.getElementById('adminSubmit');
-      const adminBody=document.getElementById('adminBody');
-      const adminToVideo=document.getElementById('adminToVideo');
-      const adminToHome=document.getElementById('adminToHome');
+      /* ========================== REFS ========================== */
+      const lensBtn = document.getElementById('lensBtn');
+      const homeSection = document.getElementById('homeSection');
+      const videoSection = document.getElementById('videoSection');
+      const adminSection = document.getElementById('adminSection');
+      const backHome = document.getElementById('backHome');
+      const videoContainer = document.getElementById('videoContainer');
+      const searchVideos = document.getElementById('searchVideos');
+      const openUploadBtn = document.getElementById('openUpload');
+      const uploadModal = document.getElementById('uploadModal');
+      const closeUploadBtn = document.getElementById('closeUpload');
+      const uploadBtn = document.getElementById('uploadBtn');
+      const fileInput = document.getElementById('videoFile');
+      const titleInput = document.getElementById('videoTitle');
+      const overlaySrcInput = document.getElementById('overlaySrc');
+      const uploadStatus = document.getElementById('uploadStatus');
+      const uploadProgress = document.getElementById('uploadProgress');
+      const adminAnchorBtn = document.getElementById('adminAnchorBtn');
+      const adminInputWrap = document.getElementById('adminInputWrap');
+      const adminInput = document.getElementById('adminInput');
+      const adminSubmit = document.getElementById('adminSubmit');
+      const adminBody = document.getElementById('adminBody');
+      const adminToVideo = document.getElementById('adminToVideo');
+      const adminToHome = document.getElementById('adminToHome');
 
-      /* NAV */
+      /* ========================== NAV ========================== */
       function showHome(){
         homeSection.classList.remove('hidden');
         videoSection.classList.add('hidden');
@@ -276,125 +249,139 @@
       lensBtn.addEventListener('click', showVideo);
       backHome && backHome.addEventListener('click', showHome);
 
-      /* RENDER PUBBLICO */
+      /* ========================== RENDER PUBBLICO ========================== */
       function createCard(item){
-        const card=document.createElement('div'); card.className='card video-card';
-        const v=document.createElement('video');
-        v.src=item.url; v.controls=true; v.preload='metadata';
-        v.setAttribute('controlsList','nodownload'); v.addEventListener('contextmenu', e=>e.preventDefault());
-        if(item.overlaySrc) v.dataset.overlaySrc=item.overlaySrc;
+        const card = document.createElement('div'); card.className = 'card video-card';
+        const v = document.createElement('video');
+        v.src = item.url;
+        v.controls = true;
+        v.preload = 'metadata';
+        v.setAttribute('controlsList','nodownload');
+        v.addEventListener('contextmenu', e => e.preventDefault());
+        if (item.overlaySrc) v.dataset.overlaySrc = item.overlaySrc;
 
-        const t=document.createElement('div'); t.className='title'; t.textContent=item.title||'Video senza titolo';
-        const vw=document.createElement('div'); vw.className='views'; vw.textContent='👁️ '+(item.views||0)+' views';
+        const t = document.createElement('div'); t.className='title'; t.textContent = item.title || 'Video senza titolo';
+        const vw = document.createElement('div'); vw.className='views'; vw.textContent = '👁️ ' + (item.views || 0) + ' views';
 
-        let counted=false;
+        let counted = false;
         v.addEventListener('play', () => {
-          if(counted) return; counted=true;
-          const saved=getSaved().map(s=>{ if(s.url===item.url) s.views=(s.views||0)+1; return s; });
+          if (counted) return; counted = true;
+          const saved = getSaved().map(s => { if (s.url === item.url) s.views = (s.views || 0) + 1; return s; });
           setSaved(saved);
-          const updated = saved.find(s=>s.url===item.url);
-          vw.textContent='👁️ '+((updated&&updated.views)||0)+' views';
+          const updated = saved.find(s => s.url === item.url);
+          vw.textContent = '👁️ ' + ((updated && updated.views) || 0) + ' views';
           renderAdminTable();
         });
 
-        card.append(v,t,vw);
+        card.appendChild(v); card.appendChild(t); card.appendChild(vw);
         return card;
       }
 
       function renderAll(){
-        videoContainer.innerHTML='';
-        const saved=getSaved().filter(v=>v.published!==false).sort((a,b)=>(b.views||0)-(a.views||0));
-        if(!saved.length){
-          const info=document.createElement('div'); info.style.color='var(--muted)'; info.textContent='Nessun video pubblicato. Carica un video per iniziare.'; videoContainer.appendChild(info);
+        videoContainer.innerHTML = '';
+        const saved = getSaved().filter(v => v.published !== false).sort((a,b) => (b.views || 0) - (a.views || 0));
+        if (!saved.length){
+          const info = document.createElement('div'); info.style.color = 'var(--muted)'; info.textContent = 'Nessun video pubblicato. Carica un video per iniziare.'; videoContainer.appendChild(info);
         } else {
-          saved.forEach(i=>videoContainer.appendChild(createCard(i)));
+          saved.forEach(i => videoContainer.appendChild(createCard(i)));
         }
       }
 
-      /* UPLOAD (simulazione con progress) */
+      /* ========================== UPLOAD (simulato con progress) ========================== */
       function openUpload(){ uploadModal.classList.add('show'); openUploadBtn && openUploadBtn.setAttribute('aria-expanded','true'); }
       function closeUpload(){ uploadModal.classList.remove('show'); openUploadBtn && openUploadBtn.setAttribute('aria-expanded','false'); uploadStatus.textContent=''; uploadProgress.style.width='0%'; fileInput.value=''; titleInput.value=''; overlaySrcInput.value=''; }
       openUploadBtn && openUploadBtn.addEventListener('click', openUpload);
       closeUploadBtn && closeUploadBtn.addEventListener('click', closeUpload);
 
       async function handleUpload(){
-        uploadStatus.textContent='';
-        const file=fileInput.files&&fileInput.files[0];
-        const title=(titleInput.value||'').trim();
-        const overlaySrc=(overlaySrcInput.value||'').trim()||null;
+        uploadStatus.textContent = '';
+        const file = fileInput.files && fileInput.files[0];
+        const title = (titleInput.value || '').trim();
+        const overlaySrc = (overlaySrcInput.value || '').trim() || null;
 
-        if(!file){ uploadStatus.textContent='❌ Seleziona un file video.'; return; }
-        if(!file.type || !file.type.startsWith('video/')){ uploadStatus.textContent='❌ Il file selezionato non è un video.'; return; }
+        if(!file){ uploadStatus.textContent = '❌ Seleziona un file video.'; return; }
+        if(!file.type || !file.type.startsWith('video/')){ uploadStatus.textContent = '❌ Il file selezionato non è un video.'; return; }
 
-        const sizeMb=(file.size/(1024*1024)).toFixed(1);
-        if(sizeMb > MAX_FILE_MB){ uploadStatus.textContent=`❌ File troppo grande: ${sizeMb} MB (limite ${MAX_FILE_MB} MB).`; return; }
+        const sizeMb = (file.size / (1024*1024)).toFixed(1);
+        if(sizeMb > MAX_FILE_MB){ uploadStatus.textContent = `❌ File troppo grande: ${sizeMb} MB (limite locale ${MAX_FILE_MB} MB).`; return; }
 
-        uploadStatus.textContent=`⏳ Caricamento ${sizeMb} MB...`;
-        uploadProgress.style.width='0%'; uploadProgress.parentElement.setAttribute('aria-hidden','false');
+        uploadStatus.textContent = `⏳ Caricamento ${sizeMb} MB...`;
+        uploadProgress.style.width = '0%'; uploadProgress.parentElement.setAttribute('aria-hidden','false');
 
-        let pct=0;
-        const timer=setInterval(()=>{
-          pct=Math.min(100,pct+Math.round(8+Math.random()*16));
-          uploadProgress.style.width=pct+'%';
-          uploadStatus.textContent=`⏳ Caricamento ${pct}%`;
-          if(pct>=100){
+        // Simulazione progress client-side (sostituibile con XHR/Cloudinary)
+        let pct = 0;
+        const timer = setInterval(() => {
+          pct = Math.min(100, pct + Math.round(10 + Math.random()*20));
+          uploadProgress.style.width = pct + '%';
+          uploadStatus.textContent = `⏳ Caricamento ${pct}%`;
+          if(pct >= 100){
             clearInterval(timer);
-            const url=URL.createObjectURL(file);
-            const saved=getSaved();
-            saved.unshift({ url, title, overlaySrc, views:0, published:true, uploadedAt:Date.now() });
+            const url = URL.createObjectURL(file);
+            const saved = getSaved();
+            saved.unshift({ url, title, overlaySrc, views: 0, published:true, uploadedAt: Date.now() });
             setSaved(saved);
             renderAll();
             renderAdminTable();
-            uploadStatus.textContent='✅ Caricamento completato';
-            setTimeout(()=>{ closeUpload(); showStatus('Video caricato e pubblicato','success'); setTimeout(()=>showStatus(''),900); },700);
+            uploadStatus.textContent = '✅ Caricamento completato';
+            setTimeout(() => { closeUpload(); showStatus('Video caricato e pubblicato', 'success'); setTimeout(()=>showStatus(''), 900); }, 700);
           }
-        },160);
+        }, 180);
       }
       uploadBtn && uploadBtn.addEventListener('click', handleUpload);
 
-      /* ADMIN UNLOCK */
+      /* ========================== ADMIN UNLOCK ========================== */
       adminAnchorBtn.addEventListener('click', () => {
-        const open=adminInputWrap.style.display==='flex';
-        if(open){ adminInputWrap.style.display='none'; adminInputWrap.setAttribute('aria-hidden','true'); adminInput.value=''; }
-        else { adminInputWrap.style.display='flex'; adminInputWrap.setAttribute('aria-hidden','false'); adminInput.focus(); adminInput.select(); }
+        const open = adminInputWrap.style.display === 'flex';
+        if(open){
+          adminInputWrap.style.display='none'; adminInputWrap.setAttribute('aria-hidden','true'); adminInput.value='';
+        } else {
+          adminInputWrap.style.display='flex'; adminInputWrap.setAttribute('aria-hidden','false'); adminInput.focus(); adminInput.select();
+        }
       });
+
       function tryUnlockAdmin(){
-        const v=(adminInput.value||'').trim();
-        if(v===ADMIN_PASS){ adminInputWrap.style.display='none'; adminInput.value=''; showAdmin(); }
-        else {
+        const v = (adminInput.value || '').trim();
+        if(v === ADMIN_PASS){
+          adminInputWrap.style.display='none'; adminInput.value='';
+          showAdmin();
+        } else {
           adminInput.style.transition='transform .12s';
-          adminInput.style.transform='translateX(-6px)'; setTimeout(()=>adminInput.style.transform='translateX(6px)',120); setTimeout(()=>adminInput.style.transform='',240);
+          adminInput.style.transform='translateX(-6px)';
+          setTimeout(()=>adminInput.style.transform='translateX(6px)',120);
+          setTimeout(()=>adminInput.style.transform='',240);
           adminInput.focus();
         }
       }
       adminSubmit.addEventListener('click', tryUnlockAdmin);
-      adminInput.addEventListener('keydown', e=>{ if(e.key==='Enter') tryUnlockAdmin(); });
+      adminInput.addEventListener('keydown', e => { if(e.key==='Enter') tryUnlockAdmin(); });
 
-      /* ADMIN TABLE */
+      /* ========================== ADMIN TABLE ========================== */
       function renderAdminTable(){
-        adminBody.innerHTML='';
-        const saved=getSaved();
+        adminBody.innerHTML = '';
+        const saved = getSaved();
         if(!saved.length){
-          const tr=document.createElement('tr'); const td=document.createElement('td'); td.colSpan=5; td.textContent='Nessun video salvato.'; td.style.color='var(--muted)'; tr.appendChild(td); adminBody.appendChild(tr); return;
+          const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan=5; td.textContent='Nessun video salvato.'; td.style.color='var(--muted)'; tr.appendChild(td); adminBody.appendChild(tr); return;
         }
-        saved.forEach((item,idx)=>{
-          const tr=document.createElement('tr');
+        saved.forEach((item, idx) => {
+          const tr = document.createElement('tr');
 
-          const tdPrev=document.createElement('td');
-          const prevV=document.createElement('video'); prevV.src=item.url; prevV.preload='metadata'; prevV.controls=true; prevV.style.maxWidth='160px'; prevV.setAttribute('controlsList','nodownload'); prevV.addEventListener('contextmenu', e=>e.preventDefault());
-          if(item.overlaySrc) prevV.dataset.overlaySrc=item.overlaySrc;
+          const tdPrev = document.createElement('td');
+          const prevV = document.createElement('video'); prevV.src=item.url; prevV.preload='metadata'; prevV.controls=true; prevV.style.maxWidth='160px'; prevV.setAttribute('controlsList','nodownload'); prevV.addEventListener('contextmenu', e => e.preventDefault());
+          if(item.overlaySrc) prevV.dataset.overlaySrc = item.overlaySrc;
           tdPrev.appendChild(prevV);
 
-          const tdTitle=document.createElement('td');
-          const titleInputEl=document.createElement('input'); titleInputEl.className='input'; titleInputEl.value=item.title||''; tdTitle.appendChild(titleInputEl);
+          const tdTitle = document.createElement('td');
+          const titleInputEl = document.createElement('input'); titleInputEl.className='input'; titleInputEl.value=item.title||''; tdTitle.appendChild(titleInputEl);
 
-          const tdViews=document.createElement('td');
-          const pillV=document.createElement('span'); pillV.className='pill'; pillV.textContent=(item.views||0)+' views'; tdViews.appendChild(pillV);
+          const tdViews = document.createElement('td');
+          const pillV = document.createElement('span'); pillV.className='pill'; pillV.textContent=(item.views||0)+' views';
+          tdViews.appendChild(pillV);
 
-          const tdStatus=document.createElement('td');
-          const pillS=document.createElement('span'); pillS.className='pill '+(item.published===false?'':'pub'); pillS.textContent=item.published===false?'Non pubblicato':'Pubblicato'; tdStatus.appendChild(pillS);
+          const tdStatus = document.createElement('td');
+          const pillS = document.createElement('span'); pillS.className='pill '+(item.published===false?'':'pub'); pillS.textContent=item.published===false?'Non pubblicato':'Pubblicato';
+          tdStatus.appendChild(pillS);
 
-          const tdActions=document.createElement('td'); const actions=document.createElement('div'); actions.className='actions';
+          const tdActions = document.createElement('td'); const actions = document.createElement('div'); actions.className='actions';
           const btnSave=document.createElement('button'); btnSave.className='btn'; btnSave.textContent='💾 Salva';
           const btnReset=document.createElement('button'); btnReset.className='btn'; btnReset.textContent='🔄 Reset';
           const btnToggle=document.createElement('button'); btnToggle.className='btn'; btnToggle.textContent=item.published===false?'📢 Pubblica':'🙈 Nascondi';
@@ -419,52 +406,51 @@
           });
         });
       }
-      window.renderAdminTable=renderAdminTable;
+      window.renderAdminTable = renderAdminTable;
       adminToVideo && adminToVideo.addEventListener('click', ()=>{ videoSection.classList.remove('hidden'); adminSection.classList.add('hidden'); renderAll(); });
       adminToHome && adminToHome.addEventListener('click', ()=>{ homeSection.classList.remove('hidden'); adminSection.classList.add('hidden'); });
 
-      /* RICERCA */
+      /* ========================== RICERCA ========================== */
       searchVideos && searchVideos.addEventListener('input', () => {
-        const term=(searchVideos.value||'').toLowerCase();
+        const term = (searchVideos.value || '').toLowerCase();
         document.querySelectorAll('.video-card').forEach(card => {
-          const src=(card.querySelector('video')?.src||'').toLowerCase();
-          const title=(card.querySelector('.title')?.textContent||'').toLowerCase();
+          const src = (card.querySelector('video')?.src || '').toLowerCase();
+          const title = (card.querySelector('.title')?.textContent || '').toLowerCase();
           card.style.display = (!term || src.includes(term) || title.includes(term)) ? '' : 'none';
         });
       });
 
-      /* TASTO J → APRI LINK */
+      /* ========================== TASTO J → APRI LINK ========================== */
       function findActiveUnderlyingVideo(){
-        const vids=Array.from(document.querySelectorAll('.video-card video, video')).filter(v=>v.offsetParent!==null);
-        const playing=vids.find(v=>!v.paused && !v.ended);
+        const vids = Array.from(document.querySelectorAll('.video-card video, video')).filter(v => v.offsetParent !== null);
+        const playing = vids.find(v => !v.paused && !v.ended);
         return playing || vids[0] || null;
       }
       function getJLink(explicitUrl){
-        if(explicitUrl) return explicitUrl;
-        const active=findActiveUnderlyingVideo();
-        const datasetLink=active && active.dataset && active.dataset.overlayLink;
+        if (explicitUrl) return explicitUrl;
+        const active = findActiveUnderlyingVideo();
+        const datasetLink = active && active.dataset && active.dataset.overlayLink;
         return datasetLink || LINK_J_DEFAULT;
       }
       function openJLink(explicitUrl){
-        const url=getJLink(explicitUrl);
-        if(!url) return;
-        const w=window.open(url,'_blank','noopener,noreferrer');
-        if(!w) window.location.href=url;
+        const url = getJLink(explicitUrl);
+        if (!url) return;
+        const w = window.open(url, '_blank', 'noopener,noreferrer');
+        if (!w) window.location.href = url; // fallback se popup bloccato
       }
-      window.toggleOverlayVideo=openJLink;
+      window.toggleOverlayVideo = openJLink; // alias per compatibilità
 
       window.addEventListener('keyup', (e) => {
-        const active=document.activeElement;
-        const typing=active && (active.tagName==='INPUT' || active.tagName==='TEXTAREA' || active.isContentEditable);
+        const active = document.activeElement;
+        const typing = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
         if(typing) return;
-        if(!e.key || e.key.toLowerCase()!=='j') return;
+        if(!e.key || e.key.toLowerCase() !== 'j') return;
         e.preventDefault(); e.stopPropagation();
         openJLink('');
       }, { capture: true });
 
-      /* INIT */
+      /* ========================== INIT ========================== */
       renderAll();
-      console.info('Tema scuro attivo. J →', LINK_J_DEFAULT);
     });
   </script>
 </body>
