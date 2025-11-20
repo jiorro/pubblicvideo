@@ -1,101 +1,83 @@
+/* ====== PALETTE DARK + NEON ====== */
+:root {
+  --bg: #0a0a0b;
+  --panel: #141519;
+  --text: #e9e9ed;
+  --muted: #9aa0ab;
+  --border: #2a2f38;
+  --accent: #00ff88;   /* verde fosforescente */
+  --danger: #ff6b6b;
+  --brand: #6fa8ff;
+}
+
+/* ====== BASE ====== */
 body {
-  font-family: sans-serif;
-  background: orange;
-  color: #111;
   margin: 0;
-  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+
+/* ====== TOPBAR ====== */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 18px;
+  background: #111; border-bottom: 1px solid var(--border);
+}
+.lens-btn {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--panel); border: 1px solid var(--border);
+  color: var(--accent); font-size: 20px; cursor: pointer;
 }
 
-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 20px;
-  background: #222;
-  color: white;
+/* ====== SECTIONS ====== */
+.section { padding-top: 96px; min-height: 100vh; }
+.hidden { display: none; }
+.panel {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px;
 }
 
-#openUpload {
-  font-size: 24px;
-  background: #8000ff;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
+/* ====== HOME ====== */
+.pill {
+  display: inline-block; padding: 4px 8px; border-radius: 999px;
+  background: #202025; color: var(--muted); border: 1px solid var(--border);
+  font-size: 13px; margin: 2px;
 }
+.pill-list { display: flex; flex-wrap: wrap; }
 
-#searchInput {
-  padding: 6px;
-  border-radius: 6px;
-  border: none;
-  width: 200px;
+/* ====== VIDEO CARDS ====== */
+.cards { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 14px; }
+.card {
+  background: var(--panel); border: 1px solid var(--border);
+  padding: 10px; border-radius: 12px;
 }
+.card video {
+  width: 100%; border-radius: 8px; background: black;
+  border: 2px solid var(--accent); box-shadow: 0 0 12px var(--accent);
+}
+.card .title { font-weight: 600; }
+.card .views { color: var(--muted); font-size: 13px; }
 
-#videoContainer {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
-  padding: 20px;
-}
+/* ====== ADMIN TABLE ====== */
+table.admin-grid { width: 100%; border-collapse: collapse; margin-top: 12px; }
+table.admin-grid th, table.admin-grid td { padding: 10px; border-top: 1px solid var(--border); }
 
-.video-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+/* ====== MODAL UPLOAD ====== */
+.modal { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); }
+.modal.show { display: flex; }
+.modal-panel { width: 92%; max-width: 680px; background: var(--panel); border: 1px solid var(--border); padding: 18px; border-radius: 12px; }
+.progress { height: 8px; border-radius: 999px; background: #111; margin-top: 8px; overflow: hidden; }
+.progress > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg,var(--brand),var(--accent)); }
 
-video {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  border: 2px solid #8000ff;
-  border-radius: 8px;
+/* ====== ADMIN ANCHOR ====== */
+.admin-anchor { position: fixed; left: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
+.admin-btn {
+  width: 44px; height: 44px; border-radius: 999px;
+  background: var(--panel); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--accent); font-size: 18px; cursor: pointer;
 }
-
-.video-title {
-  margin-top: 8px;
-  font-size: 14px;
-  color: #222;
-  text-align: center;
-}
-
-/* Modal */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.modal-content {
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  text-align: center;
-  position: relative;
-  color: #000;
-}
-
-.hidden {
-  display: none;
-}
-
-.close {
-  position: absolute;
-  top: 10px;
-  right: 20px;
-  font-size: 28px;
-  cursor: pointer;
-  color: #000;
-}
-
-#uploadStatus {
-  margin-top: 10px;
-  font-size: 14px;
-  color: red;
-}
+.admin-input { width: 220px; padding: 8px; border-radius: 10px; border: 1px solid var(--border); background: var(--panel); color: var(--text); }
