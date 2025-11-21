@@ -6,98 +6,25 @@ document.addEventListener('DOMContentLoaded', () => {
   // LISTA VIDEO MANUALE (cloud)
   // ==========================
   const initialVideos = [
-    {
-      url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763224890/fx5teli1hhrydb8eemvw.mp4",
-      title: "Video 1",
-      views: 0,
-      published: true
-    },
-    {
-      url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212600/f56bkcz1xj3afz2zxmp5.mp4",
-      title: "Video 2",
-      views: 0,
-      published: true
-    },
-    {
-      url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212306/euxyg2hahvutkkghsukg.mp4",
-      title: "Video 3",
-      views: 0,
-      published: true
-    },
-    {
-      url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212286/zdk4ybgjyfk8zmcouily.mp4",
-      title: "Video 4",
-      views: 0,
-      published: true
-    },
-    {
-      url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212268/roeghtklpgzwb9nsq1md.mp4",
-      title: "Video 5",
-      views: 0,
-      published: true
-    },
-    {
-      url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212254/bome1bxvkulbfbm6x0kq.mp4",
-      title: "Video 6",
-      views: 0,
-      published: true
-    },
-    {
-      url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763136665/ilohoc9j6kilzrrz3tk8.webm",
-      title: "Video 7",
-      views: 0,
-      published: true
-    },
-    {
-      url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763136626/casksoqxamgrimcvbfry.webm",
-      title: "Video 8",
-      views: 0,
-      published: true
-    },
-    {
-      url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763136597/oe7iwyf7jui9jeumvey1.webm",
-      title: "Video 9",
-      views: 0,
-      published: true
-    },
-    {
-      url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763136572/r0r4hgvcqtmeieangrj2.webm",
-      title: "Video 10",
-      views: 0,
-      published: true
-    },
-    {
-      url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763136530/prhm77yscr43mxeznmzf.webm",
-      title: "Video 11",
-      views: 0,
-      published: true
-    },
-    {
-      url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763135381/dv3bmf0t6of82tqiby5z.webm",
-      title: "Video 12",
-      views: 0,
-      published: true
-    },
-    {
-      url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763135360/dxa2nlg5s1oljfiruncd.webm",
-      title: "Video 13",
-      views: 0,
-      published: true
-    },
-    {
-      url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763135306/zy8vbkdnlsygo6ohj0fe.webm",
-      title: "Video 14",
-      views: 0,
-      published: true
-    }
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763224890/fx5teli1hhrydb8eemvw.mp4", title: "Video 1", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212600/f56bkcz1xj3afz2zxmp5.mp4", title: "Video 2", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212306/euxyg2hahvutkkghsukg.mp4", title: "Video 3", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212286/zdk4ybgjyfk8zmcouily.mp4", title: "Video 4", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212268/roeghtklpgzwb9nsq1md.mp4", title: "Video 5", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212254/bome1bxvkulbfbm6x0kq.mp4", title: "Video 6", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763136665/ilohoc9j6kilzrrz3tk8.webm", title: "Video 7", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763136626/casksoqxamgrimcvbfry.webm", title: "Video 8", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763136597/oe7iwyf7jui9jeumvey1.webm", title: "Video 9", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763136572/r0r4hgvcqtmeieangrj2.webm", title: "Video 10", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763136530/prhm77yscr43mxeznmzf.webm", title: "Video 11", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763135381/dv3bmf0t6of82tqiby5z.webm", title: "Video 12", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763135360/dxa2nlg5s1oljfiruncd.webm", title: "Video 13", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763135306/zy8vbkdnlsygo6ohj0fe.webm", title: "Video 14", views: 0, published: true }
   ];
 
-  // Salva subito la lista manuale in localStorage se è vuoto
+  // Sovrascrive SEMPRE localStorage con la lista manuale
   function initSaved() {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    if (saved.length === 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(initialVideos));
-    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(initialVideos));
   }
   initSaved();
 
@@ -110,61 +37,12 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(arr || []));
   }
 
-  // ... qui continua tutto il resto del tuo script (renderAll, admin, ecc.)
-});
-
-  // Helpers
-  function getSaved() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-    catch(e){ return []; }
-  }
-  function setSaved(arr) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(arr || []));
-  }
-
-  // Riferimenti DOM
-  const homeSection = document.getElementById('homeSection');
-  const videoSection = document.getElementById('videoSection');
-  const adminSection = document.getElementById('adminSection');
-  const lensBtn = document.getElementById('lensBtn');
-  const backHome = document.getElementById('backHome');
-  const videoContainer = document.getElementById('videoContainer');
-  const searchVideos = document.getElementById('searchVideos');
-  const openUploadBtn = document.getElementById('openUpload');
-  const uploadModal = document.getElementById('uploadModal');
-  const closeUploadBtn = document.getElementById('closeUpload');
-  const uploadBtn = document.getElementById('uploadBtn');
-  const fileInput = document.getElementById('videoFile');
-  const titleInput = document.getElementById('videoTitle');
-  const overlaySrcInput = document.getElementById('overlaySrc');
-  const uploadStatus = document.getElementById('uploadStatus');
-  const uploadProgress = document.getElementById('uploadProgress');
-  const adminAnchorBtn = document.getElementById('adminAnchorBtn');
-  const adminInputWrap = document.getElementById('adminInputWrap');
-  const adminInput = document.getElementById('adminInput');
-  const adminSubmit = document.getElementById('adminSubmit');
-  const adminBody = document.getElementById('adminBody');
-  const adminToVideo = document.getElementById('adminToVideo');
-  const adminToHome = document.getElementById('adminToHome');
-
-  // ==========================
-  // NAVIGAZIONE
-  // ==========================
-  lensBtn.addEventListener('click', () => {
-    homeSection.classList.add('hidden');
-    videoSection.classList.remove('hidden');
-    adminSection.classList.add('hidden');
-    renderAll();
-  });
-  backHome.addEventListener('click', () => {
-    homeSection.classList.remove('hidden');
-    videoSection.classList.add('hidden');
-    adminSection.classList.add('hidden');
-  });
-
   // ==========================
   // RENDER VIDEO CARDS
   // ==========================
+  const videoContainer = document.getElementById('videoContainer');
+  const adminBody = document.getElementById('adminBody');
+
   function createCard(item) {
     const card = document.createElement('div');
     card.className = 'card';
@@ -183,20 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const vw = document.createElement('div');
     vw.className = 'views';
     vw.textContent = '👁️ ' + (item.views || 0) + ' views';
-
-    // Conteggio views
-    let counted = false;
-    v.addEventListener('play', () => {
-      if (counted) return;
-      counted = true;
-      const saved = getSaved().map(s => {
-        if (s.url === item.url) s.views = (s.views || 0) + 1;
-        return s;
-      });
-      setSaved(saved);
-      vw.textContent = '👁️ ' + ((saved.find(s => s.url === item.url)?.views) || 0) + ' views';
-      renderAdminTable();
-    });
 
     card.appendChild(v);
     card.appendChild(t);
@@ -217,90 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ==========================
-  // UPLOAD MODAL + CLOUDINARY
-  // ==========================
-  openUploadBtn.addEventListener('click', () => uploadModal.classList.add('show'));
-  closeUploadBtn.addEventListener('click', () => uploadModal.classList.remove('show'));
-
-  async function handleUpload() {
-    const file = fileInput.files[0];
-    const title = titleInput.value.trim();
-    const overlaySrc = overlaySrcInput.value.trim() || null;
-
-    if (!file) { uploadStatus.textContent = '❌ Seleziona un file video.'; return; }
-    if (!file.type.startsWith('video/')) { uploadStatus.textContent = '❌ Non è un video.'; return; }
-    const sizeMb = (file.size / (1024*1024)).toFixed(1);
-    if (sizeMb > MAX_FILE_MB) { uploadStatus.textContent = `❌ File troppo grande (${sizeMb} MB).`; return; }
-
-    uploadStatus.textContent = '⏳ Caricamento su Cloudinary...';
-    uploadProgress.style.width = '0%';
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", "jiorro_upload"); // tuo preset
-    const cloudName = "dng8rjd6u"; // tuo cloud name
-
-    try {
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, {
-        method: "POST",
-        body: formData
-      });
-      const data = await res.json();
-      console.log("Cloudinary response:", data); // DEBUG
-
-      if (data.secure_url) {
-        const videoUrl = data.secure_url;
-
-        const saved = getSaved();
-        saved.unshift({
-          url: videoUrl,
-          title,
-          overlaySrc,
-          views: 0,
-          published: true
-        });
-        setSaved(saved);
-
-        uploadStatus.textContent = '✅ Caricato su Cloudinary';
-        uploadProgress.style.width = '100%';
-
-        renderAll();
-        renderAdminTable();
-        setTimeout(() => uploadModal.classList.remove('show'), 800);
-      } else {
-        uploadStatus.textContent = '❌ Errore: nessun URL restituito';
-        console.error(data);
-      }
-    } catch (err) {
-      console.error(err);
-      uploadStatus.textContent = '❌ Errore durante l’upload';
-    }
-  }
-
-  // 🔑 collego il bottone alla funzione vera
-  uploadBtn.addEventListener('click', handleUpload);
-
-  // ==========================
-  // ADMIN UNLOCK
-  // ==========================
-  adminAnchorBtn.addEventListener('click', () => {
-    adminInputWrap.style.display = adminInputWrap.style.display === 'flex' ? 'none' : 'flex';
-  });
-  adminSubmit.addEventListener('click', () => {
-    if (adminInput.value === ADMIN_PASS) {
-      homeSection.classList.add('hidden');
-      videoSection.classList.add('hidden');
-      adminSection.classList.remove('hidden');
-      renderAdminTable();
-    } else {
-      alert("Password errata");
-    }
-  });
-
-  // ==========================
-  // ADMIN TABLE
-  // ==========================
   function renderAdminTable() {
     adminBody.innerHTML = '';
     const saved = getSaved();
@@ -313,26 +93,22 @@ document.addEventListener('DOMContentLoaded', () => {
       adminBody.appendChild(tr);
       return;
     }
-    saved.forEach((item, idx) => {
+    saved.forEach((item) => {
       const tr = document.createElement('tr');
-
-      const tdPrev = document.createElement('td');
-      const prevV = document.createElement('video');
-      prevV.src = item.url; prevV.controls = true; prevV.style.maxWidth='180px';
-      tdPrev.appendChild(prevV);
-
       const tdTitle = document.createElement('td');
-      const titleInputEl = document.createElement('input');
-      titleInputEl.className='input'; titleInputEl.value=item.title||'';
-      tdTitle.appendChild(titleInputEl);
-
+      tdTitle.textContent = item.title;
       const tdViews = document.createElement('td');
-      tdViews.textContent = item.views||0;
-
+      tdViews.textContent = item.views;
       const tdStatus = document.createElement('td');
-      tdStatus.textContent = item.published===false?'Non pub':'Pub';
+      tdStatus.textContent = item.published ? 'Pub' : 'Non pub';
+      tr.appendChild(tdTitle);
+      tr.appendChild(tdViews);
+      tr.appendChild(tdStatus);
+      adminBody.appendChild(tr);
+    });
+  }
 
-      const tdActions = document.createElement('td');
-      const btnSave=document.createElement('button');btnSave.textContent='💾';
-      const btnReset=document.createElement('button');btnReset.textContent='🔄';
-      const
+  // Mostra subito i video
+  renderAll();
+  renderAdminTable();
+});
