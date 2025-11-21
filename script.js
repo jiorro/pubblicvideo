@@ -1,34 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // ==========================
-  // CONFIG
-  // ==========================
   const STORAGE_KEY = 'jiorroVideos_secure_v1';
   const ADMIN_PASS = 'JIORR0CON$=LE';
-  const LINK_J_DEFAULT = "https://it.wikipedia.org/wiki/Antonio_D%27Agostino";
   const MAX_FILE_MB = 800;
 
-  // ==========================
-  // HELPERS
-  // ==========================
+  // Helpers
   function getSaved() {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    } catch (e) {
-      return [];
-    }
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    catch(e){ return []; }
   }
   function setSaved(arr) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(arr || []));
   }
-  function showStatus(msg, type) {
-    const s = document.getElementById('statusEl');
-    s.textContent = msg || '';
-    s.className = 'status' + (type ? ' ' + type : '');
-  }
 
-  // ==========================
-  // DOM REFS
-  // ==========================
+  // Riferimenti DOM
   const homeSection = document.getElementById('homeSection');
   const videoSection = document.getElementById('videoSection');
   const adminSection = document.getElementById('adminSection');
@@ -124,12 +108,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================
-  // UPLOAD MODAL
+  // UPLOAD MODAL + CLOUDINARY
   // ==========================
   openUploadBtn.addEventListener('click', () => uploadModal.classList.add('show'));
   closeUploadBtn.addEventListener('click', () => uploadModal.classList.remove('show'));
 
-  uploadBtn.addEventListener('click', () => {
+  async function handleUpload() {
     const file = fileInput.files[0];
     const title = titleInput.value.trim();
     const overlaySrc = overlaySrcInput.value.trim() || null;
@@ -139,25 +123,51 @@ document.addEventListener('DOMContentLoaded', () => {
     const sizeMb = (file.size / (1024*1024)).toFixed(1);
     if (sizeMb > MAX_FILE_MB) { uploadStatus.textContent = `❌ File troppo grande (${sizeMb} MB).`; return; }
 
-    uploadStatus.textContent = `⏳ Caricamento...`;
+    uploadStatus.textContent = '⏳ Caricamento su Cloudinary...';
     uploadProgress.style.width = '0%';
-    let pct = 0;
-    const timer = setInterval(() => {
-      pct = Math.min(100, pct + 20);
-      uploadProgress.style.width = pct + '%';
-      if (pct >= 100) {
-        clearInterval(timer);
-        const url = URL.createObjectURL(file);
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "jiorro_upload"); // tuo preset
+    const cloudName = "dng8rjd6u"; // tuo cloud name
+
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, {
+        method: "POST",
+        body: formData
+      });
+      const data = await res.json();
+
+      if (data.secure_url) {
+        const videoUrl = data.secure_url;
+
         const saved = getSaved();
-        saved.unshift({ url, title, overlaySrc, views:0, published:true });
+        saved.unshift({
+          url: videoUrl,
+          title,
+          overlaySrc,
+          views: 0,
+          published: true
+        });
         setSaved(saved);
+
+        uploadStatus.textContent = '✅ Caricato su Cloudinary';
+        uploadProgress.style.width = '100%';
+
         renderAll();
         renderAdminTable();
-        uploadStatus.textContent = '✅ Caricato';
         setTimeout(() => uploadModal.classList.remove('show'), 800);
+      } else {
+        uploadStatus.textContent = '❌ Errore: nessun URL restituito';
+        console.error(data);
       }
-    }, 200);
-  });
+    } catch (err) {
+      console.error(err);
+      uploadStatus.textContent = '❌ Errore durante l’upload';
+    }
+  }
+
+  uploadBtn.addEventListener('click', handleUpload);
 
   // ==========================
   // ADMIN UNLOCK
@@ -193,6 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     saved.forEach((item, idx) => {
       const tr = document.createElement('tr');
+
       const tdPrev = document.createElement('td');
       const prevV = document.createElement('video');
       prevV.src = item.url; prevV.controls = true; prevV.style.maxWidth='180px';
@@ -212,6 +223,4 @@ document.addEventListener('DOMContentLoaded', () => {
       const tdActions = document.createElement('td');
       const btnSave=document.createElement('button');btnSave.textContent='💾';
       const btnReset=document.createElement('button');btnReset.textContent='🔄';
-      const btnToggle=document.createElement('button');btnToggle.textContent=item.published===false?'📢':'🙈';
-      const btnDel=document.createElement('button');btnDel.textContent='🗑️';
-      tdActions.append(btn
+      const btnToggle=document.createElement('button');btnToggle.textContent=item.published===false?'📢':'🙈
