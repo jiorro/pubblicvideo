@@ -137,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
         body: formData
       });
       const data = await res.json();
+      console.log("Cloudinary response:", data); // DEBUG
 
       if (data.secure_url) {
         const videoUrl = data.secure_url;
@@ -167,6 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // 🔑 collego il bottone alla funzione vera
   uploadBtn.addEventListener('click', handleUpload);
 
   // ==========================
@@ -223,4 +225,4 @@ document.addEventListener('DOMContentLoaded', () => {
       const tdActions = document.createElement('td');
       const btnSave=document.createElement('button');btnSave.textContent='💾';
       const btnReset=document.createElement('button');btnReset.textContent='🔄';
-      const btnToggle=document.createElement('button');btnToggle.textContent=item.published===false?'📢':'🙈
+      const
