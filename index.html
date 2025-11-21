@@ -109,7 +109,10 @@
       // Upload modal
       openUploadBtn.addEventListener('click', () => uploadModal.classList.add('show'));
       closeUploadBtn.addEventListener('click', () => uploadModal.classList.remove('show'));
-      uploadBtn.addEventListener('click', () => alert("Simulazione upload completata"));
+      uploadBtn.addEventListener('click', handleUpload);
+          formData.append("upload_preset", "jiorro_upload"); 
+          const cloudName = "dng8rjd6u";
+
 
       // Admin unlock
       adminAnchorBtn.addEventListener('click', () => {
