@@ -4,31 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Jiorro Video Manager</title>
-  <style>
-    /* Tema scuro + dettagli verde fosforescente */
-    body { margin:0; background:#0a0a0b; color:#e9e9ed; font-family:system-ui,sans-serif; }
-    .topbar { position:fixed; top:0; left:0; right:0; height:64px; display:flex; justify-content:space-between; align-items:center; padding:0 18px; background:#111; border-bottom:1px solid #2a2f38; }
-    .lens-btn { width:44px; height:44px; border-radius:12px; background:#141519; border:1px solid #2a2f38; color:#00ff88; font-size:20px; cursor:pointer; }
-    .section { padding-top:96px; min-height:100vh; }
-    .hidden { display:none; }
-    .panel { background:#141519; border:1px solid #2a2f38; border-radius:12px; padding:20px; }
-    .pill { display:inline-block; padding:4px 8px; border-radius:999px; background:#202025; color:#9aa0ab; border:1px solid #2a2f38; font-size:13px; margin:2px; }
-    .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; margin-top:12px; }
-    .card { background:#141519; border:1px solid #2a2f38; padding:10px; border-radius:12px; }
-    .card video { width:100%; border-radius:8px; background:black; border:2px solid #00ff88; box-shadow:0 0 12px #00ff88; }
-    .title { font-weight:600; }
-    .views { color:#9aa0ab; font-size:13px; }
-    table.admin-grid { width:100%; border-collapse:collapse; margin-top:12px; }
-    table.admin-grid th, table.admin-grid td { padding:10px; border-top:1px solid #2a2f38; }
-    .modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.55); }
-    .modal.show { display:flex; }
-    .modal-panel { width:92%; max-width:680px; background:#141519; border:1px solid #2a2f38; padding:18px; border-radius:12px; }
-    .progress { height:8px; border-radius:999px; background:#111; margin-top:8px; overflow:hidden; }
-    .progress > i { display:block; height:100%; width:0; background:linear-gradient(90deg,#6fa8ff,#00ff88); }
-    .admin-anchor { position:fixed; left:12px; bottom:12px; display:flex; flex-direction:column; gap:8px; }
-    .admin-btn { width:44px; height:44px; border-radius:999px; background:#141519; border:1px solid #2a2f38; display:flex; align-items:center; justify-content:center; color:#00ff88; font-size:18px; cursor:pointer; }
-    .admin-input { width:220px; padding:8px; border-radius:10px; border:1px solid #2a2f38; background:#141519; color:#e9e9ed; }
-  </style>
+  <!-- Collego il CSS esterno -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <!-- Navbar -->
@@ -36,6 +13,9 @@
     <div>Jiorro Video Manager</div>
     <button id="lensBtn" class="lens-btn">🔍</button>
   </header>
+
+  <!-- Status -->
+  <div id="statusEl" class="status"></div>
 
   <!-- Home -->
   <main id="homeSection" class="section">
@@ -146,4 +126,12 @@
       });
 
       // Tasto J → Wikipedia
-      window.addEventListener
+      window.addEventListener('keyup', (e) => {
+        if (e.key.toLowerCase() === 'j') {
+          window.open("https://it.wikipedia.org/wiki/Antonio_D%27Agostino", "_blank");
+        }
+      });
+    });
+  </script>
+</body>
+</html>
