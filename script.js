@@ -14,6 +14,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const addManualUrl = document.getElementById('addManualUrl');
   const addManualTitle = document.getElementById('addManualTitle');
   const videoContainer = document.getElementById('videoContainer');
+  lensBtn.addEventListener('click', () => {
+  goVideo();
+  renderAll();
+});
+
 
   // ==========================
   // Stato locale
