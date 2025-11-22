@@ -151,7 +151,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==========================
   // Bootstrap UI
   // ==========================
-  goVideo();
+   // Bootstrap UI
+   goHome();
   renderAll();
   renderAdminTable();
+    // ==========================
+  // Shortcut J → Wikipedia
+  // ==========================
+  window.addEventListener('keyup', (e) => {
+    if (e.key.toLowerCase() === 'j') {
+      window.open("https://it.wikipedia.org/wiki/Antonio_D%27Agostino", "_blank");
+    }
+
 });
