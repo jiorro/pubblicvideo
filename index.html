@@ -3,8 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Nuova scheda</title>
-  <!-- Collego il CSS esterno -->
+  <title>Jiorro Video Manager</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -46,9 +45,22 @@
     <div class="panel">
       <h2>🔧 Admin</h2>
       <table class="admin-grid">
-        <thead><tr><th>Anteprima</th><th>Titolo</th><th>Views</th><th>Stato</th><th>Azioni</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Anteprima</th>
+            <th>Titolo</th>
+            <th>URL</th>
+            <th>Views</th>
+            <th>Stato</th>
+            <th>Azioni</th>
+          </tr>
+        </thead>
         <tbody id="adminBody"></tbody>
       </table>
+      <h3>Aggiungi manualmente un video dal cloud</h3>
+      <input id="addManualUrl" type="text" placeholder="Incolla URL Cloudinary">
+      <input id="addManualTitle" type="text" placeholder="Titolo">
+      <button id="addManualBtn">Aggiungi</button>
     </div>
   </section>
 
@@ -77,64 +89,8 @@
     </div>
   </div>
 
-  <!-- Script -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const homeSection=document.getElementById('homeSection');
-      const videoSection=document.getElementById('videoSection');
-      const adminSection=document.getElementById('adminSection');
-      const lensBtn=document.getElementById('lensBtn');
-      const backHome=document.getElementById('backHome');
-      const openUploadBtn=document.getElementById('openUpload');
-      const uploadModal=document.getElementById('uploadModal');
-      const closeUploadBtn=document.getElementById('closeUpload');
-      const uploadBtn=document.getElementById('uploadBtn');
-      const adminAnchorBtn=document.getElementById('adminAnchorBtn');
-      const adminInputWrap=document.getElementById('adminInputWrap');
-      const adminInput=document.getElementById('adminInput');
-      const adminSubmit=document.getElementById('adminSubmit');
-
-      // Navigazione sezioni
-      lensBtn.addEventListener('click', () => {
-        homeSection.classList.add('hidden');
-        videoSection.classList.remove('hidden');
-        adminSection.classList.add('hidden');
-      });
-      backHome.addEventListener('click', () => {
-        homeSection.classList.remove('hidden');
-        videoSection.classList.add('hidden');
-        adminSection.classList.add('hidden');
-      });
-
-      // Upload modal
-      openUploadBtn.addEventListener('click', () => uploadModal.classList.add('show'));
-      closeUploadBtn.addEventListener('click', () => uploadModal.classList.remove('show'));
-      uploadBtn.addEventListener('click', handleUpload);
-          formData.append("upload_preset", "jiorro_upload"); 
-          const cloudName = "dng8rjd6u";
-
-
-      // Admin unlock
-      adminAnchorBtn.addEventListener('click', () => {
-        adminInputWrap.style.display = adminInputWrap.style.display === 'flex' ? 'none' : 'flex';
-      });
-      adminSubmit.addEventListener('click', () => {
-        if (adminInput.value === 'JIORR0CON$=LE') {
-          homeSection.classList.add('hidden');
-          videoSection.classList.add('hidden');
-          adminSection.classList.remove('hidden');
-        } else {
-          alert("Password errata");
-        }
-      });
-
-      // Tasto J → Wikipedia
-      window.addEventListener('keyup', (e) => {
-        if (e.key.toLowerCase() === 'j') {
-          window.open("https://it.wikipedia.org/wiki/Antonio_D%27Agostino", "_blank");
-        }
-      });
-    });
-  </script>
+  <!-- Script esterno -->
+  <script src="script.js"></script>
 </body>
 </html>
+
