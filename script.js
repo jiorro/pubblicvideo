@@ -14,13 +14,88 @@ document.addEventListener('DOMContentLoaded', () => {
   const addManualUrl = document.getElementById('addManualUrl');
   const addManualTitle = document.getElementById('addManualTitle');
   const videoContainer = document.getElementById('videoContainer');
-  lensBtn.addEventListener('click', () => {
-  goVideo();
-  renderAll();
+ document.addEventListener('DOMContentLoaded', () => {
+  const homeSection = document.getElementById('homeSection');
+  const videoSection = document.getElementById('videoSection');
+  const adminSection = document.getElementById('adminSection');
+  const lensBtn = document.getElementById('lensBtn');
+  const backHome = document.getElementById('backHome');
+  const videoContainer = document.getElementById('videoContainer');
+  const searchVideos = document.getElementById('searchVideos');
+  const adminBody = document.getElementById('adminBody');
+
+  // Guardie dure per la lente
+  if (!lensBtn) {
+    console.error('lensBtn non trovato nel DOM');
+  } else {
+    lensBtn.type = 'button';
+    lensBtn.style.pointerEvents = 'auto';
+    lensBtn.style.position = 'relative';
+    lensBtn.style.zIndex = '10';
+
+    lensBtn.addEventListener('click', (e) => {
+      console.log('Lente cliccata');
+      // Fallback 1: se goVideo non esiste o fallisce, toggla manualmente
+      try {
+        if (typeof goVideo === 'function') {
+          goVideo();
+        } else {
+          homeSection.classList.add('hidden');
+          videoSection.classList.remove('hidden');
+          adminSection.classList.add('hidden');
+        }
+      } catch (err) {
+        console.warn('goVideo ha lanciato un errore, uso fallback:', err);
+        homeSection.classList.add('hidden');
+        videoSection.classList.remove('hidden');
+        adminSection.classList.add('hidden');
+      }
+
+      // Fallback 2: render video comunque
+      try {
+        if (typeof renderAll === 'function') {
+          renderAll();
+        } else {
+          // Render minimale di sicurezza per mostrare che il click funziona
+          if (videoContainer) {
+            videoContainer.innerHTML = '<div class="card"><p>Render fallback: click rilevato</p></div>';
+          }
+        }
+      } catch (err) {
+        console.warn('renderAll ha lanciato un errore:', err);
+        if (videoContainer) {
+          videoContainer.innerHTML = '<div class="card"><p>Render fallback con errore</p></div>';
+        }
+      }
+    });
+  }
+
+  // Navigazione esplicita (se le tue funzioni sono già presenti, queste non ti servono)
+  function goHome() {
+    homeSection.classList.remove('hidden');
+    videoSection.classList.add('hidden');
+    adminSection.classList.add('hidden');
+  }
+  function goVideo() {
+    homeSection.classList.add('hidden');
+    videoSection.classList.remove('hidden');
+    adminSection.classList.add('hidden');
+  }
+
+  // Shortcut J (rimesso)
+  window.addEventListener('keyup', (e) => {
+    if (e.key.toLowerCase() === 'j') {
+      window.open("https://it.wikipedia.org/wiki/Antonio_D%27Agostino", "_blank");
+    }
+  });
+
+  // Bootstrap: parti dalla Home ma prepara tutto
+  goHome();
+  if (typeof renderAll === 'function') renderAll();
+  if (typeof renderAdminTable === 'function') renderAdminTable();
 }
 
-
-  // ==========================
+                           // ==========================
   // Stato locale
   // ==========================
   const getSaved = () => JSON.parse(localStorage.getItem('videos') || '[]');
