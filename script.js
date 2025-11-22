@@ -363,4 +363,11 @@ document.addEventListener('DOMContentLoaded', () => {
   goHome();           // avvio su Home
   renderAll();        // render iniziale (se navighi a Video)
   renderAdminTable(); // prepara tabella admin
+  // ==========================
+  // Bootstrap UI
+  // ==========================
+  goVideo();        // avvia direttamente la sezione Video
+  renderAll();      // genera subito le card con i video
+  renderAdminTable(); // prepara la tabella admin
 });
+
