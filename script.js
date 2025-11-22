@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
   goHome();
   if (typeof renderAll === 'function') renderAll();
   if (typeof renderAdminTable === 'function') renderAdminTable();
-}
+});
 
                            // ==========================
   // Stato locale
