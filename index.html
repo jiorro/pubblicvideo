@@ -1,97 +1,71 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Jiorro Video Manager</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Video Manager</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <!-- Navbar -->
-  <header class="topbar">
-    <div>Jiorro Video Manager</div>
-   <button id="lensBtn" class="lens-btn" type="button">cerca</button>
+  <div class="topbar">
+    <h1>Video Manager</h1>
+    <!-- 🔎 Lente -->
+    <button id="lensBtn" class="lens-btn" type="button">🔍</button>
+  </div>
 
-  </header>
-
-  <!-- Status -->
-  <div id="statusEl" class="status"></div>
-
-  <!-- Home -->
-  <main id="homeSection" class="section">
+  <!-- Sezione Home -->
+  <section id="homeSection" class="section">
     <div class="panel">
-      <h1>La regione di Canaan</h1>
-      <p>Importa, cerca, riproduci e gestisci i tuoi video. Admin completo, upload con progress e tracking views.</p>
-      <ul class="pill-list">
-        <li class="pill">Import automatico</li>
-        <li class="pill">Ricerca client</li>
-        <li class="pill">Upload con progress</li>
-        <li class="pill">Admin completo</li>
-      </ul>
+      <h2>Benvenuto</h2>
+      <p>Questa è la Home. Usa la lente per andare ai Video.</p>
     </div>
-  </main>
+  </section>
 
-  <!-- Video -->
+  <!-- Sezione Video -->
   <section id="videoSection" class="section hidden">
     <div class="panel">
-      <button id="backHome">🏠 Home</button>
-      <button id="openUpload">⬆️ Carica</button>
-      <input id="searchVideos" placeholder="Cerca video" />
+      <button id="backHome" type="button">⬅ Torna alla Home</button>
+      <h2>Video</h2>
+      <input id="searchVideos" type="text" placeholder="Cerca video...">
       <div id="videoContainer" class="cards"></div>
     </div>
   </section>
 
-  <!-- Admin -->
+  <!-- Sezione Admin -->
   <section id="adminSection" class="section hidden">
     <div class="panel">
-      <h2>🔧 Admin</h2>
+      <h2>Admin</h2>
+      <!-- Login -->
+      <button id="adminAnchorBtn" type="button">🔑 Login Admin</button>
+      <div id="adminInputWrap" style="display:none; flex-direction:column; gap:8px;">
+        <input id="adminInput" type="password" placeholder="Password">
+        <button id="adminSubmit" type="button">Entra</button>
+      </div>
+
+      <!-- Aggiunta manuale -->
+      <h3>Aggiungi manualmente</h3>
+      <input id="addManualUrl" type="text" placeholder="URL video">
+      <input id="addManualTitle" type="text" placeholder="Titolo">
+      <button id="addManualBtn" type="button">Aggiungi</button>
+
+      <!-- Tabella Admin -->
       <table class="admin-grid">
         <thead>
           <tr>
-            <th>Anteprima</th>
+            <th>Preview</th>
             <th>Titolo</th>
             <th>URL</th>
             <th>Views</th>
-            <th>Stato</th>
+            <th>Status</th>
             <th>Azioni</th>
           </tr>
         </thead>
         <tbody id="adminBody"></tbody>
       </table>
-      <h3>Aggiungi manualmente un video dal cloud</h3>
-      <input id="addManualUrl" type="text" placeholder="Incolla URL Cloudinary">
-      <input id="addManualTitle" type="text" placeholder="Titolo">
-      <button id="addManualBtn">Aggiungi</button>
     </div>
   </section>
 
-  <!-- Upload Modal -->
-  <div id="uploadModal" class="modal">
-    <div class="modal-panel">
-      <h3>Carica Video</h3>
-      <input id="videoFile" type="file" accept="video/*" />
-      <input id="videoTitle" placeholder="Titolo (opzionale)" />
-      <input id="overlaySrc" placeholder="Overlay source (opzionale)" />
-      <div class="progress"><i id="uploadProgress"></i></div>
-      <button id="uploadBtn">Carica</button>
-      <button id="closeUpload">Chiudi</button>
-      <div id="uploadStatus"></div>
-    </div>
-  </div>
-
-  <!-- Admin Anchor -->
-  <div class="admin-anchor">
-    <button id="adminAnchorBtn" class="admin-btn">🔑</button>
-    <div id="adminInputWrap" style="display:none">
-      <input id="adminInput" class="admin-input" placeholder="Password admin" />
-      <button id="adminSubmit">Sblocca</button>
-      <button id="adminToHome">Home</button>
-      <button id="adminToVideo">Video</button>
-    </div>
-  </div>
-
-  <!-- Script esterno -->
+  <!-- Script -->
   <script src="script.js"></script>
 </body>
 </html>
-
