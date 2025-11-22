@@ -25,37 +25,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const saveAll = (arr) => localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
 
   // ==========================
-  // Lista iniziale (Cloudinary arricchita)
+  // Lista iniziale (Cloudinary)
   // ==========================
   const initialVideos = [
-    {
-      url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763224890/fx5teli1hhrydb8eemvw.mp4",
-      title: "Video 1",
-      views: 0,
-      published: true,
-      category: "Sport",
-      duration: "2:15",
-      uploadedAt: "2025-11-20"
-    },
-    {
-      url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212600/f56bkcz1xj3afz2zxmp5.mp4",
-      title: "Video 2",
-      views: 0,
-      published: true,
-      category: "Musica",
-      duration: "3:40",
-      uploadedAt: "2025-11-19"
-    },
-    {
-      url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212306/euxyg2hahvutkkghsukg.mp4",
-      title: "Video 3",
-      views: 0,
-      published: true,
-      category: "Documentario",
-      duration: "5:00",
-      uploadedAt: "2025-11-18"
-    }
-    // … continua con gli altri fino a Video 14
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763224890/fx5teli1hhrydb8eemvw.mp4", title: "Video 1", published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212600/f56bkcz1xj3afz2zxmp5.mp4", title: "Video 2", published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212306/euxyg2hahvutkkghsukg.mp4", title: "Video 3", published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212286/zdk4ybgjyfk8zmcouily.mp4", title: "Video 4", published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212268/roeghtklpgzwb9nsq1md.mp4", title: "Video 5", published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212254/bome1bxvkulbfbm6x0kq.mp4", title: "Video 6", published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763136665/ilohoc9j6kilzrrz3tk8.webm", title: "Video 7", published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763136626/casksoqxamgrimcvbfry.webm", title: "Video 8", published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763136597/oe7iwyf7jui9jeumvey1.webm", title: "Video 9", published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763136572/r0r4hgvcqtmeieangrj2.webm", title: "Video 10", published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763136530/prhm77yscr43mxeznmzf.webm", title: "Video 11", published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763135381/dv3bmf0t6of82tqiby5z.webm", title: "Video 12", published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763135360/dxa2nlg5s1oljfiruncd.webm", title: "Video 13", published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763135306/zy8vbkdnlsygo6ohj0fe.webm", title: "Video 14", published: true }
   ];
 
   if (!localStorage.getItem(STORAGE_KEY)) {
@@ -84,6 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   lensBtn.addEventListener('click', () => {
+    console.log("Click lente"); // debug
     goVideo();
     renderAll();
   });
@@ -117,14 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
           card.innerHTML = `
             <video src="${v.url}" controls></video>
             <h4 class="title">${v.title}</h4>
-            <p class="views">Views: ${v.views}</p>
-            <p class="meta">Categoria: ${v.category || "N/A"} | Durata: ${v.duration || "?"}</p>
           `;
-          card.querySelector('video').addEventListener('play', () => {
-            v.views++;
-            saveAll(vids);
-            renderAdminTable();
-          });
           videoContainer.appendChild(card);
         });
   }
@@ -145,11 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <td><video src="${v.url}" width="120" controls></video></td>
         <td>${v.title}</td>
         <td>${v.url}</td>
-        <td>${v.views}</td>
         <td>${v.published ? "Pubblicato" : "Nascosto"}</td>
-        <td>${v.category || "-"}</td>
-        <td>${v.duration || "-"}</td>
-        <td>${v.uploadedAt || "-"}</td>
         <td>
           <button data-act="toggle" data-i="${i}">${v.published ? "Nascondi" : "Mostra"}</button>
           <button data-act="delete" data-i="${i}">Elimina</button>
@@ -182,15 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const title = addManualTitle.value.trim() || "Untitled";
     if (!url) return;
     const vids = getSaved();
-    vids.push({
-      url,
-      title,
-      views: 0,
-      published: true,
-      category: "Manuale",
-      duration: "?",
-      uploadedAt: new Date().toISOString().split("T")[0]
-    });
+    vids.push({ url, title, published: true });
     saveAll(vids);
     addManualUrl.value = "";
     addManualTitle.value = "";
@@ -198,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAdminTable();
   });
 
-  // ==========================
+   // ==========================
   // Shortcut J
   // ==========================
   window.addEventListener('keyup', (e) => {
@@ -213,4 +181,4 @@ document.addEventListener('DOMContentLoaded', () => {
   goHome();
   renderAll();
   renderAdminTable();
-});
+}); // <-- chiusura di DOMContentLoaded
