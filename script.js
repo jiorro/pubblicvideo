@@ -21,11 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const getSaved = () => JSON.parse(localStorage.getItem('videos') || '[]');
   const saveAll = (arr) => localStorage.setItem('videos', JSON.stringify(arr));
 
-  // Lista iniziale (puoi sostituire con i tuoi URL Cloudinary)
+  // Lista iniziale
   const initialVideos = [
     { url: "https://res.cloudinary.com/demo/video/upload/sample.mp4", title: "Demo Video", views: 0, active: true }
   ];
-
   if (!localStorage.getItem('videos')) {
     saveAll(initialVideos);
   }
@@ -51,8 +50,12 @@ document.addEventListener('DOMContentLoaded', () => {
     adminSection.classList.remove('hidden');
   }
 
-  // 🔎 Lente → torna alla versione funzionante
-  lensBtn.addEventListener('click', goVideo);
+  // 🔎 Lente → semplice e funzionante
+  lensBtn.addEventListener('click', () => {
+    console.log("Click lente"); // debug
+    goVideo();
+    renderAll();
+  });
   backHome.addEventListener('click', goHome);
 
   adminAnchorBtn.addEventListener('click', () => {
@@ -150,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ==========================
-  // Shortcut J → Wikipedia
+  // Shortcut J
   // ==========================
   window.addEventListener('keyup', (e) => {
     if (e.key.toLowerCase() === 'j') {
@@ -159,11 +162,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ==========================
-  // Bootstrap UI
+  // Bootstrap
   // ==========================
-  goHome();              // ora parte dalla Home
-  renderAll();           // video già pronti
+  goHome();              // parte dalla Home
+  renderAll();           // video pronti
   renderAdminTable();    // admin table popolata
 });
 
-});
