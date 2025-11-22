@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   lensBtn.addEventListener('click', () => {
   goVideo();
   renderAll();
-});
+}
 
 
   // ==========================
