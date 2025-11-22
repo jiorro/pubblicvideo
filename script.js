@@ -24,6 +24,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const searchVideos = document.getElementById('searchVideos');
   const adminBody = document.getElementById('adminBody');
 
+   lensBtn.addEventListener('click', () => {
+  console.log("Click sulla lente rilevato");
+  // Forza la navigazione senza dipendere da altre funzioni
+  homeSection.classList.add('hidden');
+  videoSection.classList.remove('hidden');
+  adminSection.classList.add('hidden');
+
+  // Renderizza i video comunque
+  renderAll();
+});
+
   // Guardie dure per la lente
   if (!lensBtn) {
     console.error('lensBtn non trovato nel DOM');
