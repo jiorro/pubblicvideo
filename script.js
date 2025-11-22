@@ -45,20 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
 
   // ==========================
-  // Stato locale
-  // ==========================
-  const getSaved = () => JSON.parse(localStorage.getItem('videos') || '[]');
-  const saveAll = (arr) => localStorage.setItem('videos', JSON.stringify(arr));
-
-  // Lista iniziale
-  const initialVideos = [
-    { url: "https://res.cloudinary.com/demo/video/upload/sample.mp4", title: "Demo Video", views: 0, active: true }
-  ];
-  if (!localStorage.getItem('videos')) {
-    saveAll(initialVideos);
-  }
-
-  // ==========================
   // Navigazione
   // ==========================
   function goHome() {
