@@ -31,7 +31,17 @@ document.addEventListener('DOMContentLoaded', () => {
     { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763224890/fx5teli1hhrydb8eemvw.mp4", title: "Video 1", views: 0, published: true },
     { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212600/f56bkcz1xj3afz2zxmp5.mp4", title: "Video 2", views: 0, published: true },
     { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212306/euxyg2hahvutkkghsukg.mp4", title: "Video 3", views: 0, published: true },
-    // ... continua con gli altri fino a Video 14
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212286/zdk4ybgjyfk8zmcouily.mp4", title: "Video 4", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212268/roeghtklpgzwb9nsq1md.mp4", title: "Video 5", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763212254/bome1bxvkulbfbm6x0kq.mp4", title: "Video 6", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763136665/ilohoc9j6kilzrrz3tk8.webm", title: "Video 7", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763136626/casksoqxamgrimcvbfry.webm", title: "Video 8", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763136597/oe7iwyf7jui9jeumvey1.webm", title: "Video 9", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763136572/r0r4hgvcqtmeieangrj2.webm", title: "Video 10", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763136530/prhm77yscr43mxeznmzf.webm", title: "Video 11", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763135381/dv3bmf0t6of82tqiby5z.webm", title: "Video 12", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763135360/dxa2nlg5s1oljfiruncd.webm", title: "Video 13", views: 0, published: true },
+    { url: "https://res.cloudinary.com/dng8rjd6u/video/upload/v1763135306/zy8vbkdnlsygo6ohj0fe.webm", title: "Video 14", views: 0, published: true }
   ];
 
   if (!localStorage.getItem(STORAGE_KEY)) {
@@ -147,6 +157,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================
+  // Aggiunta manuale
+  // ==========================
+  addManualBtn.addEventListener('click', () => {
+    const url
+      // ==========================
   // Aggiunta manuale
   // ==========================
   addManualBtn.addEventListener('click', () => {
