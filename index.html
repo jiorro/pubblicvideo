@@ -7,6 +7,39 @@
   <link rel="icon" type="image/png" href="j.jpg">
 </head>
 <body>
+  <!-- Sezione Admin -->
+<section id="adminSection" class="section hidden">
+  <div class="panel">
+    <h2>Admin</h2>
+    <!-- Login -->
+    <button id="adminAnchorBtn" type="button">🔑 Login Admin</button>
+    <div id="adminInputWrap" style="display:none; flex-direction:column; gap:8px;">
+      <input id="adminInput" type="password" placeholder="Password">
+      <button id="adminSubmit" type="button">Entra</button>
+    </div>
+
+    <!-- Aggiunta manuale -->
+    <h3>Aggiungi manualmente</h3>
+    <input id="addManualUrl" type="text" placeholder="URL video">
+    <input id="addManualTitle" type="text" placeholder="Titolo">
+    <button id="addManualBtn" type="button">Aggiungi</button>
+
+    <!-- Tabella Admin -->
+    <table class="admin-grid">
+      <thead>
+        <tr>
+          <th>Preview</th>
+          <th>Titolo</th>
+          <th>URL</th>
+          <th>Status</th>
+          <th>Azioni</th>
+        </tr>
+      </thead>
+      <tbody id="adminBody"></tbody>
+    </table>
+  </div>
+</section>
+
   <!-- Navbar -->
   <div class="topbar">
     <h1>like a normal rapper</h1>
