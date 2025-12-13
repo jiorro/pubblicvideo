@@ -1,0 +1,102 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: "WDXL Lubrifont SC", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  background: linear-gradient(135deg, #0f0f0f, #1a1a2e);
+  color: #fff;
+  scroll-behavior: smooth;
+  cursor: none;
+}
+
+#custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 30px;
+  height: 30px;
+  background-color: #8000ff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #8000ff, 0 0 20px #8000ff;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+#colorPicker {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  border: none;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.hero {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle, #1a1a2e, #0f0f0f);
+  text-align: center;
+}
+.hero h1 {
+  font-size: 5em;
+  color: #ffcc00;
+}
+.hero p {
+  font-size: 1.5em;
+  margin-top: 1em;
+}
+
+.section {
+  min-height: 100vh;
+  padding: 10vh 10vw;
+  opacity: 0;
+  transform: translateY(50px);
+  transition: all 0.8s ease-out;
+}
+.section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.button-group {
+  margin-top: 2em;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+button {
+  padding: 1em 2em;
+  font-size: 1.2em;
+  background: #ffcc00;
+  border: none;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+button:hover {
+  transform: scale(1.05);
+}
+
+.info-box {
+  margin-top: 2em;
+  padding: 1em;
+  background: #222;
+  border-left: 4px solid #ffcc00;
+  display: none;
+}
+
+.wdxl-lubrifont-sc-regular {
+  font-family: "WDXL Lubrifont SC", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
